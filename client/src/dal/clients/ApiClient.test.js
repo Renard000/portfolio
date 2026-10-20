@@ -1,13 +1,11 @@
 import ApiClient, { ApiError } from './ApiClient.js';
 
 const fakeFetch = (status, body) =>
-  vi
-    .fn()
-    .mockResolvedValue({
-      ok: status < 400,
-      status,
-      text: async () => JSON.stringify(body),
-    });
+  vi.fn().mockResolvedValue({
+    ok: status < 400,
+    status,
+    text: async () => JSON.stringify(body),
+  });
 
 describe('ApiClient', () => {
   it('ajoute les paramètres et le jeton', async () => {
