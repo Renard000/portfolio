@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
+import WebSocket from 'ws'; // Import explicite pour Node < 22
 
 import EmailClient, { ConsoleEmailClient } from '../dal/clients/EmailClient.js';
 import FirebaseAdmin from '../dal/clients/FirebaseAdmin.js';
@@ -29,6 +30,9 @@ import SubscriberAdminController from './controllers/SubscriberAdminController.j
 export function buildContainer(config) {
   const supabase = createClient(config.supabaseUrl, config.serviceRoleKey, {
     auth: { persistSession: false },
+    realtime: {
+      transport: WebSocket, // Fournit le WebSocket pour les environnements Node plus anciens
+    },
   });
 
   // DAL — Firebase Admin est initialisé à la première notification seulement
