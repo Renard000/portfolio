@@ -2,6 +2,8 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import { buildApiRouter } from './routes/index.js';
+import { createErrorHandler } from './middlewares/errorHandler.js';
 
 export function createApp(container, config) {
   const app = express();
@@ -15,12 +17,11 @@ export function createApp(container, config) {
   app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
 
   app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
-  // app.use('/api/articles', buildArticleRoutes(container.articleController));
+  // Les routes métier ne sont montées que si la composition root les fournit
+  if (container.certificationController) app.use('/api', buildApiRouter(container));
 
   // 404 puis gestionnaire d'erreurs (toujours en dernier)
   app.use((req, res) => res.status(404).json({ error: 'Not found' }));
-  if (container.errorHandler) {
-    app.use(container.errorHandler);
-  }
+  app.use(container.errorHandler || createErrorHandler());
   return app;
 }
