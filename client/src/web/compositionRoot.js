@@ -4,7 +4,17 @@ import ApiClient from '../dal/clients/ApiClient.js';
 import SupabaseAuthClient from '../dal/clients/SupabaseAuthClient.js';
 import MessagingClient from '../dal/clients/MessagingClient.js';
 import ArticleRepository from '../dal/repositories/ArticleRepository.js';
+import CertificationRepository from '../dal/repositories/CertificationRepository.js';
+import AwardRepository from '../dal/repositories/AwardRepository.js';
+import NewsletterRepository from '../dal/repositories/NewsletterRepository.js';
+import SubscriberAdminRepository from '../dal/repositories/SubscriberAdminRepository.js';
 import ArticleService from '../bll/services/ArticleService.js';
+import CertificationService from '../bll/services/CertificationService.js';
+import AwardService from '../bll/services/AwardService.js';
+import NewsletterService from '../bll/services/NewsletterService.js';
+import PushService from '../bll/services/PushService.js';
+import SubscriberAdminService from '../bll/services/SubscriberAdminService.js';
+import UploadService from '../bll/services/UploadService.js';
 import { createStore } from './store/store.js';
 
 // Webpack remplace chaque `process.env.APP_...` par sa valeur (liste blanche dans webpack.config.js).
@@ -43,10 +53,30 @@ export function createDependencies() {
   const messagingClient = new MessagingClient(firebaseApp, env.vapidKey);
 
   const articleRepository = new ArticleRepository(apiClient);
+  const certificationRepository = new CertificationRepository(apiClient);
+  const awardRepository = new AwardRepository(apiClient);
+  const newsletterRepository = new NewsletterRepository(apiClient);
+  const subscriberAdminRepository = new SubscriberAdminRepository(apiClient);
 
   // BLL
   const articleService = new ArticleService(articleRepository);
-  const services = { articleService, authClient, messagingClient };
+  const certificationService = new CertificationService(certificationRepository);
+  const awardService = new AwardService(awardRepository);
+  const newsletterService = new NewsletterService(newsletterRepository);
+  const pushService = new PushService(messagingClient, newsletterRepository);
+  const subscriberAdminService = new SubscriberAdminService(subscriberAdminRepository);
+  const uploadService = new UploadService(authClient);
+  const services = {
+    articleService,
+    certificationService,
+    awardService,
+    newsletterService,
+    pushService,
+    subscriberAdminService,
+    uploadService,
+    authClient,
+    messagingClient,
+  };
 
   // Web (store Redux : les thunks reçoivent `services` en 3e argument)
   const store = createStore(services);

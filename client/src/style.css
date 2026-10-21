@@ -1,14 +1,69 @@
-/*
- _______       _            _     _          ______        _                 _ 
-(_______)     (_)       _  (_)   | |        (____  \      (_)               | |
- _______  ____ _  ___ _| |_ _  __| |_____    ____)  ) ____ _ _____ ____   __| |
-|  ___  |/ ___) |/___|_   _) |/ _  | ___ |  |  __  ( / ___) (____ |  _ \ / _  |
-| |   | | |   | |___ | | |_| ( (_| | ____|  | |__)  ) |   | / ___ | | | ( (_| |
-|_|   |_|_|   |_(___/   \__)_|\____|_____)  |______/|_|   |_\_____|_| |_|\____|
-    
-Auteur: pflor(pflor.pro@gmail.com) 
-style.css(Ɔ) 2026
-Description : Saisissez la description puis « Tab »
-Créé le :  dimanche 18 octobre 2026 à 18:07:39 
-Dernière modification : lundi 19 octobre 2026 à 18:28:48
-*/
+/* --- Addendum v3.1 : certifications, distinctions, carrousel, frise --- */
+.certification-card__img {
+  max-height: 160px;
+  object-fit: contain;
+  background: #f8f9fa;
+  padding: 0.5rem;
+}
+.carousel-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  background: #ced4da;
+}
+.carousel-dot.active {
+  background: #0d6efd;
+}
+.carousel-dots {
+  max-height: 4rem;
+  overflow-y: auto;
+}
+
+.timeline-year {
+  position: sticky;
+  top: 0;
+  background: var(--bs-body-bg, #fff);
+  padding: 0.25rem 0;
+  z-index: 1;
+}
+.timeline-list {
+  position: relative;
+  margin-left: 1rem;
+  padding-left: 1.5rem;
+  border-left: 3px solid #0d6efd;
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 1rem;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2.1rem;
+  top: 1.1rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: #0d6efd;
+  border: 2px solid #fff;
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+.reveal--visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

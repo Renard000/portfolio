@@ -2,8 +2,28 @@ import { render, screen } from '@testing-library/react';
 import { App } from './App.jsx';
 
 describe('App', () => {
-  it("affiche la page d'accueil", () => {
+  beforeEach(() => {
+    // Aucun réseau dans les tests : l'accueil charge certifications et distinctions.
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue({
+          ok: true,
+          status: 200,
+          text: async () => '[]',
+          json: async () => [],
+        })
+    );
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("affiche la page d'accueil", async () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: /portfolio/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /portfolio/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: /Recevoir les nouveaux articles/ })
+    ).toBeInTheDocument();
   });
 });
+

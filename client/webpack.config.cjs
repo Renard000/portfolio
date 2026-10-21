@@ -1,10 +1,13 @@
+
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const dotenv = require('dotenv');
 
-// Liste blanche : seules ces variables sont injectées dans le code du navigateur.
+// Liste blanche des variables accessibles dans le navigateur.
+// Ne jamais y ajouter de clé secrète côté serveur.
 const PUBLIC_VARS = [
   'APP_API_URL',
   'APP_SUPABASE_URL',
@@ -20,10 +23,19 @@ const PUBLIC_VARS = [
 
 module.exports = (env, argv) => {
   const mode = argv.mode || 'development';
+  const isProduction = mode === 'production';
 
-  // .env.production (ou .env.development) d'abord, puis .env (dotenv n'écrase pas)
-  dotenv.config({ path: path.resolve(__dirname, `.env.${mode}`), quiet: true });
-  dotenv.config({ path: path.resolve(__dirname, '.env'), quiet: true });
+  // Charger d'abord le fichier correspondant au mode,
+  // puis .env sans écraser les variables déjà définies.
+  dotenv.config({
+    path: path.resolve(__dirname, `.env.${mode}`),
+    quiet: true,
+  });
+
+  dotenv.config({
+    path: path.resolve(__dirname, '.env'),
+    quiet: true,
+  });
 
   const definitions = Object.fromEntries(
     PUBLIC_VARS.map((name) => [
@@ -32,24 +44,53 @@ module.exports = (env, argv) => {
     ])
   );
 
+  const plugins = [
+    new HtmlWebpackPlugin({
+      template: './src/index.html',
+    }),
+
+    new webpack.DefinePlugin(definitions),
+
+    // Copie firebase-messaging-sw.js et les autres fichiers publics.
+    new CopyPlugin({
+      patterns: [
+        {
+          from: 'public',
+          to: '.',
+          noErrorOnMissing: true,
+        },
+      ],
+    }),
+  ];
+
+  // Extraire le CSS en production plutôt que de l'injecter
+  // dans la page avec style-loader.
+  if (isProduction) {
+    plugins.push(
+      new MiniCssExtractPlugin({
+        filename: 'styles.[contenthash].css',
+        chunkFilename: 'chunks/styles.[contenthash].css',
+      })
+    );
+  }
+
   return {
+    mode,
     entry: './src/Main.jsx',
 
     output: {
       path: path.resolve(__dirname, './dist'),
       filename: 'bundle.[contenthash].js',
+      chunkFilename: 'chunks/[name].[contenthash].js',
       clean: true,
       publicPath: '/',
     },
 
-    plugins: [
-      new HtmlWebpackPlugin({ template: './src/index.html' }),
-      new webpack.DefinePlugin(definitions),
-      // public/ (firebase-messaging-sw.js, favicon...) doit finir à la racine du site
-      new CopyPlugin({ patterns: [{ from: 'public', to: '.', noErrorOnMissing: true }] }),
-    ],
+    plugins,
 
-    resolve: { extensions: ['.jsx', '.js'] },
+    resolve: {
+      extensions: ['.jsx', '.js'],
+    },
 
     module: {
       rules: [
@@ -58,27 +99,61 @@ module.exports = (env, argv) => {
           exclude: /node_modules/,
           use: {
             loader: 'babel-loader',
-            options: { presets: ['@babel/preset-env', '@babel/preset-react'] },
+            options: {
+              presets: [
+                '@babel/preset-env',
+                '@babel/preset-react',
+              ],
+            },
           },
         },
-        { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+
+        {
+          test: /\.css$/i,
+          use: [
+            isProduction
+              ? MiniCssExtractPlugin.loader
+              : 'style-loader',
+            'css-loader',
+          ],
+        },
+
         {
           test: /\.(jpe?g|png|gif|svg)$/i,
           type: 'asset/resource',
-          generator: { filename: 'assets/[name][hash][ext]' },
+          generator: {
+            filename: 'assets/[name].[contenthash][ext]',
+          },
         },
+
         {
           test: /\.(woff2?|ttf|eot)$/i,
           type: 'asset/resource',
-          generator: { filename: 'fonts/[name][hash][ext]' },
+          generator: {
+            filename: 'fonts/[name].[contenthash][ext]',
+          },
         },
       ],
     },
 
-    performance: { hints: mode === 'production' ? 'warning' : false },
+    optimization: {
+      // Sépare le runtime de Webpack pour favoriser le cache.
+      runtimeChunk: 'single',
+
+      // Partage les dépendances entre les bundles.
+      splitChunks: {
+        chunks: 'all',
+      },
+    },
+
+    performance: {
+      hints: isProduction ? 'warning' : false,
+    },
 
     devServer: {
-      static: { directory: path.join(__dirname, 'public') },
+      static: {
+        directory: path.join(__dirname, 'public'),
+      },
       historyApiFallback: true,
       compress: true,
       port: 9000,

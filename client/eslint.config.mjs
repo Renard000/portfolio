@@ -36,7 +36,7 @@ export default [
       'dist/**',
       'coverage/**',
       'public/**',
-      'webpack.config.js',
+      'webpack.config.cjs',
     ],
   },
   js.configs.recommended,
