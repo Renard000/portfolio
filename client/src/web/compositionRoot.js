@@ -15,6 +15,10 @@ import NewsletterService from '../bll/services/NewsletterService.js';
 import PushService from '../bll/services/PushService.js';
 import SubscriberAdminService from '../bll/services/SubscriberAdminService.js';
 import UploadService from '../bll/services/UploadService.js';
+import ContentService from '../bll/services/ContentService.js';
+import ContactService from '../bll/services/ContactService.js';
+import ContactRepository from '../dal/repositories/ContactRepository.js';
+import * as siteContent from '../domain/content/siteContent.js';
 import { createStore } from './store/store.js';
 
 // Webpack remplace chaque `process.env.APP_...` par sa valeur (liste blanche dans webpack.config.js).
@@ -60,6 +64,9 @@ export function createDependencies() {
 
   // BLL
   const articleService = new ArticleService(articleRepository);
+  const contactRepository = new ContactRepository(apiClient);
+  const contentService = new ContentService(siteContent);
+  const contactService = new ContactService(contactRepository);
   const certificationService = new CertificationService(certificationRepository);
   const awardService = new AwardService(awardRepository);
   const newsletterService = new NewsletterService(newsletterRepository);
@@ -68,6 +75,8 @@ export function createDependencies() {
   const uploadService = new UploadService(authClient);
   const services = {
     articleService,
+    contentService,
+    contactService,
     certificationService,
     awardService,
     newsletterService,

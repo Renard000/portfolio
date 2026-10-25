@@ -4,6 +4,9 @@ import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 import { createStore } from './store/store.js';
 import AppRouter from './routes/AppRouter.jsx';
+import ContentService from '../bll/services/ContentService.js';
+import ContactService from '../bll/services/ContactService.js';
+import * as siteContent from '../domain/content/siteContent.js';
 
 export const CERTS = [
   {
@@ -102,6 +105,8 @@ export const AWARDS = {
 /** Services factices : aucun réseau. */
 export function makeServices(overrides = {}) {
   return {
+    contentService: new ContentService(siteContent),
+    contactService: { send: vi.fn().mockResolvedValue({ status: 'received' }) },
     certificationService: {
       list: vi.fn().mockResolvedValue(CERTS),
       create: vi.fn(async (d) => ({ id: 'new', ...d })),
@@ -120,27 +125,25 @@ export function makeServices(overrides = {}) {
       upload: vi.fn().mockResolvedValue('https://cdn.example/uploaded.png'),
     },
     subscriberAdminService: {
-      list: vi
-        .fn()
-        .mockResolvedValue({
-          newsletter: [
-            {
-              id: 'n1',
-              email: 'ada@ex.com',
-              active: true,
-              confirmed: true,
-              createdAt: '2026-01-02T00:00:00Z',
-            },
-          ],
-          push: [
-            {
-              id: 'p1',
-              token: 'abcdef…wxyz',
-              active: true,
-              createdAt: '2026-01-03T00:00:00Z',
-            },
-          ],
-        }),
+      list: vi.fn().mockResolvedValue({
+        newsletter: [
+          {
+            id: 'n1',
+            email: 'ada@ex.com',
+            active: true,
+            confirmed: true,
+            createdAt: '2026-01-02T00:00:00Z',
+          },
+        ],
+        push: [
+          {
+            id: 'p1',
+            token: 'abcdef…wxyz',
+            active: true,
+            createdAt: '2026-01-03T00:00:00Z',
+          },
+        ],
+      }),
       removeNewsletter: vi.fn().mockResolvedValue(),
       removePush: vi.fn().mockResolvedValue(),
       sendTestEmail: vi.fn().mockResolvedValue(),

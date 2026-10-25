@@ -6,19 +6,30 @@ import CertificationDetail from './CertificationDetail.jsx';
 import CertificationFilters from './CertificationFilters.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import Modal from './Modal.jsx';
+import PageHero from './PageHero.jsx';
 
 export default class CertificationListView extends PureComponent {
   render() {
     const { items, totalCount, filters, facets, view, selected } = this.props;
     const { onFilterChange, onReset, onViewChange, onSelect, onCloseDetail } = this.props;
     return (
-      <main className="container py-4">
-        <h1 className="h2">
-          Certifications{' '}
-          <span className="badge bg-primary align-middle" data-testid="cert-total">
-            <AnimatedCounter value={totalCount} />
-          </span>
-        </h1>
+      <main
+        className="pf-wrap"
+        style={{ paddingTop: 'clamp(48px,8vw,90px)', paddingBottom: 48 }}
+      >
+        <PageHero kicker="Certifications" title="Validé" outline="par les pairs.">
+          <div className="pf-col" style={{ alignItems: 'flex-end', gap: 0 }}>
+            <span
+              className="pf-h1 pf-lime"
+              style={{ fontSize: 'clamp(4rem,9vw,8rem)' }}
+              data-testid="cert-total"
+            >
+              <AnimatedCounter value={totalCount} />
+            </span>
+            <span className="pf-mono">Certifications</span>
+          </div>
+        </PageHero>
+        <div style={{ height: 36 }} />
         <CertificationFilters
           filters={filters}
           facets={facets}

@@ -1,8 +1,7 @@
-
 import { Component, Suspense, lazy } from 'react';
 import { Switch, Route } from 'react-router-dom';
 
-import Navbar from '../views/components/Navbar.jsx';
+import LayoutController from '../controllers/LayoutController.jsx';
 
 // Chargement différé des pages et contrôleurs.
 const NotFoundPage = lazy(() =>
@@ -11,6 +10,22 @@ const NotFoundPage = lazy(() =>
 
 const HomeController = lazy(() =>
   import('../controllers/HomeController.jsx')
+);
+
+const AboutController = lazy(() =>
+  import('../controllers/AboutController.jsx')
+);
+
+const ProjectsController = lazy(() =>
+  import('../controllers/ProjectsController.jsx')
+);
+
+const ProjectDetailController = lazy(() =>
+  import('../controllers/ProjectDetailController.jsx')
+);
+
+const ContactController = lazy(() =>
+  import('../controllers/ContactController.jsx')
 );
 
 const CertificationsController = lazy(() =>
@@ -32,25 +47,60 @@ const AdminAreaController = lazy(() =>
 export default class AppRouter extends Component {
   render() {
     return (
-      <>
-        <Navbar />
-
-        <Suspense fallback={<div className="container py-5">Chargement...</div>}>
+      <LayoutController>
+        <Suspense
+          fallback={
+            <div className="container py-5" role="status">
+              Chargement...
+            </div>
+          }
+        >
           <Switch>
-            <Route exact path="/" component={HomeController} />
+            <Route
+              exact
+              path="/"
+              component={HomeController}
+            />
 
             <Route
+              exact
+              path="/a-propos"
+              component={AboutController}
+            />
+
+            <Route
+              exact
+              path="/projets"
+              component={ProjectsController}
+            />
+
+            <Route
+              exact
+              path="/projets/:slug"
+              component={ProjectDetailController}
+            />
+
+            <Route
+              exact
+              path="/contact"
+              component={ContactController}
+            />
+
+            <Route
+              exact
               path="/certifications"
               component={CertificationsController}
             />
 
             <Route
+              exact
               path="/distinctions"
               component={AwardsController}
             />
 
             {/* La connexion doit précéder la route /admin. */}
             <Route
+              exact
               path="/admin/login"
               component={LoginController}
             />
@@ -60,11 +110,11 @@ export default class AppRouter extends Component {
               component={AdminAreaController}
             />
 
-            {/* Toujours en dernier. */}
+            {/* La page 404 doit toujours rester en dernier. */}
             <Route component={NotFoundPage} />
           </Switch>
         </Suspense>
-      </>
+      </LayoutController>
     );
   }
 }

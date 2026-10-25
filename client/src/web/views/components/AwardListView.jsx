@@ -5,6 +5,7 @@ import AwardTimeline from './AwardTimeline.jsx';
 import AwardTotals from './AwardTotals.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import Modal from './Modal.jsx';
+import PageHero from './PageHero.jsx';
 
 const TABS = [['all', 'Toutes'], ...Object.entries(AWARD_TYPE_LABELS)];
 
@@ -20,8 +21,12 @@ export default class AwardListView extends PureComponent {
       onCloseDetail,
     } = this.props;
     return (
-      <main className="container py-4">
-        <h1 className="h2">Bourses et mérites</h1>
+      <main
+        className="pf-wrap"
+        style={{ paddingTop: 'clamp(48px,8vw,90px)', paddingBottom: 48 }}
+      >
+        <PageHero kicker="Distinctions" title="Bourses" outline="et mérites." />
+        <div style={{ height: 36 }} />
         <ErrorBoundary message="Les totaux ne peuvent pas être affichés.">
           <AwardTotals totals={totals} />
         </ErrorBoundary>

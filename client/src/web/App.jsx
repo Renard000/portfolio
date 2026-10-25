@@ -8,12 +8,11 @@ import AppRouter from './routes/AppRouter.jsx';
 export class App extends Component {
   constructor(props) {
     super(props);
-    // Assemblage unique des dépendances, au montage de l'application
     this.deps = createDependencies();
   }
 
   render() {
-    return (
+    return ( 
       <Provider store={this.deps.store}>
         <HelmetProvider>
           <BrowserRouter>

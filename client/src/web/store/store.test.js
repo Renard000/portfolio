@@ -79,12 +79,10 @@ function setup(overrides = {}) {
       signOut: vi.fn().mockResolvedValue(),
     },
     subscriberAdminService: {
-      list: vi
-        .fn()
-        .mockResolvedValue({
-          newsletter: [{ id: 'n1', email: 'a@b.co' }],
-          push: [{ id: 'p1', token: 'abc…' }],
-        }),
+      list: vi.fn().mockResolvedValue({
+        newsletter: [{ id: 'n1', email: 'a@b.co' }],
+        push: [{ id: 'p1', token: 'abc…' }],
+      }),
       removeNewsletter: vi.fn().mockResolvedValue(),
       removePush: vi.fn().mockResolvedValue(),
       sendTestEmail: vi.fn().mockResolvedValue(),

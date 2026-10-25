@@ -4,3 +4,6 @@ import '@testing-library/jest-dom';
 process.env.APP_API_URL = 'http://localhost:4000/api';
 process.env.APP_SUPABASE_URL = 'http://localhost:54321';
 process.env.APP_SUPABASE_ANON_KEY = 'anon-test-key';
+
+// jsdom n'implémente pas window.scrollTo
+window.scrollTo = () => {};

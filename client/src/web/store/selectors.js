@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import CertificationService from '../../bll/services/CertificationService.js';
 import AwardService from '../../bll/services/AwardService.js';
+import ContentService from '../../bll/services/ContentService.js';
 
 const certItems = (s) => s.certifications.items;
 const certFilters = (s) => s.certifications.filters;
@@ -29,4 +30,17 @@ export const selectVisibleAwardTotals = createSelector([selectVisibleAwards], (i
 );
 export const selectAwardGroups = createSelector([selectVisibleAwards], (items) =>
   AwardService.groupByYear(items)
+);
+
+const projects = (s) => s.content.projects;
+const projectFilters = (s) => s.content.filters;
+export const selectVisibleProjects = createSelector(
+  [projects, projectFilters],
+  (list, f) => ContentService.filterProjects(list, f)
+);
+export const selectProjectCategories = createSelector([projects], (list) =>
+  ContentService.categories(list)
+);
+export const selectFeaturedProjects = createSelector([projects], (list) =>
+  list.slice(0, 3)
 );
