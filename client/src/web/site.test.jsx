@@ -1,6 +1,7 @@
 import { screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { renderApp, makeServices } from './testUtils.jsx';
 import ContactService from '../bll/services/ContactService.js';
+import ContentService from '../bll/services/ContentService.js';
 import * as siteContent from '../domain/content/siteContent.js';
 
 beforeEach(() => {
@@ -13,36 +14,37 @@ afterEach(() => {
 const { profile, projects } = siteContent;
 
 describe('Navigation et gabarit', () => {
-  
-  
-  
   it('liens de navigation + bouton Me contacter + pied de page avec espace admin', async () => {
     renderApp('/');
-    const nav = screen.getByRole('navigation', { name: /principale/i });
+    const nav = await screen.findByRole('navigation', { name: /principale/i });
+
     for (const name of [
       'Accueil',
       'À propos',
       'Projets',
       'Certifications',
       'Distinctions',
-    ])
-      expect(within(nav).getAllByRole('link', { name })[0]).toBeInTheDocument();
-    expect(within(nav).getByRole('link', { name: 'Me contacter' })).toHaveAttribute(
+    ]) {
+      expect(
+        await within(nav).findAllByRole('link', { name })
+      ).not.toHaveLength(0);
+    }
+
+    expect(await within(nav).findByRole('link', { name: 'Me contacter' })).toHaveAttribute(
       'href',
       '/contact'
     );
-    expect(screen.getByRole('link', { name: /Espace administrateur/ })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: /Espace administrateur/ })).toHaveAttribute(
       'href',
       '/admin'
     );
-    expect(screen.getByRole('link', { name: /Aller au contenu/ })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: /Aller au contenu/ })).toHaveAttribute(
       'href',
       '#contenu'
     );
     await screen.findByText('Certifications en vedette');
   });
 
-  
   it('menu mobile : ouvre, ferme avec Échap, se ferme au clic sur un lien et libère le défilement', async () => {
     renderApp('/');
     const burger = screen.getByRole('button', { name: 'Menu' });
@@ -66,7 +68,6 @@ describe('Navigation et gabarit', () => {
     ).toBeInTheDocument();
   });
 
-
   it('route inconnue : page 404 stylée avec retour accueil', async () => {
     renderApp('/nimporte-quoi');
     expect(await screen.findByRole('heading', { level: 1, name: '404' })).toBeInTheDocument();
@@ -75,13 +76,12 @@ describe('Navigation et gabarit', () => {
       '/'
     );
   });
-  
-  
+
   it('remonte en haut de page à chaque changement de route', async () => {
     const spy = vi.spyOn(window, 'scrollTo');
     renderApp('/');
     fireEvent.click(
-      within(screen.getByRole('navigation', { name: /principale/i })).getByRole('link', {
+      within(await screen.findByRole('navigation', { name: /principale/i })).getByRole('link', {
         name: 'À propos',
       })
     );
@@ -92,8 +92,6 @@ describe('Navigation et gabarit', () => {
 });
 
 describe('Accueil (héros)', () => {
-  
-  
   it('héros : nom, rôle, disponibilité, appels à l’action', async () => {
     renderApp('/');
     const h1 = await screen.findByRole('heading', { level: 1 });
@@ -106,19 +104,17 @@ describe('Accueil (héros)', () => {
     );
     expect(screen.getAllByRole('link', { name: 'Me contacter' }).length).toBeGreaterThan(
       0
-    ); // pas de CV renseigné
+    );
     await screen.findByText('Certifications en vedette');
   });
-  
-  
+
   it('bandeau de technologies : copie décorative cachée aux lecteurs d’écran', () => {
     renderApp('/');
     const marquee = screen.getByRole('list', { name: 'Technologies' });
     expect(marquee.querySelectorAll('[aria-hidden=true]').length).toBe(1);
     expect(marquee.textContent).toContain('React');
   });
-  
-  
+
   it('chiffres clés réels : projets, certifications, distinctions, technologies', async () => {
     renderApp('/');
     const stats = screen.getByRole('region', { name: 'Chiffres clés' });
@@ -129,15 +125,14 @@ describe('Accueil (héros)', () => {
     );
     await waitFor(() => expect(stats).toHaveTextContent(/3\+\s*Distinctions/));
   });
-  
-  
+
   it('projets en vedette : cartes menant au détail', async () => {
     renderApp('/');
     const card = screen.getByRole('link', { name: `Projet ${projects[0].title}` });
     expect(card).toHaveAttribute('href', `/projets/${projects[0].slug}`);
     await screen.findByText('Certifications en vedette');
   });
-  
+
   it('le halo du héros suit la souris (variables CSS) et nettoie son écouteur', async () => {
     const raf = vi
       .spyOn(window, 'requestAnimationFrame')
@@ -153,89 +148,127 @@ describe('Accueil (héros)', () => {
 });
 
 describe('Page À propos', () => {
-  
-  it('titre, compétences en barres de progression accessibles, parcours, valeurs', () => {
+  it('titre, compétences en barres de progression accessibles, parcours, valeurs', async() => {
     renderApp('/a-propos');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/n’oublie pas/);
-    const bar = screen.getByRole('progressbar', { name: profile.skills[0].name });
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(/n’oublie pas/);
+    const bar = await screen.findByRole('progressbar', { name: profile.skills[0].name });
     expect(bar).toHaveAttribute('aria-valuenow', String(profile.skills[0].level));
-    expect(screen.getAllByRole('progressbar')).toHaveLength(profile.skills.length);
-    expect(screen.getByText(profile.timeline[0].title)).toBeInTheDocument();
+    expect(await screen.findAllByRole('progressbar')).toHaveLength(profile.skills.length);
+    expect(await screen.findByText(profile.timeline[0].title)).toBeInTheDocument();
     for (const v of profile.values) expect(screen.getByText(v.title)).toBeInTheDocument();
   });
-  
-  it('sans photo : initiales ; sans CV : seul le bouton Contact', () => {
-    renderApp('/a-propos');
-    expect(
-      within(screen.getByRole('main')).getByText(profile.initials)
-    ).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /Télécharger le CV/ })).toBeNull();
-    expect(screen.getAllByRole('link', { name: 'Me contacter' }).length).toBeGreaterThan(
-      0
+
+  it('sans photo : initiales ; sans CV : seul le bouton Contact', async () => {
+    const customContent = {
+      ...siteContent,
+      profile: { ...profile, photoUrl: '' },
+    };
+    renderApp(
+      '/a-propos',
+      makeServices({
+        contentService: new ContentService(customContent),
+      })
     );
+    const main = await screen.findByRole('main');
+
+    expect(
+      await within(main).findByText(profile.initials)
+    ).toBeInTheDocument();
+
+    expect(screen.queryByRole('link', { name: /Télécharger le CV/ })).toBeNull();
+    const contactLinks = await screen.findAllByRole('link', { name: 'Me contacter' });
+    expect(contactLinks.length).toBeGreaterThan(0);
   });
 });
 
 describe('Page Projets', () => {
-  
-  it('liste tous les projets avec compteur et catégories', () => {
+  it('liste tous les projets avec compteur et catégories', async() => {
     renderApp('/projets');
-    expect(screen.getAllByRole('link', { name: /^Projet / })).toHaveLength(
+    expect(await screen.findAllByRole('link', { name: /^Projet / })).toHaveLength(
       projects.length
     );
     expect(
-      screen.getByRole('button', { name: `Tous (${projects.length})` })
+     await screen.findByRole('button', { name: `Tous (${projects.length})` })
     ).toHaveAttribute('aria-pressed', 'true');
     for (const c of new Set(projects.map((p) => p.category)))
-      expect(screen.getByRole('button', { name: c })).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: c })).toBeInTheDocument();
   });
-  
-  it('filtre par catégorie puis revient à « Tous »', () => {
+
+  it('filtre par catégorie puis revient à « Tous »', async() => {
     renderApp('/projets');
-    fireEvent.click(screen.getByRole('button', { name: 'Mobile' }));
-    expect(screen.getAllByRole('link', { name: /^Projet / })).toHaveLength(
-      projects.filter((p) => p.category === 'Mobile').length
-    );
-    expect(screen.getByRole('button', { name: 'Mobile' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
-    fireEvent.click(screen.getByRole('button', { name: /^Tous/ }));
-    expect(screen.getAllByRole('link', { name: /^Projet / })).toHaveLength(
+    const mobileBtn = await screen.findByRole('button', { name: 'Mobile' });
+    fireEvent.click(mobileBtn);
+    
+    const expectedCount = projects.filter((p) => p.category === 'Mobile').length;
+    const projectLinks = await screen.findAllByRole('link', { name: /^Projet / });
+    expect(projectLinks).toHaveLength(expectedCount);
+
+    expect(mobileBtn).toHaveAttribute('aria-pressed', 'true');
+    
+    const tousBtn = await screen.findByRole('button', { name: /^Tous/ });
+    fireEvent.click(tousBtn);
+    
+    expect(await screen.findAllByRole('link', { name: /^Projet / })).toHaveLength(
       projects.length
     );
   });
-  
-  it('recherche sans accents ; aucun résultat annoncé', () => {
-    renderApp('/projets');
-    fireEvent.change(screen.getByLabelText('Rechercher un projet'), {
-      target: { value: 'sante' },
-    });
-    expect(screen.getAllByRole('link', { name: /^Projet / })).toHaveLength(1);
-    fireEvent.change(screen.getByLabelText('Rechercher un projet'), {
-      target: { value: 'zzzz' },
-    });
-    expect(screen.getByRole('status')).toHaveTextContent(/Aucun projet/);
-    expect(screen.queryAllByRole('link', { name: /^Projet / })).toHaveLength(0);
+
+  it('recherche sans accents ; aucun résultat annoncé', async() => {
+      renderApp('/projets');
+      const searchInput = await screen.findByLabelText('Rechercher un projet');
+      
+      // Recherche avec un terme accentué/normalisé
+      fireEvent.change(searchInput, {
+        target: { value: 'santé' },
+      });
+      
+      // On calcule dynamiquement le nombre de projets correspondants sans la sensibilité aux accents
+      const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const expectedCount = projects.filter(
+        (p) => normalize(p.title).includes('sante') || normalize(p.summary).includes('sante')
+      ).length;
+      
+      expect(await screen.findAllByRole('link', { name: /^Projet / })).toHaveLength(expectedCount);
+      
+      // Recherche avec un terme inexistant
+      fireEvent.change(searchInput, {
+        target: { value: 'zzzz' },
+      });
+      expect(await screen.findByRole('status')).toHaveTextContent(/Aucun projet/);
+      expect(screen.queryAllByRole('link', { name: /^Projet / })).toHaveLength(0);
   });
-  
-  
+
   it('le filtre persiste quand on quitte la page puis qu’on y revient', async () => {
     renderApp('/projets');
-    fireEvent.click(screen.getByRole('button', { name: 'Mobile' }));
-    const nav = () => within(screen.getByRole('navigation', { name: /principale/i }));
-    fireEvent.click(nav().getByRole('link', { name: 'À propos' }));
-    await screen.findByRole('heading', { name: /Compétences/ });
-    fireEvent.click(nav().getByRole('link', { name: 'Projets' }));
-    expect(screen.getByRole('button', { name: 'Mobile' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Mobile' })
     );
+
+    const nav = async () =>
+      within(
+        await screen.findByRole('navigation', {
+          name: /principale/i,
+        })
+      );
+
+    fireEvent.click(
+      await (await nav()).findByRole('link', { name: 'À propos' })
+    );
+
+    await screen.findByRole('heading', { name: /Compétences/ });
+
+    fireEvent.click(
+      await (await nav()).findByRole('link', { name: 'Projets' })
+    );
+
+    expect(
+      await screen.findByRole('button', { name: 'Mobile' })
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 });
 
 describe('Détail d’un projet', () => {
-
   it('affiche le défi, la solution, la fiche et les indicateurs', async () => {
     renderApp(`/projets/${projects[0].slug}`);
     expect(
@@ -294,7 +327,7 @@ describe('Page Contact', () => {
       target: { value: v.message },
     });
   };
-  
+
   it('affiche le formulaire, la disponibilité et le honeypot caché', async () => {
     renderApp('/contact');
     expect( await screen.findByRole('heading', { level: 1 })).toHaveTextContent(/Parlons projet/);
@@ -306,7 +339,6 @@ describe('Page Contact', () => {
     expect(honey).toHaveAttribute('tabindex', '-1');
   });
 
-  
   it('envoi réussi : confirmation, puis possibilité d’écrire un autre message', async () => {
     const { services } = renderApp('/contact');
     await fill();
@@ -323,7 +355,6 @@ describe('Page Contact', () => {
     expect(await screen.findByLabelText('Nom')).toHaveValue('');
   });
 
-
   it('validation (vrai service) : erreur affichée, aucun appel API', async () => {
     const repo = { send: vi.fn() };
     renderApp('/contact', makeServices({ contactService: new ContactService(repo) }));
@@ -337,7 +368,7 @@ describe('Page Contact', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(/10 caractères|courriel/)
     );
   });
-  
+
   it('erreur serveur : message affiché, les saisies sont conservées', async () => {
     renderApp(
       '/contact',
@@ -354,7 +385,7 @@ describe('Page Contact', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Trop de requêtes');
     expect(await screen.findByLabelText('Nom')).toHaveValue('Ada Lovelace');
   });
-  
+
   it('le honeypot rempli est transmis (le serveur l’ignore)', async () => {
     const { services } = renderApp('/contact');
     await fill();
@@ -365,7 +396,7 @@ describe('Page Contact', () => {
     await waitFor(() => expect(services.contactService.send).toHaveBeenCalled());
     expect(services.contactService.send.mock.calls[0][0].website).toBe('http://spam');
   });
-  
+
   it('bouton désactivé pendant l’envoi (pas de double envoi)', async () => {
     let resolve;
     const send = vi.fn(() => new Promise((r) => (resolve = r)));

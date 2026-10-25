@@ -4,19 +4,21 @@
  * ce contenu : plus tard, ce fichier pourra être remplacé par un appel à l'API
  * (seul ContentService changera).
  */
+
+import imgFlo from '../../assets/imgFlo.png';
 export const profile = {
-  name: '[Votre nom]',
-  initials: 'VN',
-  role: 'développeur·se full-stack',
+  name: 'Florwensky Paniague',
+  initials: 'FP',
+  role: 'développeur full-stack',
   city: 'Montréal, Québec',
   availability: 'Disponible pour de nouveaux mandats',
   intro:
     'Je conçois des produits web rapides, accessibles et soignés, du pixel jusqu’à l’API. React, Node, Supabase, AWS.',
-  bio: '[Votre présentation en 3 phrases : qui vous êtes, ce que vous aimez construire, ce que vous cherchez.]',
-  email: '[courriel@exemple.com]',
+  bio: 'étudiant en informatique',
+  email: 'pflorwensky@gmail.com',
   cvUrl: '',
-  photoUrl: '',
-  links: { github: '', linkedin: '' },
+  photoUrl: imgFlo,
+  links: { github: 'https://github.com/Renard000', linkedin: 'https://www.linkedin.com/in/florwensky-paniague-63b80622a' },
   tech: ['React', 'Redux Toolkit', 'Node.js', 'Supabase', 'AWS', 'Firebase'],
   skills: [
     { name: 'React et Redux Toolkit', level: 90 },
@@ -25,6 +27,7 @@ export const profile = {
     { name: 'AWS (S3, CloudFront)', level: 70 },
     { name: 'UX et accessibilité', level: 78 },
   ],
+
   timeline: [
     {
       period: '2025 — auj.',
@@ -42,6 +45,7 @@ export const profile = {
       detail: '[Établissement] · mention, bourses',
     },
   ],
+
   values: [
     {
       title: 'Code propre',
