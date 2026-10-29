@@ -4,9 +4,23 @@ import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 import { createStore } from './store/store.js';
 import AppRouter from './routes/AppRouter.jsx';
+import ProgressService from '../bll/services/ProgressService.js';
 import ContentService from '../bll/services/ContentService.js';
 import ContactService from '../bll/services/ContactService.js';
 import * as siteContent from '../domain/content/siteContent.js';
+
+/** Faux repository de progression en mémoire (la couche web n'importe pas la DAL). */
+export class MemoryProgressRepo {
+  constructor() {
+    this.data = {};
+  }
+  get(id) {
+    return this.data[id] || null;
+  }
+  set(id, v) {
+    this.data[id] = v;
+  }
+}
 
 export const CERTS = [
   {
@@ -105,6 +119,15 @@ export const AWARDS = {
 /** Services factices : aucun réseau. */
 export function makeServices(overrides = {}) {
   return {
+    videoService: {
+      listSeries: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1 }),
+      getSeries: vi.fn(),
+      getVideo: vi.fn(),
+      getPlayback: vi.fn(),
+      registerView: vi.fn().mockResolvedValue(),
+    },
+    progressService: new ProgressService(new MemoryProgressRepo()),
+    videoAdminService: { listSeries: vi.fn().mockResolvedValue([]), getSeries: vi.fn() },
     contentService: new ContentService(siteContent),
     contactService: { send: vi.fn().mockResolvedValue({ status: 'received' }) },
     certificationService: {

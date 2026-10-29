@@ -1,5 +1,5 @@
 import { chunk } from '../../shared/html.js';
-import { articleEmail } from '../emails.js';
+import { contentEmail } from '../emails.js';
 
 const FCM_BATCH = 500;
 
@@ -25,14 +25,43 @@ export default class NotificationService {
     return `${this.siteUrl}/blog/${encodeURIComponent(article.slug)}`;
   }
 
+  videoUrl(video, series) {
+    return `${this.siteUrl}/formations/${encodeURIComponent(series.slug)}/${encodeURIComponent(video.slug)}`;
+  }
+
+  /** Article publié : courriels aux abonnés confirmés + push FCM. */
+  notifyPublished(article) {
+    return this.#notify({
+      kind: 'article',
+      id: article.id,
+      title: article.title,
+      excerpt: article.excerpt,
+      url: this.articleUrl(article),
+      pushTitle: 'Nouvel article',
+    });
+  }
+
+  /** Vidéo publiée (dans une série publiée) : mêmes canaux. */
+  notifyVideoPublished(video, series) {
+    const excerpt = video.description ? String(video.description).slice(0, 200) : null;
+    return this.#notify({
+      kind: 'video',
+      id: video.id,
+      title: video.title,
+      excerpt,
+      url: this.videoUrl(video, series),
+      pushTitle: 'Nouvelle vidéo',
+    });
+  }
+
   /** Une panne d'un canal n'empêche jamais l'autre, ni la publication. */
-  async notifyPublished(article) {
+  async #notify(item) {
     const [email, push] = await Promise.all([
-      this.#sendEmails(article).catch((err) => this.#fail('courriel', err)),
-      this.#sendPush(article).catch((err) => this.#fail('push', err)),
+      this.#sendEmails(item).catch((err) => this.#fail('courriel', err)),
+      this.#sendPush(item).catch((err) => this.#fail('push', err)),
     ]);
     this.logger.log(
-      `[notifications] article ${article.id} — courriels : ${email.sent} ok / ${email.failed} échecs ; ` +
+      `[notifications] ${item.kind} ${item.id} — courriels : ${email.sent} ok / ${email.failed} échecs ; ` +
         `push : ${push.sent} ok / ${push.failed} échecs / ${push.deactivated} jetons désactivés`
     );
     return { email, push };
@@ -43,7 +72,7 @@ export default class NotificationService {
     return { sent: 0, failed: 0, deactivated: 0, error: true };
   }
 
-  async #sendEmails(article) {
+  async #sendEmails(item) {
     // Règle d'envoi, revérifiée ici même si le repository filtre déjà.
     const receivers = (await this.newsletterRepository.listReceivers()).filter((s) =>
       s.canReceive()
@@ -55,9 +84,11 @@ export default class NotificationService {
         batch.map((s) =>
           this.emailClient.send({
             to: s.email,
-            ...articleEmail({
-              article,
-              articleUrl: this.articleUrl(article),
+            ...contentEmail({
+              kind: item.kind,
+              title: item.title,
+              excerpt: item.excerpt,
+              url: item.url,
               unsubscribeUrl: `${this.publicApiUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(
                 s.unsubscribeToken
               )}`,
@@ -71,7 +102,7 @@ export default class NotificationService {
     return { sent, failed, deactivated: 0 };
   }
 
-  async #sendPush(article) {
+  async #sendPush(item) {
     const tokens = (await this.pushSubscriptionRepository.listActive()).map(
       (p) => p.fcmToken
     );
@@ -80,9 +111,9 @@ export default class NotificationService {
     const invalid = [];
     for (const batch of chunk(tokens, FCM_BATCH)) {
       const r = await this.firebaseAdmin.sendToTokens(batch, {
-        title: 'Nouvel article',
-        body: article.title,
-        url: this.articleUrl(article),
+        title: item.pushTitle,
+        body: item.title,
+        url: item.url,
       });
       sent += r.successCount;
       failed += r.failureCount;

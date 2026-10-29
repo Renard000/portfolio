@@ -17,6 +17,12 @@ import SubscriberAdminService from '../bll/services/SubscriberAdminService.js';
 import UploadService from '../bll/services/UploadService.js';
 import ContentService from '../bll/services/ContentService.js';
 import ContactService from '../bll/services/ContactService.js';
+import VideoRepository from '../dal/repositories/VideoRepository.js';
+import ProgressRepository from '../dal/repositories/ProgressRepository.js';
+import S3UploadClient from '../dal/clients/S3UploadClient.js';
+import VideoService from '../bll/services/VideoService.js';
+import ProgressService from '../bll/services/ProgressService.js';
+import VideoAdminService from '../bll/services/VideoAdminService.js';
 import ContactRepository from '../dal/repositories/ContactRepository.js';
 import * as siteContent from '../domain/content/siteContent.js';
 import { createStore } from './store/store.js';
@@ -64,9 +70,15 @@ export function createDependencies() {
 
   // BLL
   const articleService = new ArticleService(articleRepository);
+  const videoRepository = new VideoRepository(apiClient);
+  // Progression gardée dans le navigateur (stockage injecté, jamais appelé par une vue)
+  const progressRepository = new ProgressRepository(window.localStorage);
   const contactRepository = new ContactRepository(apiClient);
   const contentService = new ContentService(siteContent);
   const contactService = new ContactService(contactRepository);
+  const videoService = new VideoService(videoRepository);
+  const progressService = new ProgressService(progressRepository);
+  const videoAdminService = new VideoAdminService(videoRepository, new S3UploadClient());
   const certificationService = new CertificationService(certificationRepository);
   const awardService = new AwardService(awardRepository);
   const newsletterService = new NewsletterService(newsletterRepository);
@@ -76,6 +88,9 @@ export function createDependencies() {
   const services = {
     articleService,
     contentService,
+    videoService,
+    progressService,
+    videoAdminService,
     contactService,
     certificationService,
     awardService,

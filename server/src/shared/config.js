@@ -25,6 +25,23 @@ export const config = {
     clientEmail: required('FIREBASE_CLIENT_EMAIL'),
     privateKey: required('FIREBASE_PRIVATE_KEY').replace(/\\n/g, '\n'),
   },
+  // Adresse qui reçoit une copie des messages du formulaire de contact (facultatif)
+  contact: { notifyTo: process.env.CONTACT_TO_EMAIL || '' },
+  // Vidéos (addendum C/E) : facultatif. Sans ces variables, les routes vidéo qui touchent
+  // S3 / CloudFront répondent 503 ; la lecture des listes (base de données) reste possible.
+  aws: {
+    region: process.env.AWS_REGION || 'ca-central-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    bucket: process.env.S3_BUCKET || '',
+  },
+  cloudfront: {
+    url: process.env.CLOUDFRONT_URL || '',
+    keyPairId: process.env.CLOUDFRONT_KEY_PAIR_ID || '',
+    // Contenu PEM, \n littéraux comme pour la clé Firebase
+    privateKey: (process.env.CLOUDFRONT_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  },
+  maxVideoBytes: Number(process.env.MAX_VIDEO_BYTES) || 3 * 1024 * 1024 * 1024,
   email: {
     apiKey: emailVar('EMAIL_API_KEY', ''),
     from: emailVar('EMAIL_FROM', 'Portfolio <no-reply@localhost>'),

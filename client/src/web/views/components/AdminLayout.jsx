@@ -26,6 +26,15 @@ export default class AdminLayout extends PureComponent {
               <NavLink
                 className="nav-link"
                 activeClassName="active"
+                to="/admin/formations"
+              >
+                Formations
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink
+                className="nav-link"
+                activeClassName="active"
                 to="/admin/subscribers"
               >
                 Abonnés

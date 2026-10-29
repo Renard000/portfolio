@@ -23,3 +23,9 @@ export class ForbiddenError extends Error {
     this.name = 'ForbiddenError';
   }
 }
+export class ServiceUnavailableError extends Error {
+  constructor(message = 'Service indisponible') {
+    super(message);
+    this.name = 'ServiceUnavailableError';
+  }
+}

@@ -28,6 +28,7 @@ export default class Footer extends PureComponent {
           <div className="pf-col">
             <span className="pf-mono">Explorer</span>
             <Link to="/projets">Projets</Link>
+            <Link to="/formations">Formations</Link>
             <Link to="/a-propos">À propos</Link>
             <Link to="/contact">Contact</Link>
           </div>
@@ -51,6 +52,8 @@ export default class Footer extends PureComponent {
             <span className="pf-mu">
               © {new Date().getFullYear()} {name}. Tous droits réservés.
             </span>
+            <Link to="/conditions">Conditions d’utilisation</Link>
+            <Link to="/confidentialite">Confidentialité</Link>
             <Link to="/admin" className="pf-mu" style={{ fontSize: 13 }}>
               Espace administrateur
             </Link>

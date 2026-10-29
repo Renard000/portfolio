@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import NotificationService from '../../src/bll/services/NotificationService';
+import NotificationService from '../../src/bll/services/NotificationService.js';
 import ArticleService from '../../src/bll/services/ArticleService.js';
 import PushSubscriptionService from '../../src/bll/services/PushSubscriptionService.js';
 import SubscriberAdminService from '../../src/bll/services/SubscriberAdminService.js';

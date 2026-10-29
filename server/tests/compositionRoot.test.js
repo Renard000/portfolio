@@ -11,6 +11,10 @@ const config = {
   serviceRoleKey: 'service-role-test',
   firebase: { projectId: 'p', clientEmail: 'e@p.iam', privateKey: 'k' },
   email: { apiKey: '', from: 'x', publicApiUrl: 'http://localhost:4000' },
+  contact: { notifyTo: '' },
+  aws: { region: 'ca-central-1', accessKeyId: '', secretAccessKey: '', bucket: '' },
+  cloudfront: { url: '', keyPairId: '', privateKey: '' },
+  maxVideoBytes: 1000,
 };
 
 describe('composition root serveur', () => {
@@ -23,6 +27,9 @@ describe('composition root serveur', () => {
       'awardController',
       'newsletterController',
       'subscriberAdminController',
+      'contactController',
+      'videoController',
+      'videoAdminController',
       'authService',
       'articleService',
     ])
@@ -37,5 +44,26 @@ describe('composition root serveur', () => {
     expect((await request(app).post('/api/newsletter/subscribe').send({})).status).toBe(
       400
     );
+  });
+
+  it("avec AWS et CloudFront configurés, l'assemblage réussit aussi (client S3 créé sans réseau)", () => {
+    const full = {
+      ...config,
+      aws: {
+        region: 'ca-central-1',
+        accessKeyId: 'AK',
+        secretAccessKey: 'SK',
+        bucket: 'b',
+      },
+      cloudfront: { url: 'https://d1.cloudfront.net', keyPairId: 'K', privateKey: 'PEM' },
+    };
+    const c = buildContainer(full);
+    expect(c.videoController).toBeDefined();
+    expect(createApp(c, full)).toBeDefined();
+  });
+  it('routes vidéo montées : administration protégée (401)', async () => {
+    expect((await request(app).get('/api/admin/video-series')).status).toBe(401);
+    expect((await request(app).post('/api/videos').send({})).status).toBe(401);
+    expect((await request(app).get('/api/video-series?limit=99')).status).toBe(400);
   });
 });

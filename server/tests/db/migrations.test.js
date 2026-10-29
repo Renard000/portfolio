@@ -49,6 +49,8 @@ async function as(role, uid, fn) {
 }
 
 describe('migrations Supabase (PGlite)', () => {
+  const SERIES = 'a0000000-0000-4000-8000-000000000001';
+  const V = (n) => `b0000000-0000-4000-8000-00000000000${n}`;
   beforeAll(async () => {
     db = new PGlite();
     await db.exec(STUBS);
@@ -68,7 +70,7 @@ describe('migrations Supabase (PGlite)', () => {
     `);
   }, 60000); // le démarrage de PGlite (WebAssembly) peut être lent sous charge
 
-  it('applique les 7 migrations sans erreur (4 et 5 incluses)', () => {
+  it('applique toutes les migrations sans erreur (4, 5 et 6 incluses)', () => {
     expect(files).toContain('20261021024859_subscribers_split.sql');
     expect(files).toContain('20261021024955_certifications_awards.sql');
   });
@@ -322,6 +324,200 @@ describe('migrations Supabase (PGlite)', () => {
         'documents_admin_update',
         'documents_admin_write',
       ]);
+    });
+  });
+
+  describe('migration 6 : séries et vidéos', () => {
+    const mkSeries = (status = 'published') =>
+      db.exec(
+        `insert into public.video_series (id, title, slug, status) values ('${SERIES}', 'Série', 'serie-${status}', '${status}') on conflict do nothing`
+      );
+    const mkVideo = (n, o = {}) =>
+      db.exec(`insert into public.videos (id, series_id, title, slug, video_key, duration_seconds, position, status)
+        values ('${V(n)}', '${o.series || SERIES}', 'V${n}', 'v${n}', '${o.key || `videos/serie/0${n}-v${n}.mp4`}', 600, ${n}, '${o.status || 'published'}')`);
+
+    beforeAll(async () => {
+      await mkSeries();
+      await mkVideo(1);
+      await mkVideo(2);
+      await mkVideo(3, { status: 'draft' });
+    });
+
+    it('crée les deux tables avec RLS active', async () => {
+      const r = await db.query(
+        `select relname, relrowsecurity from pg_class where relname in ('video_series','videos') and relnamespace = 'public'::regnamespace`
+      );
+      expect(r.rows).toHaveLength(2);
+      expect(r.rows.every((x) => x.relrowsecurity)).toBe(true);
+    });
+
+    it('valeurs par défaut de la série (niveau, langue, brouillon)', async () => {
+      await db.exec(
+        `insert into public.video_series (title, slug) values ('Défauts', 'defauts')`
+      );
+      const r = await db.query(
+        `select level, language, status, featured from public.video_series where slug = 'defauts'`
+      );
+      expect(r.rows[0]).toEqual({
+        level: 'beginner',
+        language: 'fr',
+        status: 'draft',
+        featured: false,
+      });
+    });
+
+    it.each([
+      ["une URL complète au lieu d'une clé", 'https://cdn.example/videos/a.mp4'],
+      ['un chemin avec ..', 'videos/../secret.mp4'],
+      ['une majuscule', 'videos/Serie/01.mp4'],
+      ['un autre dossier', 'autre/01.mp4'],
+      ['une autre extension', 'videos/serie/01.mov'],
+    ])('refuse video_key : %s', async (_n, key) => {
+      await expect(mkVideo(9, { key })).rejects.toThrow(/check constraint/i);
+    });
+
+    it('refuse un poster hors posters/ et une durée nulle', async () => {
+      await expect(
+        db.exec(
+          `update public.videos set poster_key = 'videos/x.jpg' where id = '${V(1)}'`
+        )
+      ).rejects.toThrow(/check constraint/i);
+      await expect(
+        db.exec(`update public.videos set duration_seconds = 0 where id = '${V(1)}'`)
+      ).rejects.toThrow(/check constraint/i);
+      await db.exec(
+        `update public.videos set poster_key = 'posters/serie/01-v1.jpg' where id = '${V(1)}'`
+      );
+    });
+
+    it('position unique par série (vérifiée à la fin de la transaction)', async () => {
+      await expect(
+        db.exec(`update public.videos set position = 1 where id = '${V(2)}'`)
+      ).rejects.toThrow(/duplicate key|videos_series_position_key/i);
+    });
+
+    it("lecture publique : seulement les vidéos publiées d'une série publiée", async () => {
+      const v = await as('anon', null, () =>
+        db.query('select slug from public.videos order by position')
+      );
+      expect(v.rows.map((r) => r.slug)).toEqual(['v1', 'v2']);
+      const s = await as('anon', null, () =>
+        db.query(`select slug from public.video_series where status = 'published'`)
+      );
+      expect(s.rows.length).toBeGreaterThan(0);
+    });
+
+    it('une série en brouillon cache toutes ses vidéos, même publiées', async () => {
+      await db.exec(
+        `update public.video_series set status = 'draft' where id = '${SERIES}'`
+      );
+      const v = await as('anon', null, () => db.query('select * from public.videos'));
+      expect(v.rows).toHaveLength(0);
+      await db.exec(
+        `update public.video_series set status = 'published' where id = '${SERIES}'`
+      );
+    });
+
+    it("aucune écriture publique ; l'admin écrit", async () => {
+      await expect(
+        as('anon', null, () =>
+          db.exec(`insert into public.video_series (title, slug) values ('x','x')`)
+        )
+      ).rejects.toThrow(/row-level security/i);
+      await expect(
+        as('authenticated', USER, () =>
+          db.exec(
+            `insert into public.videos (series_id, title, slug, video_key, duration_seconds) values ('${SERIES}','x','x','videos/a/x.mp4',5)`
+          )
+        )
+      ).rejects.toThrow(/row-level security/i);
+      const up = await as('authenticated', ADMIN, () =>
+        db.query(
+          `update public.videos set title = 'Renommée' where id = '${V(3)}' returning title`
+        )
+      );
+      expect(up.rows[0].title).toBe('Renommée');
+    });
+
+    it('supprimer une série supprime ses vidéos (cascade)', async () => {
+      await db.exec(
+        `insert into public.video_series (id, title, slug) values ('a0000000-0000-4000-8000-0000000000ff', 'Jetable', 'jetable')`
+      );
+      await mkVideo(8, {
+        series: 'a0000000-0000-4000-8000-0000000000ff',
+        key: 'videos/jetable/08-v8.mp4',
+      });
+      await db.exec(`delete from public.video_series where slug = 'jetable'`);
+      const r = await db.query(`select 1 from public.videos where id = '${V(8)}'`);
+      expect(r.rows).toHaveLength(0);
+    });
+
+    it('increment_video_views : réservé au serveur (refusé à anon et authenticated)', async () => {
+      await expect(
+        as('anon', null, () => db.query(`select public.increment_video_views('${V(1)}')`))
+      ).rejects.toThrow(/permission denied/i);
+      await expect(
+        as('authenticated', ADMIN, () =>
+          db.query(`select public.increment_video_views('${V(1)}')`)
+        )
+      ).rejects.toThrow(/permission denied/i);
+    });
+
+    it('increment_video_views : compte les vidéos publiées seulement', async () => {
+      await db.exec(
+        `select public.increment_video_views('${V(1)}'); select public.increment_video_views('${V(1)}'); select public.increment_video_views('${V(3)}');`
+      );
+      const r = await db.query(
+        `select id, views from public.videos where id in ('${V(1)}','${V(3)}') order by id`
+      );
+      expect(r.rows.map((x) => x.views)).toEqual([2, 0]);
+    });
+
+    it('reorder_videos : échange atomique des positions', async () => {
+      await db.exec(
+        `select public.reorder_videos('${SERIES}', array['${V(2)}','${V(3)}','${V(1)}']::uuid[])`
+      );
+      const r = await db.query(
+        `select slug, position from public.videos where series_id = '${SERIES}' order by position`
+      );
+      expect(r.rows).toEqual([
+        { slug: 'v2', position: 1 },
+        { slug: 'v3', position: 2 },
+        { slug: 'v1', position: 3 },
+      ]);
+    });
+
+    it.each([
+      ['une vidéo manquante', () => [V(1), V(2)]],
+      ['un doublon', () => [V(1), V(1), V(2)]],
+      ['une vidéo étrangère', () => [V(1), V(2), 'c0000000-0000-4000-8000-000000000009']],
+    ])('reorder_videos refuse %s, sans rien modifier', async (_n, ids) => {
+      const before = (
+        await db.query(
+          `select id, position from public.videos where series_id = '${SERIES}' order by id`
+        )
+      ).rows;
+      await expect(
+        db.exec(
+          `select public.reorder_videos('${SERIES}', array[${ids()
+            .map((i) => `'${i}'`)
+            .join(',')}]::uuid[])`
+        )
+      ).rejects.toThrow(/Ordre invalide/);
+      const after = (
+        await db.query(
+          `select id, position from public.videos where series_id = '${SERIES}' order by id`
+        )
+      ).rows;
+      expect(after).toEqual(before);
+    });
+
+    it('reorder_videos : réservé au serveur', async () => {
+      await expect(
+        as('authenticated', ADMIN, () =>
+          db.query(`select public.reorder_videos('${SERIES}', array['${V(1)}']::uuid[])`)
+        )
+      ).rejects.toThrow(/permission denied/i);
     });
   });
 });

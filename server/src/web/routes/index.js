@@ -12,6 +12,16 @@ import {
   awardUpdate,
   newsletterSubscribeBody,
   pushSubscribeBody,
+  contactBody,
+  seriesQuery,
+  slugParams,
+  slugsParams,
+  seriesCreate,
+  seriesUpdate,
+  videoCreate,
+  videoUpdate,
+  orderBody,
+  uploadUrlBody,
   testEmailBody,
 } from '../../bll/schemas/index.js';
 
@@ -32,6 +42,9 @@ export function buildApiRouter(container) {
     awardController: awards,
     newsletterController: news,
     subscriberAdminController: subs,
+    contactController: contact,
+    videoController: video,
+    videoAdminController: videoAdmin,
     authService,
   } = container;
   const router = Router();
@@ -98,6 +111,14 @@ export function buildApiRouter(container) {
     h(news, 'unsubscribe')
   );
 
+  // --- Contact (public, limité : 5 messages par heure et par adresse IP) ---
+  router.post(
+    '/contact',
+    limiter(5),
+    validate({ body: contactBody }),
+    h(contact, 'send')
+  );
+
   // --- Push (public, limité) ---
   router.post(
     '/push/subscribe',
@@ -126,6 +147,95 @@ export function buildApiRouter(container) {
     limiter(10),
     validate({ body: testEmailBody }),
     h(subs, 'sendTestEmail')
+  );
+
+  // --- Formations vidéo : lecture publique (listes plus strictement limitées, 20 par page) ---
+  router.get(
+    '/video-series',
+    limiter(60, 15 * 60 * 1000),
+    validate({ query: seriesQuery }),
+    h(video, 'listSeries')
+  );
+  router.get(
+    '/video-series/:slug',
+    validate({ params: slugParams }),
+    h(video, 'getSeries')
+  );
+  router.get(
+    '/video-series/:seriesSlug/videos/:videoSlug',
+    validate({ params: slugsParams }),
+    h(video, 'getVideo')
+  );
+  router.post(
+    '/videos/:id/view',
+    limiter(60),
+    validate({ params: idParams }),
+    h(video, 'view')
+  );
+  // Lecture : URL CloudFront signée (30 par heure et par IP)
+  router.post(
+    '/videos/:id/playback',
+    limiter(30),
+    validate({ params: idParams }),
+    h(video, 'playback')
+  );
+
+  // --- Formations vidéo : administration ---
+  router.get('/admin/video-series', ...admin, h(videoAdmin, 'listSeries'));
+  router.get(
+    '/admin/video-series/:id',
+    ...admin,
+    validate({ params: idParams }),
+    h(videoAdmin, 'getSeries')
+  );
+  router.post(
+    '/video-series',
+    ...admin,
+    validate({ body: seriesCreate }),
+    h(videoAdmin, 'createSeries')
+  );
+  router.put(
+    '/video-series/:id',
+    ...admin,
+    validate({ params: idParams, body: seriesUpdate }),
+    h(videoAdmin, 'updateSeries')
+  );
+  router.delete(
+    '/video-series/:id',
+    ...admin,
+    validate({ params: idParams }),
+    h(videoAdmin, 'deleteSeries')
+  );
+  router.put(
+    '/video-series/:id/order',
+    ...admin,
+    validate({ params: idParams, body: orderBody }),
+    h(videoAdmin, 'order')
+  );
+  router.post(
+    '/videos',
+    ...admin,
+    validate({ body: videoCreate }),
+    h(videoAdmin, 'createVideo')
+  );
+  router.put(
+    '/videos/:id',
+    ...admin,
+    validate({ params: idParams, body: videoUpdate }),
+    h(videoAdmin, 'updateVideo')
+  );
+  router.delete(
+    '/videos/:id',
+    ...admin,
+    validate({ params: idParams }),
+    h(videoAdmin, 'deleteVideo')
+  );
+  router.post(
+    '/admin/videos/upload-url',
+    ...admin,
+    limiter(60),
+    validate({ body: uploadUrlBody }),
+    h(videoAdmin, 'uploadUrl')
   );
 
   return router;

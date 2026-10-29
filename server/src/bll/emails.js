@@ -17,13 +17,20 @@ export function confirmationEmail({ confirmUrl }) {
   };
 }
 
-export function articleEmail({ article, articleUrl, unsubscribeUrl }) {
+const KINDS = {
+  article: { subject: 'Nouvel article', cta: "Lire l'article" },
+  video: { subject: 'Nouvelle vidéo', cta: 'Regarder la vidéo' },
+};
+
+/** Courriel de publication (article ou vidéo) : tout le texte dynamique est échappé. */
+export function contentEmail({ kind = 'article', title, excerpt, url, unsubscribeUrl }) {
+  const k = KINDS[kind];
   return {
-    subject: `Nouvel article : ${article.title}`,
+    subject: `${k.subject} : ${title}`,
     html: wrap(
-      `<h2>${escapeHtml(article.title)}</h2>
-       ${article.excerpt ? `<p>${escapeHtml(article.excerpt)}</p>` : ''}
-       <p><a href="${escapeHtml(articleUrl)}">Lire l'article</a></p>`,
+      `<h2>${escapeHtml(title)}</h2>
+       ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
+       <p><a href="${escapeHtml(url)}">${k.cta}</a></p>`,
       `Vous recevez ce courriel car vous êtes abonné(e) à la newsletter. <a href="${escapeHtml(
         unsubscribeUrl
       )}">Me désabonner</a>`
@@ -31,11 +38,33 @@ export function articleEmail({ article, articleUrl, unsubscribeUrl }) {
   };
 }
 
+export function articleEmail({ article, articleUrl, unsubscribeUrl }) {
+  return contentEmail({
+    kind: 'article',
+    title: article.title,
+    excerpt: article.excerpt,
+    url: articleUrl,
+    unsubscribeUrl,
+  });
+}
+
 export function testEmail() {
   return {
     subject: 'Courriel de test',
     html: wrap(
       '<p>Ceci est un courriel de test : la configuration d’envoi fonctionne.</p>'
+    ),
+  };
+}
+
+export function contactNotificationEmail({ nom, email, sujet, message }) {
+  return {
+    subject: `Nouveau message de ${nom}${sujet ? ` : ${sujet}` : ''}`.slice(0, 200),
+    html: wrap(
+      `<h2>Nouveau message du portfolio</h2>
+       <p><strong>${escapeHtml(nom)}</strong> &lt;${escapeHtml(email)}&gt;</p>
+       ${sujet ? `<p>Sujet : ${escapeHtml(sujet)}</p>` : ''}
+       <p style="white-space:pre-wrap">${escapeHtml(message)}</p>`
     ),
   };
 }

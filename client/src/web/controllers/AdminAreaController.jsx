@@ -5,6 +5,8 @@ import { restoreSession, signOut } from '../store/slices/authSlice.js';
 import AdminLayout from '../views/components/AdminLayout.jsx';
 import AdminCertificationsController from './AdminCertificationsController.jsx';
 import AdminAwardsController from './AdminAwardsController.jsx';
+import AdminFormationsController from './AdminFormationsController.jsx';
+import AdminSeriesController from './AdminSeriesController.jsx';
 import AdminSubscribersController from './AdminSubscribersController.jsx';
 
 /** Garde de la zone /admin : session requise, sinon redirection vers la connexion. */
@@ -27,6 +29,8 @@ class AdminAreaController extends Component {
         <Switch>
           <Route path="/admin/certifications" component={AdminCertificationsController} />
           <Route path="/admin/awards" component={AdminAwardsController} />
+          <Route exact path="/admin/formations" component={AdminFormationsController} />
+          <Route path="/admin/formations/:id" component={AdminSeriesController} />
           <Route path="/admin/subscribers" component={AdminSubscribersController} />
           <Redirect to="/admin/certifications" />
         </Switch>

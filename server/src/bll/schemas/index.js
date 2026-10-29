@@ -102,3 +102,99 @@ export const pushSubscribeBody = z.object({
 export const testEmailBody = z.object({
   to: z.string().trim().toLowerCase().pipe(z.email().max(254)),
 });
+
+export const contactBody = z.object({
+  nom: z.string().trim().min(1).max(100),
+  email: z.string().trim().toLowerCase().pipe(z.email().max(254)),
+  sujet: z.string().trim().max(200).optional(),
+  message: z.string().trim().min(10).max(5000),
+  // Honeypot : champ invisible que seuls les robots remplissent.
+  website: z.string().max(500).optional(),
+});
+
+// ---------- Vidéos (addendum C) ----------
+const slug = z
+  .string()
+  .min(1)
+  .max(80)
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Slug invalide (minuscules, chiffres, tirets)');
+// Clés S3 : même règle que la base, sans « .. » ni « // »
+const noTraversal = (v) => !/\.\.|\/\//.test(v);
+const videoKey = z
+  .string()
+  .regex(/^videos\/[a-z0-9/_.-]+\.mp4$/)
+  .refine(noTraversal, 'Clé invalide');
+const posterKey = z
+  .string()
+  .regex(/^posters\/[a-z0-9/_.-]+\.(jpg|png|webp)$/)
+  .refine(noTraversal, 'Clé invalide');
+const chapter = z.object({
+  t: z.number().int().min(0),
+  label: z.string().trim().min(1).max(120),
+});
+const resource = z.object({ label: z.string().trim().min(1).max(120), url: httpUrl });
+
+export const seriesQuery = z.object({
+  category: z.string().trim().max(100).optional(),
+  level: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  tag: z.string().trim().max(60).optional(),
+  q: z.string().trim().max(100).optional(),
+  // E.7 : pages de taille limitée (20 maximum)
+  page: z.coerce.number().int().min(1).max(1000).optional(),
+  limit: z.coerce.number().int().min(1).max(20).optional(),
+});
+export const slugsParams = z.object({ seriesSlug: slug, videoSlug: slug });
+export const slugParams = z.object({ slug });
+
+const seriesShape = z.object({
+  title: z.string().trim().min(1).max(200),
+  slug,
+  description: optText(5000),
+  coverUrl: optUrl,
+  category: optText(100),
+  level: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  tags: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
+  language: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z]{2}$/)
+    .optional(),
+  status: z.enum(['draft', 'published']).optional(),
+  featured: z.boolean().optional(),
+  sortOrder: z.number().int().min(-100000).max(100000).optional(),
+});
+export const seriesCreate = seriesShape;
+export const seriesUpdate = seriesShape
+  .partial()
+  .refine((v) => Object.keys(v).length > 0, 'Aucun champ à modifier');
+
+const videoShape = z.object({
+  seriesId: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+  slug,
+  description: optText(10000),
+  videoKey,
+  posterKey: posterKey.nullable().optional(),
+  durationSeconds: z.number().int().min(1).max(86400),
+  chapters: z.array(chapter).max(60).optional(),
+  resources: z.array(resource).max(20).optional(),
+  status: z.enum(['draft', 'published']).optional(),
+});
+export const videoCreate = videoShape;
+export const videoUpdate = videoShape
+  .omit({ seriesId: true })
+  .partial()
+  .refine((v) => Object.keys(v).length > 0, 'Aucun champ à modifier');
+
+export const orderBody = z.object({ videoIds: z.array(z.uuid()).min(1).max(200) });
+
+// Le client n'envoie JAMAIS de chemin : seulement série, slug, type et taille.
+export const uploadUrlBody = z.object({
+  seriesId: z.uuid(),
+  videoSlug: slug,
+  kind: z.enum(['video', 'poster']).default('video'),
+  contentType: z.string().max(100),
+  size: z.number().int().min(1),
+  position: z.number().int().min(1).max(999).optional(),
+});

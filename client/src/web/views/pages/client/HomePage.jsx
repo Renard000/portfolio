@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import AnimatedCounter from '../../components/AnimatedCounter.jsx';
 import AwardsSummary from '../../components/AwardsSummary.jsx';
 import CertificationDetail from '../../components/CertificationDetail.jsx';
+import FeaturedSeries from '../../components/FeaturedSeries.jsx';
 import ErrorBoundary from '../../components/ErrorBoundary.jsx';
 import FeaturedCertifications from '../../components/FeaturedCertifications.jsx';
 import HeroGlow from '../../components/HeroGlow.jsx';
@@ -21,6 +22,7 @@ export default class HomePage extends PureComponent {
       profile,
       projects,
       featured,
+      latestSeries,
       stats,
       loadAwards,
       selected,
@@ -150,6 +152,10 @@ export default class HomePage extends PureComponent {
               ))}
             </div>
           </section>
+
+          <ErrorBoundary>
+            <FeaturedSeries items={latestSeries} />
+          </ErrorBoundary>
 
           <section className="pf-wrap pf-sec">
             <ErrorBoundary>

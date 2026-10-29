@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { fetchCertifications } from '../store/slices/certificationsSlice.js';
 import { fetchAwards } from '../store/slices/awardsSlice.js';
+import { fetchLatestSeries } from '../store/slices/videosSlice.js';
 import { subscribeNewsletter, enablePush } from '../store/slices/newsletterSlice.js';
 import {
   selectFeaturedCertifications,
@@ -14,6 +15,7 @@ class HomeController extends Component {
 
   componentDidMount() {
     this.props.fetchCertifications();
+    this.props.fetchLatestSeries();
   }
 
   // Le render prop DataFetcher de l'accueil appelle cette fonction (promesse des données).
@@ -28,6 +30,7 @@ class HomeController extends Component {
         profile={p.profile}
         projects={p.projects}
         featured={p.featured}
+        latestSeries={p.latestSeries}
         stats={p.stats}
         loadAwards={this.loadAwards}
         selected={this.state.selected}
@@ -47,6 +50,7 @@ const mapState = (state) => ({
   profile: state.content.profile,
   projects: selectFeaturedProjects(state),
   featured: selectFeaturedCertifications(state),
+  latestSeries: state.videos.latest,
   stats: {
     projects: state.content.projects.length,
     certifications: state.certifications.items.length,
@@ -60,6 +64,7 @@ const mapState = (state) => ({
 
 export default connect(mapState, {
   fetchCertifications,
+  fetchLatestSeries,
   fetchAwards,
   subscribeNewsletter,
   enablePush,

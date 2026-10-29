@@ -1,6 +1,7 @@
 import {
   ForbiddenError,
   NotFoundError,
+  ServiceUnavailableError,
   UnauthorizedError,
   ValidationError,
 } from '../../domain/errors/index.js';
@@ -15,6 +16,8 @@ export function createErrorHandler(logger = console) {
       return res.status(401).json({ error: err.message });
     if (err instanceof ForbiddenError)
       return res.status(403).json({ error: err.message });
+    if (err instanceof ServiceUnavailableError)
+      return res.status(503).json({ error: err.message });
     if (err instanceof NotFoundError) return res.status(404).json({ error: err.message });
     // Erreurs du parseur JSON (corps mal formé, trop gros)
     if (err && err.status >= 400 && err.status < 500)
