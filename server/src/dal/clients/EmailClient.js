@@ -1,27 +1,67 @@
+/** Les clés d'API Brevo commencent toutes par ce préfixe ; les autres sont des clés Resend. */
+const BREVO_KEY_PREFIX = 'xkeysib-';
+
+/** « Portfolio <moi@exemple.com> » → { name: 'Portfolio', email: 'moi@exemple.com' } */
+export function parseAddress(from) {
+  const match = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(from);
+  if (!match) return { email: from.trim() };
+  return match[1]
+    ? { name: match[1], email: match[2].trim() }
+    : { email: match[2].trim() };
+}
+
 /**
- * Envoi de courriels transactionnels via l'API HTTP de Resend.
- * La BLL ne connaît que send({ to, subject, html }) : changer de fournisseur
- * (Brevo...) ne touche que ce fichier.
+ * Envoi de courriels transactionnels par l'API HTTP de Brevo ou de Resend,
+ * choisie d'après la clé. La BLL ne connaît que send({ to, subject, html }) :
+ * changer de fournisseur ne touche que ce fichier.
  */
 export default class EmailClient {
   constructor(apiKey, from, fetchImpl = (...args) => fetch(...args)) {
     this.apiKey = apiKey;
     this.from = from;
     this.fetchImpl = fetchImpl;
+    this.provider = apiKey.startsWith(BREVO_KEY_PREFIX) ? 'brevo' : 'resend';
   }
 
-  async send({ to, subject, html }) {
-    const response = await this.fetchImpl('https://api.resend.com/emails', {
+  #request({ to, subject, html }) {
+    if (this.provider === 'brevo')
+      return [
+        'https://api.brevo.com/v3/smtp/email',
+        {
+          headers: { 'api-key': this.apiKey },
+          body: {
+            sender: parseAddress(this.from),
+            to: [{ email: to }],
+            subject,
+            htmlContent: html,
+          },
+        },
+      ];
+    return [
+      'https://api.resend.com/emails',
+      {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+        body: { from: this.from, to: [to], subject, html },
+      },
+    ];
+  }
+
+  async send(message) {
+    const [url, { headers, body }] = this.#request(message);
+    const response = await this.fetchImpl(url, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.apiKey}`,
+        ...headers,
         'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
-      body: JSON.stringify({ from: this.from, to: [to], subject, html }),
+      body: JSON.stringify(body),
     });
     if (!response.ok) {
       // Ni le corps du courriel ni la clé ne sont journalisés.
-      throw new Error(`Envoi de courriel refusé (HTTP ${response.status})`);
+      throw new Error(
+        `Envoi de courriel refusé par ${this.provider} (HTTP ${response.status})`
+      );
     }
   }
 }

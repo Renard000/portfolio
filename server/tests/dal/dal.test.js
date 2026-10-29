@@ -4,7 +4,10 @@ import AwardRepository from '../../src/dal/repositories/AwardRepository.js';
 import NewsletterRepository from '../../src/dal/repositories/NewsletterRepository.js';
 import PushSubscriptionRepository from '../../src/dal/repositories/PushSubscriptionRepository.js';
 import AuthRepository from '../../src/dal/repositories/AuthRepository.js';
-import EmailClient, { ConsoleEmailClient } from '../../src/dal/clients/EmailClient.js';
+import EmailClient, {
+  ConsoleEmailClient,
+  parseAddress,
+} from '../../src/dal/clients/EmailClient.js';
 import FirebaseAdmin from '../../src/dal/clients/FirebaseAdmin.js';
 import Certification from '../../src/domain/entities/Certification.js';
 
@@ -265,6 +268,32 @@ describe('EmailClient', () => {
       to: ['x@y.co'],
       subject: 'S',
       html: '<p>h</p>',
+    });
+  });
+  it('clé Brevo (xkeysib-) : POST vers Brevo avec en-tête api-key et expéditeur décomposé', async () => {
+    const f = vi.fn().mockResolvedValue({ ok: true, status: 201 });
+    await new EmailClient('xkeysib-KEY', 'Portfolio <moi@ex.co>', f).send({
+      to: 'x@y.co',
+      subject: 'S',
+      html: '<p>h</p>',
+    });
+    const [url, opts] = f.mock.calls[0];
+    expect(url).toBe('https://api.brevo.com/v3/smtp/email');
+    expect(opts.headers['api-key']).toBe('xkeysib-KEY');
+    expect(opts.headers.Authorization).toBeUndefined();
+    expect(JSON.parse(opts.body)).toEqual({
+      sender: { name: 'Portfolio', email: 'moi@ex.co' },
+      to: [{ email: 'x@y.co' }],
+      subject: 'S',
+      htmlContent: '<p>h</p>',
+    });
+  });
+  it('parseAddress : avec ou sans nom', () => {
+    expect(parseAddress('a@b.co')).toEqual({ email: 'a@b.co' });
+    expect(parseAddress('<a@b.co>')).toEqual({ email: 'a@b.co' });
+    expect(parseAddress('Mon Nom <a@b.co>')).toEqual({
+      name: 'Mon Nom',
+      email: 'a@b.co',
     });
   });
   it('erreur HTTP : lève sans fuiter la clé ni le contenu', async () => {
