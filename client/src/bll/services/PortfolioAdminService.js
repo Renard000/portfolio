@@ -1,3 +1,4 @@
+import { withScheme } from '../../domain/url.js';
 const text = (v) => {
   const t = String(v ?? '').trim();
   return t === '' ? null : t;
@@ -63,8 +64,8 @@ export default class PortfolioAdminService {
       tech: list(values.tech),
       // Un indicateur par ligne
       results: list(values.results, '\n'),
-      githubUrl: text(values.githubUrl),
-      liveUrl: text(values.liveUrl),
+      githubUrl: withScheme(text(values.githubUrl)),
+      liveUrl: withScheme(text(values.liveUrl)),
       imageUrl: urls.imageUrl ?? text(values.imageUrl),
       color: text(values.color),
       featured: Boolean(values.featured),

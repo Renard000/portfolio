@@ -48,8 +48,13 @@ export default class ApiClient {
     const text = await response.text();
     const data = text ? JSON.parse(text) : null;
     if (!response.ok) {
+      const details = ((data && data.details) || [])
+        .map((d) => `${d.path} : ${d.message}`)
+        .join(' ; ');
       throw new ApiError(
-        (data && data.error) || 'Erreur ' + response.status,
+        [(data && data.error) || 'Erreur ' + response.status, details]
+          .filter(Boolean)
+          .join(' — '),
         response.status,
         data
       );

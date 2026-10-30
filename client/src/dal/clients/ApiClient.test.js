@@ -7,6 +7,27 @@ const fakeFetch = (status, body) =>
     text: async () => JSON.stringify(body),
   });
 
+describe('ApiClient : erreurs de validation', () => {
+  it('le message indique le champ refusé', async () => {
+    const api = new ApiClient(
+      'http://x',
+      async () => null,
+      async () => ({
+        ok: false,
+        status: 400,
+        text: async () =>
+          JSON.stringify({
+            error: 'Données invalides',
+            details: [{ path: 'credentialUrl', message: 'URL http(s) invalide' }],
+          }),
+      })
+    );
+    await expect(api.post('/a', {})).rejects.toThrow(
+      'Données invalides — credentialUrl : URL http(s) invalide'
+    );
+  });
+});
+
 describe('ApiClient', () => {
   it('ajoute les paramètres et le jeton', async () => {
     const fetchImpl = fakeFetch(200, [{ id: 1 }]);

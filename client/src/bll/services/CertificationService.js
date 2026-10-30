@@ -1,3 +1,4 @@
+import { withScheme } from '../../domain/url.js';
 /** Minuscules sans accents. */
 const norm = (s) =>
   String(s ?? '')
@@ -67,6 +68,11 @@ export default class CertificationService {
     if (!values.issueDate) return "La date d'obtention est obligatoire.";
     if (values.expiryDate && values.expiryDate < values.issueDate)
       return "La date d'expiration doit suivre la date d'obtention.";
+    const tooLong = String(values.skills || '')
+      .split(',')
+      .find((x) => x.trim().length > 60);
+    if (tooLong)
+      return `Compétence trop longue (60 caractères maximum) : « ${tooLong.trim().slice(0, 30)}… ». Séparez-les par des virgules.`;
     return null;
   }
 
@@ -84,7 +90,7 @@ export default class CertificationService {
       issueDate: values.issueDate,
       expiryDate: text(values.expiryDate),
       credentialId: text(values.credentialId),
-      credentialUrl: text(values.credentialUrl),
+      credentialUrl: withScheme(text(values.credentialUrl)),
       imageUrl: urls.imageUrl ?? text(values.imageUrl),
       documentUrl: urls.documentUrl ?? text(values.documentUrl),
       skills: [

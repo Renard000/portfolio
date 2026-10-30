@@ -34,6 +34,34 @@ const certs = [
 ];
 const ids = (l) => l.map((x) => x.id);
 
+describe('Liens saisis sans protocole', () => {
+  const values = {
+    title: 'T',
+    issuer: 'I',
+    issueDate: '2024-01-01',
+    credentialUrl: 'ude.my/UC-1',
+  };
+  it('ajoute https:// ; un autre protocole reste à refuser par le serveur', () => {
+    expect(CertificationService.toDto(values).credentialUrl).toBe('https://ude.my/UC-1');
+    expect(
+      CertificationService.toDto({ ...values, credentialUrl: 'http://a.co' })
+        .credentialUrl
+    ).toBe('http://a.co');
+    expect(
+      CertificationService.toDto({ ...values, credentialUrl: 'javascript:alert(1)' })
+        .credentialUrl
+    ).toBe('javascript:alert(1)');
+    expect(
+      CertificationService.toDto({ ...values, credentialUrl: '' }).credentialUrl
+    ).toBeNull();
+  });
+  it('compétence de plus de 60 caractères : message clair avant l’envoi', () => {
+    expect(
+      CertificationService.validate({ ...values, skills: `a, ${'x'.repeat(61)}` })
+    ).toMatch(/Compétence trop longue/);
+  });
+});
+
 describe('CertificationService (client)', () => {
   it('filtre par émetteur, catégorie, recherche sans accents', () => {
     expect(ids(CertificationService.filterAndSort(certs, { issuer: 'Amazon' }))).toEqual([
