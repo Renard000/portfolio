@@ -31,7 +31,15 @@ export default class VideoService {
   // ---------------- Public ----------------
 
   /** Séries publiées ayant au moins une vidéo publiée, filtrées et paginées (20 max par page). */
-  async listSeries({ category, level, tag, q, page = 1, limit = DEFAULT_LIMIT } = {}) {
+  async listSeries({
+    category,
+    level,
+    tag,
+    q,
+    sort,
+    page = 1,
+    limit = DEFAULT_LIMIT,
+  } = {}) {
     let list = (await this.seriesRepository.list({ includeDrafts: false })).filter(
       (s) => s.isPublished() && s.publishedVideos().length > 0
     );
@@ -48,6 +56,10 @@ export default class VideoService {
         )
       );
     }
+    if (sort === 'recent')
+      list = [...list].sort((a, b) =>
+        String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? ''))
+      );
     const size = Math.min(limit, 20);
     const items = list
       .slice((page - 1) * size, page * size)

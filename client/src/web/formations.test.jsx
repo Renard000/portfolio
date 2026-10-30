@@ -74,16 +74,23 @@ describe('Accueil : « Dernières formations »', () => {
     expect(
       await screen.findByRole('heading', { name: 'Dernières formations' })
     ).toBeInTheDocument();
-    expect(services.videoService.listSeries).toHaveBeenCalledWith({ limit: 3 });
+    expect(services.videoService.listSeries).toHaveBeenCalledWith({
+      limit: 3,
+      sort: 'recent',
+    });
     expect(screen.getByRole('link', { name: 'Série React avancé' })).toHaveAttribute(
       'href',
       '/formations/react-avance'
     );
   });
-  it("sans série : le bandeau n'apparaît pas", async () => {
+  it('sans série : la section reste visible avec un message', async () => {
     renderApp('/');
-    await screen.findByText('Certifications en vedette');
-    expect(screen.queryByRole('heading', { name: 'Dernières formations' })).toBeNull();
+    expect(
+      await screen.findByText('Aucune formation publiée pour l’instant.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Dernières formations' })
+    ).toBeInTheDocument();
   });
 });
 

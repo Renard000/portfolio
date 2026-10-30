@@ -9,7 +9,7 @@ export const fetchSeriesList = createAsyncThunk(
 /** Séries les plus récentes pour l'accueil (indépendant des filtres de la page Formations). */
 export const fetchLatestSeries = createAsyncThunk(
   'videos/fetchLatest',
-  async (_arg, { extra }) => (await extra.videoService.listSeries({ limit: 3 })).items
+  async (_arg, { extra }) => (await extra.videoService.listSeries({ limit: 3, sort: 'recent' })).items
 );
 export const fetchSeries = createAsyncThunk(
   'videos/fetchSeries',

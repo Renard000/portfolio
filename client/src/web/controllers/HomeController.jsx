@@ -6,12 +6,11 @@ import { fetchLatestSeries } from '../store/slices/videosSlice.js';
 import { fetchLatestArticles } from '../store/slices/articlesSlice.js';
 import { subscribeNewsletter, enablePush } from '../store/slices/newsletterSlice.js';
 import {
-  selectFeaturedCertifications,
+  selectHomeFeaturedCertifications,
   selectFeaturedProjects,
   selectRecentArticleCards,
   selectRecentAwards,
   selectRecentCertifications,
-  selectRecentProjects,
 } from '../store/selectors.js';
 import HomePage from '../views/pages/client/HomePage.jsx';
 
@@ -37,7 +36,6 @@ class HomeController extends Component {
         projects={p.projects}
         featured={p.featured}
         latestSeries={p.latestSeries}
-        recentProjects={p.recentProjects}
         recentArticles={p.recentArticles}
         recentCertifications={p.recentCertifications}
         recentAwards={p.recentAwards}
@@ -59,9 +57,8 @@ class HomeController extends Component {
 const mapState = (state) => ({
   profile: state.content.profile,
   projects: selectFeaturedProjects(state),
-  featured: selectFeaturedCertifications(state),
+  featured: selectHomeFeaturedCertifications(state),
   latestSeries: state.videos.latest,
-  recentProjects: selectRecentProjects(state),
   recentArticles: selectRecentArticleCards(state),
   recentCertifications: selectRecentCertifications(state),
   recentAwards: selectRecentAwards(state),

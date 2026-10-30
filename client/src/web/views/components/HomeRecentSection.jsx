@@ -2,11 +2,11 @@ import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 import SectionHeading from './SectionHeading.jsx';
 
-/** Section « ajoutés récemment » de l'accueil : invisible tant qu'elle est vide. */
+/** Section « ajoutés récemment » de l'accueil : toujours visible, même sans contenu. */
 export default class HomeRecentSection extends PureComponent {
   render() {
-    const { id, kicker, title, to, linkLabel, count, children } = this.props;
-    if (!count) return null;
+    const { id, kicker, title, to, linkLabel, count, emptyMessage, children } =
+      this.props;
     return (
       <section className="pf-wrap pf-sec" aria-labelledby={id}>
         <SectionHeading kicker={kicker} title={title} id={id}>
@@ -14,7 +14,11 @@ export default class HomeRecentSection extends PureComponent {
             {linkLabel} →
           </Link>
         </SectionHeading>
-        <div className="pf-grid3">{children}</div>
+        {count ? (
+          <div className="pf-grid3">{children}</div>
+        ) : (
+          <p className="pf-mu">{emptyMessage}</p>
+        )}
       </section>
     );
   }

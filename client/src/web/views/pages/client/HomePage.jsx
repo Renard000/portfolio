@@ -27,7 +27,6 @@ export default class HomePage extends PureComponent {
       projects,
       featured,
       latestSeries,
-      recentProjects,
       recentArticles,
       recentCertifications,
       recentAwards,
@@ -163,29 +162,13 @@ export default class HomePage extends PureComponent {
 
           <ErrorBoundary>
             <HomeRecentSection
-              id="home-recent-projects"
-              kicker="Atelier"
-              title="Sorti de l’atelier"
-              to="/projets"
-              linkLabel="Tous les projets"
-              count={recentProjects.length}
-            >
-              {recentProjects.map((p) => (
-                <RevealOnScroll key={p.slug}>
-                  <ProjectCard project={p} height={220} />
-                </RevealOnScroll>
-              ))}
-            </HomeRecentSection>
-          </ErrorBoundary>
-
-          <ErrorBoundary>
-            <HomeRecentSection
               id="home-recent-articles"
               kicker="Blog"
-              title="Fraîchement écrit"
+              title="Derniers articles"
               to="/blog"
               linkLabel="Tous les articles"
               count={recentArticles.length}
+              emptyMessage="Aucun article publié pour l’instant."
             >
               {recentArticles.map((card) => (
                 <RevealOnScroll key={card.id}>
@@ -199,6 +182,22 @@ export default class HomePage extends PureComponent {
             <FeaturedSeries items={latestSeries} />
           </ErrorBoundary>
 
+          <ErrorBoundary>
+            <HomeRecentSection
+              id="home-recent-certifications"
+              kicker="Certifications"
+              title="Dernières certifications"
+              to="/certifications"
+              linkLabel="Toutes les certifications"
+              count={recentCertifications.length}
+              emptyMessage="Aucune certification ajoutée pour l’instant."
+            >
+              {recentCertifications.map((c) => (
+                <CertificationCard key={c.id} certification={c} onOpen={onSelect} />
+              ))}
+            </HomeRecentSection>
+          </ErrorBoundary>
+
           <section className="pf-wrap pf-sec">
             <ErrorBoundary>
               <FeaturedCertifications items={featured} onOpen={onSelect} />
@@ -210,27 +209,13 @@ export default class HomePage extends PureComponent {
 
           <ErrorBoundary>
             <HomeRecentSection
-              id="home-recent-certifications"
-              kicker="Preuves"
-              title="Derniers acquis"
-              to="/certifications"
-              linkLabel="Toutes les certifications"
-              count={recentCertifications.length}
-            >
-              {recentCertifications.map((c) => (
-                <CertificationCard key={c.id} certification={c} onOpen={onSelect} />
-              ))}
-            </HomeRecentSection>
-          </ErrorBoundary>
-
-          <ErrorBoundary>
-            <HomeRecentSection
               id="home-recent-awards"
               kicker="Reconnaissance"
               title="Dernières distinctions"
               to="/distinctions"
               linkLabel="Toutes les distinctions"
               count={recentAwards.length}
+              emptyMessage="Aucune distinction ajoutée pour l’instant."
             >
               {recentAwards.map((a) => (
                 <RecentAwardCard key={a.id} award={a} />
@@ -286,7 +271,6 @@ export default class HomePage extends PureComponent {
 HomePage.defaultProps = {
   featured: [],
   projects: [],
-  recentProjects: [],
   recentArticles: [],
   recentCertifications: [],
   recentAwards: [],

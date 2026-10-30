@@ -62,7 +62,7 @@ describe('Navigation et gabarit', () => {
       '#contenu'
     );
 
-    await screen.findByText('Certifications en vedette');
+    await screen.findByText('Dernières certifications');
   });
 
   it('menu mobile : ouvre, ferme avec Échap, se ferme au clic sur un lien et libère le défilement', async () => {
@@ -146,7 +146,7 @@ describe('Accueil (héros)', () => {
       0
     );
 
-    await screen.findByText('Certifications en vedette');
+    await screen.findByText('Dernières certifications');
   });
 
   it('bandeau de technologies : copie décorative cachée aux lecteurs d’écran', async () => {

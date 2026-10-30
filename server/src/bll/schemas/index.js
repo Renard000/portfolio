@@ -141,6 +141,7 @@ export const seriesQuery = z.object({
   level: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
   tag: z.string().trim().max(60).optional(),
   q: z.string().trim().max(100).optional(),
+  sort: z.enum(['recent']).optional(),
   // E.7 : pages de taille limitée (20 maximum)
   page: z.coerce.number().int().min(1).max(1000).optional(),
   limit: z.coerce.number().int().min(1).max(20).optional(),

@@ -5,14 +5,9 @@ const time = (value) => {
 
 /** Sélection des contenus ajoutés récemment, pour l'accueil. */
 export default class RecentService {
-  /**
-   * Les plus récents d'abord (sans date : en dernier, dans leur ordre d'origine).
-   * exclude : éléments déjà affichés dans une autre section de la page.
-   */
-  static latest(items, { exclude = [], date = (i) => i.createdAt, count = 3 } = {}) {
-    const shown = new Set(exclude.map((i) => i.id ?? i.slug));
+  /** Les plus récents d'abord (sans date : en dernier, dans leur ordre d'origine). */
+  static latest(items, { date = (i) => i.createdAt, count = 3 } = {}) {
     return items
-      .filter((i) => !shown.has(i.id ?? i.slug))
       .map((item, index) => ({ item, index, at: time(date(item)) }))
       .sort((a, b) => b.at - a.at || a.index - b.index)
       .slice(0, count)

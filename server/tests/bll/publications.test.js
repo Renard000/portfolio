@@ -179,6 +179,22 @@ describe('Série de formation : passage en ligne', () => {
     expect(notifier.notify).not.toHaveBeenCalled();
   });
 
+  it('sort=recent : les séries ajoutées en dernier d’abord', async () => {
+    for (const [slug, createdAt] of [
+      ['ancienne', '2026-01-01T00:00:00Z'],
+      ['recente', '2026-10-01T00:00:00Z'],
+    ]) {
+      const s = store.addSeries({
+        slug,
+        createdAt,
+        sortOrder: slug === 'recente' ? 9 : 0,
+      });
+      store.addVideo(s, { status: 'published' });
+    }
+    const { items } = await service.listSeries({ sort: 'recent', limit: 1 });
+    expect(items[0].slug).toBe('recente');
+  });
+
   it('série déjà publiée : modifier ne renotifie pas', async () => {
     const series = store.addSeries();
     store.addVideo(series, { status: 'published' });

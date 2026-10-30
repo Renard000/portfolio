@@ -50,18 +50,14 @@ export const selectFeaturedProjects = createSelector([projects], (list) => {
   return (featured.length ? featured : list).slice(0, 3);
 });
 
-// --- Accueil : contenus ajoutés récemment, sans répéter ceux déjà en vedette ---
-export const selectRecentProjects = createSelector(
-  [projects, selectFeaturedProjects],
-  (list, featured) => RecentService.latest(list, { exclude: featured })
+// --- Accueil : contenus ajoutés récemment ---
+export const selectRecentCertifications = createSelector([certItems], (items) =>
+  RecentService.latest(items, { date: (c) => c.createdAt || c.issueDate })
 );
-export const selectRecentCertifications = createSelector(
-  [certItems, selectFeaturedCertifications],
-  (items, featured) =>
-    RecentService.latest(items, {
-      exclude: featured,
-      date: (c) => c.createdAt || c.issueDate,
-    })
+/** Bandeau vedette de l'accueil : sans répéter les certifications déjà affichées. */
+export const selectHomeFeaturedCertifications = createSelector(
+  [selectFeaturedCertifications, selectRecentCertifications],
+  (featured, recent) => featured.filter((c) => !recent.some((r) => r.id === c.id))
 );
 export const selectRecentAwards = createSelector([awardItems], (items) =>
   RecentService.latest(items, { date: (a) => a.createdAt || a.awardedAt })

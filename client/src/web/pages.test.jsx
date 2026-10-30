@@ -186,49 +186,60 @@ describe('Page /distinctions', () => {
 });
 
 describe('Accueil', () => {
-  it('bandeau « Certifications en vedette » (featured = true seulement)', async () => {
-    renderApp('/');
-    expect(
-      await screen.findByRole('heading', { name: 'Certifications en vedette' })
-    ).toBeInTheDocument();
-    const section = screen
-      .getByRole('heading', { name: 'Certifications en vedette' })
-      .closest('section');
-    expect(within(section).getByText('AWS Cloud Practitioner')).toBeInTheDocument();
-    expect(within(section).getByText('Cybersécurité Cisco')).toBeInTheDocument();
-    expect(within(section).queryByText('Scrum Master')).toBeNull();
+  it('certifications : les 3 dernières, puis les vedettes restantes, sans doublon', async () => {
+    const services = makeServices();
+    const recent = ['Kubernetes', 'Terraform', 'Docker'].map((title, i) => ({
+      ...CERTS[1],
+      id: `n${i}`,
+      title,
+      createdAt: `2026-10-0${i + 1}T00:00:00Z`,
+    }));
+    services.certificationService.list.mockResolvedValue([...CERTS, ...recent]);
+    renderApp('/', services);
+    const latest = await screen.findByRole('heading', {
+      name: 'Dernières certifications',
+    });
+    const latestSection = within(latest.closest('section'));
+    expect(await latestSection.findByText('Docker')).toBeInTheDocument();
+    expect(latestSection.queryByText('AWS Cloud Practitioner')).toBeNull();
+    const featured = await screen.findByRole('heading', {
+      name: 'Certifications en vedette',
+    });
+    const featuredSection = within(featured.closest('section'));
+    expect(featuredSection.getByText('AWS Cloud Practitioner')).toBeInTheDocument();
+    expect(featuredSection.queryByText('Docker')).toBeNull();
+    expect(featuredSection.queryByText('Scrum Master')).toBeNull();
   });
-  it('sections « ajoutés récemment » : articles, projets, certifications, distinctions', async () => {
+  it('une seule section de projets ; articles et certifications récents affichés', async () => {
     const { services } = renderApp('/');
-    const articles = await screen.findByRole('heading', { name: 'Fraîchement écrit' });
+    const articles = await screen.findByRole('heading', { name: 'Derniers articles' });
     expect(services.articleService.list).toHaveBeenCalledWith({ limit: 3 });
     expect(
       within(articles.closest('section')).getByText('Redux sans hooks')
     ).toBeInTheDocument();
-    // Pas de doublon avec la section vedette
-    const certs = await screen.findByRole('heading', { name: 'Derniers acquis' });
+    const certs = await screen.findByRole('heading', {
+      name: 'Dernières certifications',
+    });
     expect(
-      within(certs.closest('section')).getByText('Scrum Master')
+      await within(certs.closest('section')).findByText('Scrum Master')
     ).toBeInTheDocument();
     expect(
-      within(certs.closest('section')).queryByText('AWS Cloud Practitioner')
-    ).toBeNull();
-    const awards = await screen.findByRole('heading', { name: 'Dernières distinctions' });
-    expect(within(awards.closest('section')).getAllByRole('link').length).toBeGreaterThan(
-      1
-    );
-    expect(
-      screen.getByRole('heading', { name: 'Sorti de l’atelier' })
+      await screen.findByRole('heading', { name: 'Dernières distinctions' })
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Projets en vedette' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Sorti de l’atelier')).toBeNull();
   });
-  it('section vide : invisible, le reste de l’accueil reste affiché', async () => {
+  it('aucun article : la section reste visible avec un message', async () => {
     const services = makeServices();
     services.articleService.list = vi
       .fn()
       .mockResolvedValue({ items: [], total: 0, page: 1, pages: 1, categories: [] });
     renderApp('/', services);
-    await screen.findByRole('heading', { name: 'Certifications en vedette' });
-    expect(screen.queryByRole('heading', { name: 'Fraîchement écrit' })).toBeNull();
+    expect(
+      await screen.findByText('Aucun article publié pour l’instant.')
+    ).toBeInTheDocument();
   });
   it('création depuis l’admin : la case « Notifier les abonnés » est transmise', async () => {
     const services = makeServices();

@@ -11,16 +11,6 @@ describe('RecentService.latest', () => {
   it('les plus récents d’abord, 3 par défaut', () => {
     expect(RecentService.latest(items).map((i) => i.id)).toEqual(['b', 'c', 'a']);
   });
-  it('exclut ce qui est déjà affiché (par id ou slug)', () => {
-    expect(RecentService.latest(items, { exclude: [items[1]] }).map((i) => i.id)).toEqual(
-      ['c', 'a', 'd']
-    );
-    expect(
-      RecentService.latest([{ slug: 'x' }, { slug: 'y' }], {
-        exclude: [{ slug: 'x' }],
-      }).map((i) => i.slug)
-    ).toEqual(['y']);
-  });
   it('sans date (contenu du fichier local) : garde l’ordre d’origine, en dernier', () => {
     const list = [
       { id: '1' },
