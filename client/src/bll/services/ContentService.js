@@ -4,10 +4,18 @@ const norm = (s) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 
-/** Profil et projets du portfolio. La source (fichier, API) est injectée. */
+const PALETTE = ['#3b2f8f', '#0f5e4d', '#8a3a24', '#24507a', '#6b3b8f'];
+const SHAPE_COUNT = 3;
+
+/**
+ * Profil et projets du portfolio. Le fichier local sert de contenu initial et de repli ;
+ * les projets et compétences gérés depuis l'admin (API) le remplacent dès qu'ils existent.
+ */
 export default class ContentService {
-  constructor(content) {
+  constructor(content, { projectRepository = null, skillRepository = null } = {}) {
     this.content = content;
+    this.projectRepository = projectRepository;
+    this.skillRepository = skillRepository;
   }
 
   /** Version synchrone : sert à préremplir le store (aucun écran de chargement). */
@@ -15,8 +23,47 @@ export default class ContentService {
     return { profile: this.content.profile, projects: this.content.projects };
   }
 
+  /** Contenu de l'API si disponible et non vide, sinon celui du fichier (panne incluse). */
   async getAll() {
-    return this.snapshot();
+    const local = this.snapshot();
+    const [projects, skills] = await Promise.all([
+      this.#fetch(this.projectRepository),
+      this.#fetch(this.skillRepository),
+    ]);
+    return {
+      profile:
+        skills && skills.length
+          ? {
+              ...local.profile,
+              skills: skills.map((s) => ({ name: s.name, level: s.level })),
+            }
+          : local.profile,
+      projects:
+        projects && projects.length
+          ? projects.map((p, i) => ContentService.fromApiProject(p, i))
+          : local.projects,
+    };
+  }
+
+  async #fetch(repository) {
+    if (!repository) return null;
+    try {
+      return await repository.list();
+    } catch {
+      return null;
+    }
+  }
+
+  /** Projet de l'API → forme attendue par les vues (couleur et vignette par défaut). */
+  static fromApiProject(p, index = 0) {
+    return {
+      ...p,
+      summary: p.summary || p.description || '',
+      tech: p.tech || [],
+      results: p.results || [],
+      color: p.color || PALETTE[index % PALETTE.length],
+      kind: index % SHAPE_COUNT,
+    };
   }
 
   /** Catégories présentes, dans l'ordre d'apparition. */

@@ -8,7 +8,7 @@ class LoginController extends Component {
   submit = (email, password) => this.props.signIn({ email, password });
 
   render() {
-    if (this.props.user) return <Redirect to="/admin/certifications" />;
+    if (this.props.user) return <Redirect to="/admin" />;
     return (
       <LoginView
         loading={this.props.loading}

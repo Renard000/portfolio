@@ -28,6 +28,7 @@ export default class Footer extends PureComponent {
           <div className="pf-col">
             <span className="pf-mono">Explorer</span>
             <Link to="/projets">Projets</Link>
+            <Link to="/blog">Blog</Link>
             <Link to="/formations">Formations</Link>
             <Link to="/a-propos">À propos</Link>
             <Link to="/contact">Contact</Link>

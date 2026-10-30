@@ -44,22 +44,23 @@ describe('Navigation et gabarit', () => {
       'Certifications',
       'Distinctions',
     ]) {
-      expect(
-        within(nav).getAllByRole('link', { name })[0]
-      ).toBeInTheDocument();
+      expect(within(nav).getAllByRole('link', { name })[0]).toBeInTheDocument();
     }
 
-    expect(
-      within(nav).getByRole('link', { name: 'Me contacter' })
-    ).toHaveAttribute('href', '/contact');
+    expect(within(nav).getByRole('link', { name: 'Me contacter' })).toHaveAttribute(
+      'href',
+      '/contact'
+    );
 
-    expect(
-      screen.getByRole('link', { name: /Espace administrateur/ })
-    ).toHaveAttribute('href', '/admin');
+    expect(screen.getByRole('link', { name: /Espace administrateur/ })).toHaveAttribute(
+      'href',
+      '/admin'
+    );
 
-    expect(
-      screen.getByRole('link', { name: /Aller au contenu/ })
-    ).toHaveAttribute('href', '#contenu');
+    expect(screen.getByRole('link', { name: /Aller au contenu/ })).toHaveAttribute(
+      'href',
+      '#contenu'
+    );
 
     await screen.findByText('Certifications en vedette');
   });
@@ -75,9 +76,7 @@ describe('Navigation et gabarit', () => {
     fireEvent.click(burger);
 
     const menu = screen.getByRole('dialog', { name: 'Menu' });
-    expect(
-      within(menu).getByRole('link', { name: /Contact/ })
-    ).toBeInTheDocument();
+    expect(within(menu).getByRole('link', { name: /Contact/ })).toBeInTheDocument();
     expect(document.body.style.overflow).toBe('hidden');
 
     fireEvent.keyDown(document, { key: 'Escape' });
@@ -119,9 +118,7 @@ describe('Navigation et gabarit', () => {
       name: /principale/i,
     });
 
-    fireEvent.click(
-      within(nav).getByRole('link', { name: 'À propos' })
-    );
+    fireEvent.click(within(nav).getByRole('link', { name: 'À propos' }));
 
     await screen.findByRole('heading', { name: /Compétences/ });
     expect(spy).toHaveBeenCalledWith(0, 0);
@@ -138,17 +135,16 @@ describe('Accueil (héros)', () => {
     expect(h1).toHaveTextContent(profile.name);
     expect(h1).toHaveTextContent(/full-stack/);
 
-    expect(
-      await screen.findByText(new RegExp(profile.availability))
-    ).toBeInTheDocument();
+    expect(await screen.findByText(new RegExp(profile.availability))).toBeInTheDocument();
 
-    expect(
-      screen.getByRole('link', { name: /Voir mes projets/ })
-    ).toHaveAttribute('href', '/projets');
+    expect(screen.getByRole('link', { name: /Voir mes projets/ })).toHaveAttribute(
+      'href',
+      '/projets'
+    );
 
-    expect(
-      screen.getAllByRole('link', { name: 'Me contacter' }).length
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: 'Me contacter' }).length).toBeGreaterThan(
+      0
+    );
 
     await screen.findByText('Certifications en vedette');
   });
@@ -171,9 +167,7 @@ describe('Accueil (héros)', () => {
 
     await waitFor(() => {
       expect(stats).toHaveTextContent(/3\+\s*Certifications/);
-      expect(stats).toHaveTextContent(
-        new RegExp(`${projects.length}\\+\\s*Projets`)
-      );
+      expect(stats).toHaveTextContent(new RegExp(`${projects.length}\\+\\s*Projets`));
       expect(stats).toHaveTextContent(
         new RegExp(`${profile.tech.length}\\+\\s*Technologies`)
       );
@@ -218,21 +212,16 @@ describe('Page À propos', () => {
   it('titre, compétences en barres de progression accessibles, parcours, valeurs', async () => {
     renderApp('/a-propos');
 
-    expect(
-      await screen.findByRole('heading', { level: 1 })
-    ).toHaveTextContent(/n’oublie pas/);
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      /n’oublie pas/
+    );
 
     const bar = screen.getByRole('progressbar', {
       name: profile.skills[0].name,
     });
 
-    expect(bar).toHaveAttribute(
-      'aria-valuenow',
-      String(profile.skills[0].level)
-    );
-    expect(screen.getAllByRole('progressbar')).toHaveLength(
-      profile.skills.length
-    );
+    expect(bar).toHaveAttribute('aria-valuenow', String(profile.skills[0].level));
+    expect(screen.getAllByRole('progressbar')).toHaveLength(profile.skills.length);
     expect(screen.getByText(profile.timeline[0].title)).toBeInTheDocument();
 
     for (const value of profile.values) {
@@ -255,13 +244,11 @@ describe('Page À propos', () => {
       expect(within(main).getByText(profile.initials)).toBeInTheDocument();
     }
 
-    expect(
-      screen.queryByRole('link', { name: /Télécharger le CV/i })
-    ).toBeNull();
+    expect(screen.queryByRole('link', { name: /Télécharger le CV/i })).toBeNull();
 
-    expect(
-      screen.getAllByRole('link', { name: 'Me contacter' }).length
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: 'Me contacter' }).length).toBeGreaterThan(
+      0
+    );
   });
 });
 
@@ -282,9 +269,7 @@ describe('Page Projets', () => {
     ).toHaveAttribute('aria-pressed', 'true');
 
     for (const category of new Set(projects.map((project) => project.category))) {
-      expect(
-        screen.getByRole('button', { name: category })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: category })).toBeInTheDocument();
     }
   });
 
@@ -324,9 +309,7 @@ describe('Page Projets', () => {
 
     // Utilise le titre réel d’un projet pour éviter de dépendre d’un mot
     // qui n’existerait pas dans les données de test.
-    const projectWithAccents = projects.find((project) =>
-      /[À-ÿ]/.test(project.title)
-    );
+    const projectWithAccents = projects.find((project) => /[À-ÿ]/.test(project.title));
     const projectToFind = projectWithAccents || projects[0];
     const query = normalizeText(projectToFind.title);
 
@@ -349,9 +332,7 @@ describe('Page Projets', () => {
     ).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(
-        screen.queryAllByRole('link', { name: /^Projet / })
-      ).toHaveLength(0);
+      expect(screen.queryAllByRole('link', { name: /^Projet / })).toHaveLength(0);
     });
   });
 
@@ -362,8 +343,7 @@ describe('Page Projets', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Mobile' }));
 
-    const nav = () =>
-      within(screen.getByRole('navigation', { name: /principale/i }));
+    const nav = () => within(screen.getByRole('navigation', { name: /principale/i }));
 
     fireEvent.click(nav().getByRole('link', { name: 'À propos' }));
     await screen.findByRole('heading', { name: /Compétences/ });
@@ -389,9 +369,7 @@ describe('Détail d’un projet', () => {
       })
     ).toBeInTheDocument();
 
-    expect(
-      await screen.findByRole('heading', { name: 'Le défi' })
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Le défi' })).toBeInTheDocument();
 
     expect(
       await screen.findByRole('heading', { name: 'La solution' })
@@ -443,9 +421,9 @@ describe('Détail d’un projet', () => {
   it('slug inconnu : message clair et retour à la liste', async () => {
     renderApp('/projets/nexiste-pas');
 
-    expect(
-      await screen.findByRole('heading', { level: 1 })
-    ).toHaveTextContent(/introuvable/i);
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      /introuvable/i
+    );
 
     expect(
       await screen.findByRole('link', { name: /Tous les projets/i })
@@ -460,13 +438,9 @@ describe('Détail d’un projet', () => {
       name: projects[0].title,
     });
 
-    expect(
-      screen.queryByRole('link', { name: /Voir le site/i })
-    ).toBeNull();
+    expect(screen.queryByRole('link', { name: /Voir le site/i })).toBeNull();
 
-    expect(
-      screen.queryByRole('link', { name: /Code source/i })
-    ).toBeNull();
+    expect(screen.queryByRole('link', { name: /Code source/i })).toBeNull();
   });
 });
 
@@ -497,9 +471,9 @@ describe('Page Contact', () => {
   it('affiche le formulaire, la disponibilité et le honeypot caché', async () => {
     renderApp('/contact');
 
-    expect(
-      await screen.findByRole('heading', { level: 1 })
-    ).toHaveTextContent(/Parlons projet/i);
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      /Parlons projet/i
+    );
 
     expect(
       screen.getByRole('form', { name: /Formulaire de contact/i })
@@ -514,9 +488,7 @@ describe('Page Contact', () => {
     const { services } = renderApp('/contact');
 
     await fill();
-    fireEvent.click(
-      screen.getByRole('button', { name: /Envoyer le message/i })
-    );
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer le message/i }));
 
     expect(await screen.findByText('Message envoyé.')).toBeInTheDocument();
 
@@ -528,9 +500,7 @@ describe('Page Contact', () => {
       website: '',
     });
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Envoyer un autre message/i })
-    );
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer un autre message/i }));
 
     expect(await screen.findByLabelText('Nom')).toHaveValue('');
   });
@@ -538,32 +508,21 @@ describe('Page Contact', () => {
   it('validation (vrai service) : erreur affichée, aucun appel API', async () => {
     const repo = { send: vi.fn() };
 
-    renderApp(
-      '/contact',
-      makeServices({ contactService: new ContactService(repo) })
-    );
+    renderApp('/contact', makeServices({ contactService: new ContactService(repo) }));
 
     await fill({ email: 'pas-un-courriel' });
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Envoyer le message/i })
-    );
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer le message/i }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      /courriel invalide/i
-    );
+    expect(await screen.findByRole('alert')).toHaveTextContent(/courriel invalide/i);
     expect(repo.send).not.toHaveBeenCalled();
 
     await fill({ message: 'court' });
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Envoyer le message/i })
-    );
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer le message/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(
-        /10 caractères|courriel/i
-      );
+      expect(screen.getByRole('alert')).toHaveTextContent(/10 caractères|courriel/i);
     });
   });
 
@@ -574,22 +533,16 @@ describe('Page Contact', () => {
         contactService: {
           send: vi
             .fn()
-            .mockRejectedValue(
-              new Error('Trop de requêtes, réessayez plus tard')
-            ),
+            .mockRejectedValue(new Error('Trop de requêtes, réessayez plus tard')),
         },
       })
     );
 
     await fill();
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Envoyer le message/i })
-    );
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer le message/i }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Trop de requêtes'
-    );
+    expect(await screen.findByRole('alert')).toHaveTextContent('Trop de requêtes');
     expect(await screen.findByLabelText('Nom')).toHaveValue('Ada Lovelace');
   });
 
@@ -602,36 +555,31 @@ describe('Page Contact', () => {
       target: { value: 'http://spam' },
     });
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Envoyer le message/i })
-    );
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer le message/i }));
 
     await waitFor(() => {
       expect(services.contactService.send).toHaveBeenCalled();
     });
 
-    expect(services.contactService.send.mock.calls[0][0].website).toBe(
-      'http://spam'
-    );
+    expect(services.contactService.send.mock.calls[0][0].website).toBe('http://spam');
   });
 
   it('bouton désactivé pendant l’envoi (pas de double envoi)', async () => {
     let resolve;
-    const send = vi.fn(() => new Promise((resolvePromise) => {
-      resolve = resolvePromise;
-    }));
+    const send = vi.fn(
+      () =>
+        new Promise((resolvePromise) => {
+          resolve = resolvePromise;
+        })
+    );
 
     renderApp('/contact', makeServices({ contactService: { send } }));
 
     await fill();
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Envoyer le message/i })
-    );
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer le message/i }));
 
-    expect(
-      await screen.findByRole('button', { name: 'Envoi…' })
-    ).toBeDisabled();
+    expect(await screen.findByRole('button', { name: 'Envoi…' })).toBeDisabled();
 
     resolve({});
     expect(await screen.findByText('Message envoyé.')).toBeInTheDocument();

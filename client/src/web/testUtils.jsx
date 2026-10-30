@@ -117,6 +117,104 @@ export const AWARDS = {
 };
 
 /** Services factices : aucun réseau. */
+export const ARTICLES = [
+  {
+    id: 'a1',
+    title: 'Redux sans hooks',
+    slug: 'redux-sans-hooks',
+    excerpt: 'connect et classes.',
+    category: 'React',
+    status: 'published',
+    views: 1248,
+    likes: 58,
+    comments: 2,
+    readingMinutes: 8,
+    publishedAt: '2026-10-23T10:00:00Z',
+  },
+  {
+    id: 'a2',
+    title: 'Express en couches',
+    slug: 'express-en-couches',
+    excerpt: 'Web, BLL, DAL.',
+    category: 'Node',
+    status: 'draft',
+    views: 0,
+    likes: 0,
+    comments: 0,
+    readingMinutes: 6,
+    publishedAt: null,
+  },
+];
+
+export const ARTICLE_DETAIL = {
+  article: {
+    ...ARTICLES[0],
+    content:
+      '## Intertitre\n\nTexte **gras**.\n\n```js\nconst x = 1;\n```\n\n<script>alert(1)</script>',
+  },
+  comments: [
+    { id: 'm1', author: 'Ada', content: 'Très clair', createdAt: '2026-10-25T10:00:00Z' },
+  ],
+  related: [{ ...ARTICLES[1], status: 'published', publishedAt: '2026-10-12T10:00:00Z' }],
+};
+
+export const COMMENTS = [
+  {
+    id: 'co1',
+    author: 'Bob',
+    content: 'En attente',
+    approved: false,
+    createdAt: '2026-10-28T10:00:00Z',
+    article: { title: 'Redux sans hooks', slug: 'redux-sans-hooks' },
+  },
+  {
+    id: 'co2',
+    author: 'Ada',
+    content: 'Approuvé',
+    approved: true,
+    createdAt: '2026-10-20T10:00:00Z',
+    article: { title: 'Redux sans hooks', slug: 'redux-sans-hooks' },
+  },
+];
+
+export const MESSAGES = [
+  {
+    id: 'ms1',
+    nom: 'Grace',
+    email: 'grace@ex.com',
+    sujet: 'Mandat',
+    message: 'Bonjour, un projet ?',
+    lu: false,
+    createdAt: '2026-10-28T10:00:00Z',
+  },
+  {
+    id: 'ms2',
+    nom: 'Alan',
+    email: 'alan@ex.com',
+    sujet: null,
+    message: 'Message déjà lu.',
+    lu: true,
+    createdAt: '2026-10-01T10:00:00Z',
+  },
+];
+
+export const DASHBOARD = {
+  views: { last30Days: 1248, changePct: 12 },
+  articles: { published: 40, drafts: 2 },
+  unreadMessages: 2,
+  pendingComments: 3,
+  subscribers: { confirmed: 86, newThisWeek: 5 },
+  viewsByMonth: [
+    { month: '2025-11-01', views: 300 },
+    { month: '2026-10-01', views: 950 },
+  ],
+  topArticles: [
+    { id: 'a1', title: 'Redux sans hooks', slug: 'redux-sans-hooks', views: 1248 },
+  ],
+  topVideos: [{ id: 'v1', title: 'Intro React', views: 402 }],
+  publishedVideoSeconds: 51600,
+};
+
 export function makeServices(overrides = {}) {
   return {
     videoService: {
@@ -170,6 +268,50 @@ export function makeServices(overrides = {}) {
       removeNewsletter: vi.fn().mockResolvedValue(),
       removePush: vi.fn().mockResolvedValue(),
       sendTestEmail: vi.fn().mockResolvedValue(),
+    },
+    articleService: {
+      list: vi.fn().mockResolvedValue({
+        items: ARTICLES,
+        total: ARTICLES.length,
+        page: 1,
+        pages: 1,
+        categories: ['React', 'Node'],
+      }),
+      get: vi.fn().mockResolvedValue(ARTICLE_DETAIL),
+      view: vi.fn().mockResolvedValue(),
+      like: vi.fn().mockResolvedValue(59),
+      comment: vi.fn().mockResolvedValue({ status: 'pending' }),
+      listAll: vi.fn().mockResolvedValue(ARTICLES),
+      getById: vi.fn().mockResolvedValue(ARTICLE_DETAIL.article),
+      save: vi.fn(async (id, d) => ({ id: id || 'new', status: 'draft', ...d })),
+      publish: vi.fn(async (id) => ({
+        ...ARTICLE_DETAIL.article,
+        id,
+        status: 'published',
+      })),
+      unpublish: vi.fn(async (id) => ({ id, status: 'draft', publishedAt: null })),
+      remove: vi.fn().mockResolvedValue(null),
+    },
+    adminContentService: {
+      dashboard: vi.fn().mockResolvedValue(DASHBOARD),
+      listComments: vi.fn().mockResolvedValue(COMMENTS),
+      moderateComment: vi.fn(async (id, approved) => ({ id, approved })),
+      removeComment: vi.fn().mockResolvedValue(null),
+      listMessages: vi.fn().mockResolvedValue(MESSAGES),
+      markMessage: vi.fn(async (id, lu) => ({ id, lu })),
+      removeMessage: vi.fn().mockResolvedValue(null),
+    },
+    portfolioAdminService: {
+      listProjects: vi
+        .fn()
+        .mockResolvedValue([
+          { id: 'p1', slug: 'ecotrack', title: 'EcoTrack', category: 'Mobile', tech: [] },
+        ]),
+      saveProject: vi.fn(async (id, d) => ({ id: id || 'np', ...d })),
+      removeProject: vi.fn().mockResolvedValue(null),
+      listSkills: vi.fn().mockResolvedValue([{ id: 'k1', name: 'React', level: 90 }]),
+      saveSkill: vi.fn(async (id, d) => ({ id: id || 'nk', ...d })),
+      removeSkill: vi.fn().mockResolvedValue(null),
     },
     authClient: {
       getSession: vi.fn().mockResolvedValue(null),

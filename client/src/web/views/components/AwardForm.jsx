@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import NotifyCheckbox from './NotifyCheckbox.jsx';
 import { AWARD_TYPE_LABELS } from '../../../domain/models/Award.js';
 
 const EMPTY = {
@@ -10,6 +11,7 @@ const EMPTY = {
   currency: 'CAD',
   awardedAt: '',
   featured: false,
+  notify: true,
   sortOrder: '0',
   imageUrl: '',
   documentUrl: '',
@@ -201,6 +203,13 @@ export default class AwardForm extends Component {
             </label>
           </div>
         </div>
+        {this.props.initial ? null : (
+          <NotifyCheckbox
+            id="a-notify"
+            checked={v.notify}
+            onChange={this.set('notify')}
+          />
+        )}
         {error ? (
           <div className="col-12">
             <div className="alert alert-danger mb-0" role="alert">

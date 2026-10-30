@@ -3,16 +3,24 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import Navbar from '../views/components/Navbar.jsx';
 import Footer from '../views/components/Footer.jsx';
+import { loadContent } from '../store/slices/contentSlice.js';
 
 /** Gabarit commun : navigation, contenu de la route, pied de page ; remonte en haut à chaque page. */
 class LayoutController extends Component {
+  componentDidMount() {
+    // Projets et compétences gérés depuis l'admin (le fichier local reste affiché d'ici là)
+    this.props.loadContent();
+  }
+
   componentDidUpdate(prevProps) {
     if (prevProps.location.pathname !== this.props.location.pathname)
       window.scrollTo(0, 0);
   }
 
   render() {
-    const { profile, children } = this.props;
+    const { profile, children, location } = this.props;
+    // L'administration a sa propre mise en page (barre latérale, maquettes A-01 à A-08)
+    if (location.pathname.startsWith('/admin')) return children;
     return (
       <>
         <a
@@ -31,4 +39,4 @@ class LayoutController extends Component {
 }
 
 const mapState = (state) => ({ profile: state.content.profile });
-export default withRouter(connect(mapState)(LayoutController));
+export default withRouter(connect(mapState, { loadContent })(LayoutController));

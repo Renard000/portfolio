@@ -22,7 +22,7 @@ describe('App', () => {
       await screen.findByRole('heading', { level: 1, name: /full-stack/i })
     ).toBeInTheDocument();
     expect(
-      await screen.findByRole('heading', { name: /Recevoir les nouveaux articles/ })
+      await screen.findByRole('heading', { name: /Recevoir mes nouvelles publications/ })
     ).toBeInTheDocument();
   });
 });

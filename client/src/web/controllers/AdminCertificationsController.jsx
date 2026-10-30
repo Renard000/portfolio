@@ -57,7 +57,8 @@ class AdminCertificationsController extends Component {
       const dto = CertificationService.toDto(values, urls);
       if (editing && editing.id)
         await this.props.updateCertification({ id: editing.id, dto }).unwrap();
-      else await this.props.createCertification(dto).unwrap();
+      else
+        await this.props.createCertification({ ...dto, notify: values.notify }).unwrap();
       this.setState({ editing: null, busy: false });
     } catch (err) {
       this.setState({ formError: err.message, busy: false });

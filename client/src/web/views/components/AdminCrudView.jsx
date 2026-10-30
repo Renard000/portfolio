@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import AdminHeader from './AdminHeader.jsx';
 import ConfirmModal from './ConfirmModal.jsx';
 import DataTable from './DataTable.jsx';
 import Modal from './Modal.jsx';
@@ -46,11 +47,12 @@ export default class AdminCrudView extends Component {
     } = this.props;
     return (
       <section>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h1 className="h3 mb-0">{title}</h1>
-          <button type="button" className="btn btn-primary" onClick={onCreate}>
-            <i className="fa-solid fa-plus me-1" aria-hidden="true" /> Ajouter
-          </button>
+        <div className="mb-3">
+          <AdminHeader title={title}>
+            <button type="button" className="pf-btn pf-btn--pri" onClick={onCreate}>
+              + Ajouter
+            </button>
+          </AdminHeader>
         </div>
         {error ? (
           <div className="alert alert-danger" role="alert">

@@ -12,7 +12,7 @@ export class App extends Component {
   }
 
   render() {
-    return ( 
+    return (
       <Provider store={this.deps.store}>
         <HelmetProvider>
           <BrowserRouter>

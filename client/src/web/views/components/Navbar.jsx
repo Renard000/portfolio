@@ -5,6 +5,7 @@ export const NAV_LINKS = [
   { to: '/', label: 'Accueil', exact: true },
   { to: '/a-propos', label: 'À propos' },
   { to: '/projets', label: 'Projets' },
+  { to: '/blog', label: 'Blog' },
   { to: '/formations', label: 'Formations' },
   { to: '/certifications', label: 'Certifications' },
   { to: '/distinctions', label: 'Distinctions' },

@@ -3,10 +3,15 @@ import { connect } from 'react-redux';
 import { fetchCertifications } from '../store/slices/certificationsSlice.js';
 import { fetchAwards } from '../store/slices/awardsSlice.js';
 import { fetchLatestSeries } from '../store/slices/videosSlice.js';
+import { fetchLatestArticles } from '../store/slices/articlesSlice.js';
 import { subscribeNewsletter, enablePush } from '../store/slices/newsletterSlice.js';
 import {
   selectFeaturedCertifications,
   selectFeaturedProjects,
+  selectRecentArticleCards,
+  selectRecentAwards,
+  selectRecentCertifications,
+  selectRecentProjects,
 } from '../store/selectors.js';
 import HomePage from '../views/pages/client/HomePage.jsx';
 
@@ -16,6 +21,7 @@ class HomeController extends Component {
   componentDidMount() {
     this.props.fetchCertifications();
     this.props.fetchLatestSeries();
+    this.props.fetchLatestArticles();
   }
 
   // Le render prop DataFetcher de l'accueil appelle cette fonction (promesse des données).
@@ -31,6 +37,10 @@ class HomeController extends Component {
         projects={p.projects}
         featured={p.featured}
         latestSeries={p.latestSeries}
+        recentProjects={p.recentProjects}
+        recentArticles={p.recentArticles}
+        recentCertifications={p.recentCertifications}
+        recentAwards={p.recentAwards}
         stats={p.stats}
         loadAwards={this.loadAwards}
         selected={this.state.selected}
@@ -51,6 +61,10 @@ const mapState = (state) => ({
   projects: selectFeaturedProjects(state),
   featured: selectFeaturedCertifications(state),
   latestSeries: state.videos.latest,
+  recentProjects: selectRecentProjects(state),
+  recentArticles: selectRecentArticleCards(state),
+  recentCertifications: selectRecentCertifications(state),
+  recentAwards: selectRecentAwards(state),
   stats: {
     projects: state.content.projects.length,
     certifications: state.certifications.items.length,
@@ -65,6 +79,7 @@ const mapState = (state) => ({
 export default connect(mapState, {
   fetchCertifications,
   fetchLatestSeries,
+  fetchLatestArticles,
   fetchAwards,
   subscribeNewsletter,
   enablePush,

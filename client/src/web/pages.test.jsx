@@ -191,9 +191,65 @@ describe('Accueil', () => {
     expect(
       await screen.findByRole('heading', { name: 'Certifications en vedette' })
     ).toBeInTheDocument();
-    expect(screen.getByText('AWS Cloud Practitioner')).toBeInTheDocument();
-    expect(screen.getByText('Cybersécurité Cisco')).toBeInTheDocument();
-    expect(screen.queryByText('Scrum Master')).toBeNull();
+    const section = screen
+      .getByRole('heading', { name: 'Certifications en vedette' })
+      .closest('section');
+    expect(within(section).getByText('AWS Cloud Practitioner')).toBeInTheDocument();
+    expect(within(section).getByText('Cybersécurité Cisco')).toBeInTheDocument();
+    expect(within(section).queryByText('Scrum Master')).toBeNull();
+  });
+  it('sections « ajoutés récemment » : articles, projets, certifications, distinctions', async () => {
+    const { services } = renderApp('/');
+    const articles = await screen.findByRole('heading', { name: 'Fraîchement écrit' });
+    expect(services.articleService.list).toHaveBeenCalledWith({ limit: 3 });
+    expect(
+      within(articles.closest('section')).getByText('Redux sans hooks')
+    ).toBeInTheDocument();
+    // Pas de doublon avec la section vedette
+    const certs = await screen.findByRole('heading', { name: 'Derniers acquis' });
+    expect(
+      within(certs.closest('section')).getByText('Scrum Master')
+    ).toBeInTheDocument();
+    expect(
+      within(certs.closest('section')).queryByText('AWS Cloud Practitioner')
+    ).toBeNull();
+    const awards = await screen.findByRole('heading', { name: 'Dernières distinctions' });
+    expect(within(awards.closest('section')).getAllByRole('link').length).toBeGreaterThan(
+      1
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Sorti de l’atelier' })
+    ).toBeInTheDocument();
+  });
+  it('section vide : invisible, le reste de l’accueil reste affiché', async () => {
+    const services = makeServices();
+    services.articleService.list = vi
+      .fn()
+      .mockResolvedValue({ items: [], total: 0, page: 1, pages: 1, categories: [] });
+    renderApp('/', services);
+    await screen.findByRole('heading', { name: 'Certifications en vedette' });
+    expect(screen.queryByRole('heading', { name: 'Fraîchement écrit' })).toBeNull();
+  });
+  it('création depuis l’admin : la case « Notifier les abonnés » est transmise', async () => {
+    const services = makeServices();
+    services.authClient.getSession.mockResolvedValue({ user: { email: 'admin@ex.com' } });
+    renderApp('/admin/certifications', services);
+    await screen.findByText('Scrum Master');
+    fireEvent.click(screen.getByRole('button', { name: /Ajouter/ }));
+    fireEvent.change(screen.getByLabelText('Titre *'), { target: { value: 'Ancienne' } });
+    fireEvent.change(screen.getByLabelText('Émetteur *'), { target: { value: 'Org' } });
+    fireEvent.change(screen.getByLabelText("Date d'obtention *"), {
+      target: { value: '2020-01-01' },
+    });
+    const notify = screen.getByLabelText(/Notifier les abonnés/);
+    expect(notify).toBeChecked();
+    fireEvent.click(notify);
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    await waitFor(() =>
+      expect(services.certificationService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Ancienne', notify: false })
+      )
+    );
   });
   it('résumé des distinctions (via DataFetcher)', async () => {
     renderApp('/');
@@ -296,7 +352,7 @@ describe('Admin : accès', () => {
       await screen.findByRole('heading', { name: /Connexion administrateur/ })
     ).toBeInTheDocument();
   });
-  it('connexion réussie → tableau des certifications', async () => {
+  it('connexion réussie → tableau de bord, puis certifications', async () => {
     const { services } = renderApp('/admin');
     fireEvent.change(await screen.findByLabelText('Courriel'), {
       target: { value: 'admin@ex.com' },
@@ -306,9 +362,13 @@ describe('Admin : accès', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Se connecter' }));
     expect(
-      await screen.findByRole('heading', { name: 'Certifications' })
+      await screen.findByRole('heading', { name: 'Tableau de bord' })
     ).toBeInTheDocument();
     expect(services.authClient.signIn).toHaveBeenCalledWith('admin@ex.com', 'secret');
+    fireEvent.click(screen.getByRole('link', { name: 'Certifications' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Certifications' })
+    ).toBeInTheDocument();
     expect(await screen.findByText('Scrum Master')).toBeInTheDocument();
   });
   it('échec de connexion : message vague, reste sur la page', async () => {

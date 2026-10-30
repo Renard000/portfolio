@@ -1,17 +1,21 @@
 import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 import AnimatedCounter from '../../components/AnimatedCounter.jsx';
+import ArticleCard from '../../components/ArticleCard.jsx';
 import AwardsSummary from '../../components/AwardsSummary.jsx';
+import CertificationCard from '../../components/CertificationCard.jsx';
 import CertificationDetail from '../../components/CertificationDetail.jsx';
 import FeaturedSeries from '../../components/FeaturedSeries.jsx';
 import ErrorBoundary from '../../components/ErrorBoundary.jsx';
 import FeaturedCertifications from '../../components/FeaturedCertifications.jsx';
 import HeroGlow from '../../components/HeroGlow.jsx';
+import HomeRecentSection from '../../components/HomeRecentSection.jsx';
 import Marquee from '../../components/Marquee.jsx';
 import Modal from '../../components/Modal.jsx';
 import NewsletterForm from '../../components/NewsletterForm.jsx';
 import ProjectCard from '../../components/ProjectCard.jsx';
 import PushOptIn from '../../components/PushOptIn.jsx';
+import RecentAwardCard from '../../components/RecentAwardCard.jsx';
 import RevealOnScroll from '../../components/RevealOnScroll.jsx';
 import SectionHeading from '../../components/SectionHeading.jsx';
 import { safeHref } from '../../../utils/url.js';
@@ -23,6 +27,10 @@ export default class HomePage extends PureComponent {
       projects,
       featured,
       latestSeries,
+      recentProjects,
+      recentArticles,
+      recentCertifications,
+      recentAwards,
       stats,
       loadAwards,
       selected,
@@ -154,6 +162,40 @@ export default class HomePage extends PureComponent {
           </section>
 
           <ErrorBoundary>
+            <HomeRecentSection
+              id="home-recent-projects"
+              kicker="Atelier"
+              title="Sorti de l’atelier"
+              to="/projets"
+              linkLabel="Tous les projets"
+              count={recentProjects.length}
+            >
+              {recentProjects.map((p) => (
+                <RevealOnScroll key={p.slug}>
+                  <ProjectCard project={p} height={220} />
+                </RevealOnScroll>
+              ))}
+            </HomeRecentSection>
+          </ErrorBoundary>
+
+          <ErrorBoundary>
+            <HomeRecentSection
+              id="home-recent-articles"
+              kicker="Blog"
+              title="Fraîchement écrit"
+              to="/blog"
+              linkLabel="Tous les articles"
+              count={recentArticles.length}
+            >
+              {recentArticles.map((card) => (
+                <RevealOnScroll key={card.id}>
+                  <ArticleCard card={card} />
+                </RevealOnScroll>
+              ))}
+            </HomeRecentSection>
+          </ErrorBoundary>
+
+          <ErrorBoundary>
             <FeaturedSeries items={latestSeries} />
           </ErrorBoundary>
 
@@ -165,6 +207,36 @@ export default class HomePage extends PureComponent {
               {loadAwards ? <AwardsSummary load={loadAwards} /> : null}
             </ErrorBoundary>
           </section>
+
+          <ErrorBoundary>
+            <HomeRecentSection
+              id="home-recent-certifications"
+              kicker="Preuves"
+              title="Derniers acquis"
+              to="/certifications"
+              linkLabel="Toutes les certifications"
+              count={recentCertifications.length}
+            >
+              {recentCertifications.map((c) => (
+                <CertificationCard key={c.id} certification={c} onOpen={onSelect} />
+              ))}
+            </HomeRecentSection>
+          </ErrorBoundary>
+
+          <ErrorBoundary>
+            <HomeRecentSection
+              id="home-recent-awards"
+              kicker="Reconnaissance"
+              title="Dernières distinctions"
+              to="/distinctions"
+              linkLabel="Toutes les distinctions"
+              count={recentAwards.length}
+            >
+              {recentAwards.map((a) => (
+                <RecentAwardCard key={a.id} award={a} />
+              ))}
+            </HomeRecentSection>
+          </ErrorBoundary>
 
           <section className="pf-wrap pf-sec" aria-labelledby="newsletter-title">
             <div
@@ -180,8 +252,12 @@ export default class HomePage extends PureComponent {
               <div className="pf-col">
                 <span className="pf-kicker">Newsletter</span>
                 <h2 id="newsletter-title" className="pf-h2">
-                  Recevoir les nouveaux articles
+                  Recevoir mes nouvelles publications
                 </h2>
+                <p className="pf-mu" style={{ margin: 0 }}>
+                  Articles, formations, projets, certifications et distinctions : un
+                  courriel à chaque nouveauté.
+                </p>
                 <ErrorBoundary>
                   <NewsletterForm
                     status={newsletterStatus}
@@ -210,6 +286,10 @@ export default class HomePage extends PureComponent {
 HomePage.defaultProps = {
   featured: [],
   projects: [],
+  recentProjects: [],
+  recentArticles: [],
+  recentCertifications: [],
+  recentAwards: [],
   stats: { projects: 0, certifications: 0, distinctions: 0, technologies: 0 },
   newsletterStatus: 'idle',
   pushStatus: 'idle',

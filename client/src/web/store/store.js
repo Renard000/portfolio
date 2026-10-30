@@ -10,6 +10,10 @@ import contact from './slices/contactSlice.js';
 import videos from './slices/videosSlice.js';
 import adminVideos from './slices/adminVideosSlice.js';
 import progress from './slices/progressSlice.js';
+import adminArticles from './slices/adminArticlesSlice.js';
+import moderation from './slices/moderationSlice.js';
+import dashboard from './slices/dashboardSlice.js';
+import adminPortfolio from './slices/adminPortfolioSlice.js';
 
 export function createStore(services) {
   // Le contenu éditable (profil, projets) est local : on préremplit le store.
@@ -30,6 +34,10 @@ export function createStore(services) {
       videos,
       adminVideos,
       progress,
+      adminArticles,
+      moderation,
+      dashboard,
+      adminPortfolio,
     },
     middleware: (getDefault) => getDefault({ thunk: { extraArgument: services } }),
   });

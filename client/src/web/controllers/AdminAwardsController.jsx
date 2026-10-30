@@ -53,7 +53,7 @@ class AdminAwardsController extends Component {
       const dto = AwardService.toDto(values, urls);
       if (editing && editing.id)
         await this.props.updateAward({ id: editing.id, dto }).unwrap();
-      else await this.props.createAward(dto).unwrap();
+      else await this.props.createAward({ ...dto, notify: values.notify }).unwrap();
       this.setState({ editing: null, busy: false });
     } catch (err) {
       this.setState({ formError: err.message, busy: false });

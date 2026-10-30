@@ -98,7 +98,7 @@ describe('Pages protégées / non protégées', () => {
     expect(protectedAt('/admin/login')).toBeNull();
     expect(protectedAt('/conditions')).toBeNull();
   });
-  
+
   it('le clic droit est bloqué sur une page de contenu et permis dans le formulaire de contact', async () => {
     const { container } = renderApp('/a-propos');
 

@@ -24,6 +24,10 @@ import VideoService from '../bll/services/VideoService.js';
 import ProgressService from '../bll/services/ProgressService.js';
 import VideoAdminService from '../bll/services/VideoAdminService.js';
 import ContactRepository from '../dal/repositories/ContactRepository.js';
+import AdminContentRepository from '../dal/repositories/AdminContentRepository.js';
+import PortfolioRepository from '../dal/repositories/PortfolioRepository.js';
+import AdminContentService from '../bll/services/AdminContentService.js';
+import PortfolioAdminService from '../bll/services/PortfolioAdminService.js';
 import * as siteContent from '../domain/content/siteContent.js';
 import { createStore } from './store/store.js';
 
@@ -74,7 +78,19 @@ export function createDependencies() {
   // Progression gardée dans le navigateur (stockage injecté, jamais appelé par une vue)
   const progressRepository = new ProgressRepository(window.localStorage);
   const contactRepository = new ContactRepository(apiClient);
-  const contentService = new ContentService(siteContent);
+  const adminContentRepository = new AdminContentRepository(apiClient);
+  const projectRepository = new PortfolioRepository(apiClient, '/projects');
+  const skillRepository = new PortfolioRepository(apiClient, '/skills');
+  // Fichier local = contenu initial et repli ; l'API (gérée par l'admin) le remplace
+  const contentService = new ContentService(siteContent, {
+    projectRepository,
+    skillRepository,
+  });
+  const adminContentService = new AdminContentService(adminContentRepository);
+  const portfolioAdminService = new PortfolioAdminService(
+    projectRepository,
+    skillRepository
+  );
   const contactService = new ContactService(contactRepository);
   const videoService = new VideoService(videoRepository);
   const progressService = new ProgressService(progressRepository);
@@ -98,6 +114,8 @@ export function createDependencies() {
     pushService,
     subscriberAdminService,
     uploadService,
+    adminContentService,
+    portfolioAdminService,
     authClient,
     messagingClient,
   };

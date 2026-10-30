@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import NotifyCheckbox from './NotifyCheckbox.jsx';
 
 const EMPTY = {
   title: '',
@@ -11,6 +12,7 @@ const EMPTY = {
   credentialUrl: '',
   skills: '',
   featured: false,
+  notify: true,
   sortOrder: '0',
   imageUrl: '',
   documentUrl: '',
@@ -152,6 +154,13 @@ export default class CertificationForm extends Component {
             </label>
           </div>
         </div>
+        {this.props.initial ? null : (
+          <NotifyCheckbox
+            id="notify"
+            checked={v.notify}
+            onChange={this.set('notify')}
+          />
+        )}
         {error ? (
           <div className="col-12">
             <div className="alert alert-danger mb-0" role="alert">

@@ -23,7 +23,7 @@ export const profile = {
   links: {
     github: 'https://github.com/Renard000',
     linkedin: 'https://www.linkedin.com/in/florwensky-paniague-63b80622a',
-    upwork:'https://www.upwork.com/freelancers/~017c7de346bbaaed72?mp_source=share',
+    upwork: 'https://www.upwork.com/freelancers/~017c7de346bbaaed72?mp_source=share',
     wozolab: 'https://wozolabwaste.com/about',
   },
   tech: [
@@ -80,7 +80,7 @@ export const profile = {
     { name: 'Scrum Master', level: 85 },
     { name: 'Product Owner', level: 80 },
     { name: 'draw.io et UML', level: 90 },
-    { name: 'UX et accessibilité', level: 80 }
+    { name: 'UX et accessibilité', level: 80 },
   ],
 
   timeline: [
@@ -143,7 +143,16 @@ export const projects = [
       'Suivre de façon fiable chaque collecte de déchets, de la tournée au dépôt, avec une application simple à utiliser sur le terrain.',
     solution:
       'Application Flutter (Dart) connectée à une API Spring Boot sécurisée par Spring Security et documentée avec SpringDoc, selon une architecture MVC. Données gérées avec Supabase et Firebase, déploiement sur AWS EC2 et stockage sur S3.',
-    tech: ['Flutter', 'Dart', 'Spring Boot', 'Spring Security', 'Supabase', 'Firebase', 'AWS EC2', 'S3'],
+    tech: [
+      'Flutter',
+      'Dart',
+      'Spring Boot',
+      'Spring Security',
+      'Supabase',
+      'Firebase',
+      'AWS EC2',
+      'S3',
+    ],
     results: [],
     githubUrl: '',
     liveUrl: '',
@@ -158,13 +167,22 @@ export const projects = [
     year: '[Année]',
     role: 'Développeur full-stack et IA',
     duration: '[Durée]',
-    summary:
-      'Logiciel de prédiction et d’analyse du taux de change USD/CAD.',
+    summary: 'Logiciel de prédiction et d’analyse du taux de change USD/CAD.',
     challenge:
       'Offrir à l’utilisateur une lecture claire de l’évolution du taux USD/CAD, appuyée par des modèles de prédiction.',
     solution:
       'Modèles LSTM et analyse de sentiment FinBERT exposés par une API FastAPI, consommés par une application Windows Forms en C# (Entity Framework, LINQ, SQL Express).',
-    tech: ['C#', 'Windows Forms', 'Entity Framework', 'SQL Express', 'LINQ', 'Python', 'LSTM', 'FinBERT', 'FastAPI'],
+    tech: [
+      'C#',
+      'Windows Forms',
+      'Entity Framework',
+      'SQL Express',
+      'LINQ',
+      'Python',
+      'LSTM',
+      'FinBERT',
+      'FastAPI',
+    ],
     results: [],
     githubUrl: '',
     liveUrl: '',
@@ -179,8 +197,7 @@ export const projects = [
     year: '[Année]',
     role: 'Développeur full-stack',
     duration: '[Durée]',
-    summary:
-      'Plateforme de mise en relation entre clients et nettoyeurs.',
+    summary: 'Plateforme de mise en relation entre clients et nettoyeurs.',
     challenge:
       'Connecter rapidement des clients et des nettoyeurs disponibles au sein d’une même application.',
     solution:
@@ -242,12 +259,10 @@ export const projects = [
     year: '[Année]',
     role: 'Développeur IA',
     duration: '[Durée]',
-    summary:
-      'API d’analyse du sentiment financier basée sur FinBERT.',
+    summary: 'API d’analyse du sentiment financier basée sur FinBERT.',
     challenge:
       'Mesurer automatiquement le sentiment du marché à partir de textes financiers.',
-    solution:
-      'Modèle FinBERT mis à disposition par une API FastAPI en Python.',
+    solution: 'Modèle FinBERT mis à disposition par une API FastAPI en Python.',
     tech: ['Python', 'FinBERT', 'FastAPI'],
     results: [],
     githubUrl: '',
@@ -263,8 +278,7 @@ export const projects = [
     year: '[Année]',
     role: 'Développeur · Scrum',
     duration: '[Durée]',
-    summary:
-      'Système de gestion des recettes d’un hôtel, développé en méthode agile.',
+    summary: 'Système de gestion des recettes d’un hôtel, développé en méthode agile.',
     challenge:
       'Suivre et centraliser les recettes d’un hôtel dans un logiciel clair et maintenable.',
     solution:
@@ -284,8 +298,7 @@ export const projects = [
     year: '[Année]',
     role: 'Développeur freelance',
     duration: '[Durée]',
-    summary:
-      'Collecte automatisée de données sur un site MLM pour un client.',
+    summary: 'Collecte automatisée de données sur un site MLM pour un client.',
     challenge:
       'Récupérer des données d’un site dynamique, difficile à extraire avec un simple scraper.',
     solution:
@@ -343,7 +356,8 @@ export const projects = [
     duration: '[Durée]',
     summary: 'Application de quiz interactive sur l’univers Marvel.',
     challenge: 'Créer une expérience de quiz fluide avec une gestion d’état propre.',
-    solution: 'Application React avec Hooks et Redux Toolkit, données et authentification via Firebase, interface en Bootstrap.',
+    solution:
+      'Application React avec Hooks et Redux Toolkit, données et authentification via Firebase, interface en Bootstrap.',
     tech: ['React', 'Hooks', 'Redux Toolkit', 'Firebase', 'Bootstrap'],
     results: [],
     githubUrl: '',
