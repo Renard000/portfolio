@@ -53,5 +53,6 @@ export default class CertificationService {
   async remove(id) {
     const deleted = await this.certificationRepository.delete(id);
     if (!deleted) throw new NotFoundError('Certification introuvable');
+    if (this.publications) await this.publications.retract({ kind: 'certification', id });
   }
 }

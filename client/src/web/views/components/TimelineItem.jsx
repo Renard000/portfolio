@@ -1,6 +1,8 @@
 import { PureComponent } from 'react';
 import Award from '../../../domain/models/Award.js';
 import Certification from '../../../domain/models/Certification.js';
+import NewItemsContext from '../../context/NewItemsContext.js';
+import NewBadge from './NewBadge.jsx';
 import RevealOnScroll from './RevealOnScroll.jsx';
 
 const TYPE_STYLE = {
@@ -11,7 +13,12 @@ const TYPE_STYLE = {
 };
 
 export default class TimelineItem extends PureComponent {
-  open = () => this.props.onOpen(this.props.award);
+  static contextType = NewItemsContext;
+
+  open = () => {
+    this.context.markSeen(`award:${this.props.award.id}`);
+    this.props.onOpen(this.props.award);
+  };
 
   render() {
     const award = new Award(this.props.award);
@@ -19,6 +26,7 @@ export default class TimelineItem extends PureComponent {
       <li className="timeline-item">
         <RevealOnScroll>
           <article className="card award-card">
+            <NewBadge itemKey={`award:${award.id}`} />
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-start gap-2">
                 <h4 className="h6 mb-1">{award.title}</h4>

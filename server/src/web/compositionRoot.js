@@ -13,7 +13,10 @@ import PlaybackService from '../bll/services/PlaybackService.js';
 import VideoController from './controllers/VideoController.js';
 import VideoAdminController from './controllers/VideoAdminController.js';
 import { ServiceUnavailableError } from '../domain/errors/index.js';
-import EmailClient, { ConsoleEmailClient } from '../dal/clients/EmailClient.js';
+import EmailClient, {
+  ConsoleEmailClient,
+  parseAddress,
+} from '../dal/clients/EmailClient.js';
 import FirebaseAdmin from '../dal/clients/FirebaseAdmin.js';
 import CertificationRepository from '../dal/repositories/CertificationRepository.js';
 import AwardRepository from '../dal/repositories/AwardRepository.js';
@@ -36,6 +39,13 @@ import SubscriberAdminService from '../bll/services/SubscriberAdminService.js';
 import PublicationSubject from '../bll/events/PublicationSubject.js';
 import EmailPublicationObserver from '../bll/events/EmailPublicationObserver.js';
 import PushPublicationObserver from '../bll/events/PushPublicationObserver.js';
+import FeedPublicationObserver from '../bll/events/FeedPublicationObserver.js';
+import EmailTemplateService from '../bll/services/EmailTemplateService.js';
+import PublicationFeedService from '../bll/services/PublicationFeedService.js';
+import EmailTemplateRepository from '../dal/repositories/EmailTemplateRepository.js';
+import PublicationFeedRepository from '../dal/repositories/PublicationFeedRepository.js';
+import EmailAdminController from './controllers/EmailAdminController.js';
+import PublicationController from './controllers/PublicationController.js';
 import ContactService from '../bll/services/ContactService.js';
 import ArticleService from '../bll/services/ArticleService.js';
 import AuthService from '../bll/services/AuthService.js';
@@ -108,7 +118,17 @@ export function buildContainer(config) {
   const dashboardRepository = new DashboardRepository(supabase);
 
   // BLL
-  const sender = { ...config.email.sender, site: config.siteUrl };
+  const fromAddress = parseAddress(config.email.from || '');
+  const sender = {
+    ...config.email.sender,
+    name: config.email.sender?.name || fromAddress.name,
+    site: config.siteUrl,
+  };
+  const emailTemplateService = new EmailTemplateService(
+    new EmailTemplateRepository(supabase),
+    emailClient,
+    { sender }
+  );
   // Observer : chaque service annonce ses publications, les canaux s'abonnent ici
   const publications = new PublicationSubject();
   publications.subscribe(
@@ -116,6 +136,7 @@ export function buildContainer(config) {
       siteUrl: config.siteUrl,
       publicApiUrl: config.email.publicApiUrl,
       sender,
+      templates: emailTemplateService,
     })
   );
   publications.subscribe(
@@ -123,6 +144,8 @@ export function buildContainer(config) {
       siteUrl: config.siteUrl,
     })
   );
+  const publicationFeedRepository = new PublicationFeedRepository(supabase);
+  publications.subscribe(new FeedPublicationObserver(publicationFeedRepository));
   const certificationService = new CertificationService(
     certificationRepository,
     publications
@@ -131,6 +154,7 @@ export function buildContainer(config) {
   const newsletterService = new NewsletterService(newsletterRepository, emailClient, {
     publicApiUrl: config.email.publicApiUrl,
     sender,
+    templates: emailTemplateService,
   });
   const pushSubscriptionService = new PushSubscriptionService(pushSubscriptionRepository);
   const subscriberAdminService = new SubscriberAdminService(
@@ -165,7 +189,12 @@ export function buildContainer(config) {
     commentRepository
   );
   const commentService = new CommentService(commentRepository, articleRepository);
-  const messageService = new MessageService(messageRepository);
+  const messageService = new MessageService(messageRepository, {
+    emailClient,
+    templates: emailTemplateService,
+    sender,
+    replyTo: config.email.replyTo || fromAddress.email,
+  });
   const projectService = new ProjectService(projectRepository, publications);
   const skillService = new SkillService(skillRepository);
   const dashboardService = new DashboardService(dashboardRepository);
@@ -190,6 +219,14 @@ export function buildContainer(config) {
     videoAdminController: new VideoAdminController(videoService, videoUploadService),
     contactController: new ContactController(contactService),
     articleController: new ArticleController(articleService, commentService),
+    publicationController: new PublicationController(
+      new PublicationFeedService(publicationFeedRepository)
+    ),
+    emailAdminController: new EmailAdminController({
+      emailTemplateService,
+      messageService,
+      newsletterService,
+    }),
     projectController: new CrudController(projectService),
     skillController: new CrudController(skillService),
     adminContentController: new AdminContentController({

@@ -98,9 +98,7 @@ describe('Publication : un événement par type de contenu', () => {
       unsubscribeUrl: 'https://api.ex/u',
       sender: { name: 'Flo <b>', address: '1 rue X, Montréal', site: 'https://site.ex' },
     });
-    expect(html).toContain(
-      'Expéditeur : Flo &lt;b&gt; · 1 rue X, Montréal · https://site.ex.'
-    );
+    expect(html).toContain('Flo &lt;b&gt; · 1 rue X, Montréal · https://site.ex');
     expect(html).toContain('Me désabonner');
   });
 
@@ -138,7 +136,10 @@ describe('Création d’un contenu : notification', () => {
   ];
   let notifier;
   beforeEach(() => {
-    notifier = { notify: vi.fn().mockResolvedValue({}) };
+    notifier = {
+      notify: vi.fn().mockResolvedValue({}),
+      retract: vi.fn().mockResolvedValue(),
+    };
   });
 
   it.each(cases)(
@@ -170,7 +171,10 @@ describe('Série de formation : passage en ligne', () => {
   let store, notifier, service;
   beforeEach(() => {
     store = new MemoryVideoStore();
-    notifier = { notify: vi.fn().mockResolvedValue({}) };
+    notifier = {
+      notify: vi.fn().mockResolvedValue({}),
+      retract: vi.fn().mockResolvedValue(),
+    };
     service = new VideoService(
       store.seriesRepo,
       store.videoRepo,

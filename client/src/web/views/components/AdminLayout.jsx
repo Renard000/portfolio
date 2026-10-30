@@ -8,6 +8,7 @@ export const ADMIN_LINKS = [
   { to: '/admin/articles', label: 'Articles' },
   { to: '/admin/commentaires', label: 'Commentaires', badge: 'comments' },
   { to: '/admin/messages', label: 'Messages', badge: 'messages' },
+  { to: '/admin/courriels', label: 'Courriels' },
   { to: '/admin/competences', label: 'Compétences' },
   { to: '/admin/certifications', label: 'Certifications' },
   { to: '/admin/distinctions', label: 'Distinctions', also: '/admin/awards' },

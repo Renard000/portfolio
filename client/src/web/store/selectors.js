@@ -5,6 +5,7 @@ import ContentService from '../../bll/services/ContentService.js';
 import AdminContentService from '../../bll/services/AdminContentService.js';
 import ArticleService from '../../bll/services/ArticleService.js';
 import RecentService from '../../bll/services/RecentService.js';
+import FeedService from '../../bll/services/FeedService.js';
 
 const certItems = (s) => s.certifications.items;
 const certFilters = (s) => s.certifications.filters;
@@ -62,6 +63,13 @@ export const selectHomeFeaturedCertifications = createSelector(
 const latestArticles = (s) => s.articles.latest;
 export const selectRecentArticleCards = createSelector([latestArticles], (items) =>
   items.map((a, i) => ArticleService.toCard(a, i))
+);
+
+const feedItems = (s) => s.feed.items;
+const feedSeen = (s) => s.feed.seen;
+/** Publications non ouvertes et points rouges du menu, pour ce visiteur. */
+export const selectFeedIndex = createSelector([feedItems, feedSeen], (items, seen) =>
+  FeedService.newIndex(items, seen)
 );
 
 const modComments = (s) => s.moderation.comments;

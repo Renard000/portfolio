@@ -234,6 +234,36 @@ export const commentBody = z.object({
   website: z.string().max(500).optional(),
 });
 export const approveBody = z.object({ approved: z.boolean() });
+
+// ---------- Courriels ----------
+export const templateParams = z.object({
+  key: z.enum([
+    'confirmation',
+    'reply',
+    'news',
+    'article',
+    'video',
+    'series',
+    'certification',
+    'award',
+    'project',
+  ]),
+});
+const templateShape = z.object({
+  subject: z.string().trim().min(1).max(200),
+  heading: z.string().trim().min(1).max(200),
+  body: z.string().trim().min(1).max(10000),
+  ctaLabel: optText(60),
+});
+export const templateBody = templateShape;
+export const templateTestBody = templateShape.extend({
+  to: z.string().trim().toLowerCase().pipe(z.email().max(254)),
+});
+export const replyBody = z.object({
+  subject: z.string().trim().min(1).max(200),
+  body: z.string().trim().min(1).max(10000),
+});
+export const broadcastBody = templateShape.extend({ ctaUrl: optUrl });
 export const readBody = z.object({ lu: z.boolean() });
 
 // ---------- Projets et compétences ----------

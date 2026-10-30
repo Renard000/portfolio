@@ -104,6 +104,11 @@ export default class ArticleService {
   async remove(id) {
     if (!(await this.articleRepository.delete(id)))
       throw new NotFoundError('Article introuvable');
+    await this.#retract(id);
+  }
+
+  async #retract(id) {
+    if (this.publications) await this.publications.retract({ kind: 'article', id });
   }
 
   /** Publie un brouillon puis notifie abonnés (courriel) et appareils (push). */
@@ -121,6 +126,8 @@ export default class ArticleService {
     const article = await this.articleRepository.findById(id);
     if (!article) throw new NotFoundError('Article introuvable');
     article.unpublish();
-    return this.articleRepository.save(article);
+    const saved = await this.articleRepository.save(article);
+    await this.#retract(id);
+    return saved;
   }
 }

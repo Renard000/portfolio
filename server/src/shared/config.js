@@ -46,6 +46,8 @@ export const config = {
     apiKey: emailVar('EMAIL_API_KEY', ''),
     from: emailVar('EMAIL_FROM', 'Portfolio <no-reply@localhost>'),
     publicApiUrl: emailVar('PUBLIC_API_URL', 'http://localhost:4000'),
+    // Adresse qui reçoit les réponses aux courriels envoyés depuis l'admin (facultatif)
+    replyTo: process.env.EMAIL_REPLY_TO || '',
     // Identification de l'expéditeur dans le bas de chaque courriel (LCAP / CASL)
     sender: {
       name: process.env.EMAIL_SENDER_NAME || '',

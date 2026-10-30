@@ -1,6 +1,7 @@
 import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 import Video from '../../../domain/models/Video.js';
+import NewBadge from './NewBadge.jsx';
 import Thumb from './Thumb.jsx';
 
 const PALETTE = ['#3b2f8f', '#0f5e4d', '#8a3a24', '#24507a', '#6b3b8f'];
@@ -17,6 +18,7 @@ export default class SeriesCard extends PureComponent {
         style={{ padding: 14 }}
         aria-label={`Série ${s.title}`}
       >
+        <NewBadge prefix={`/formations/${s.slug}`} />
         <Thumb
           color={seriesColor(s.slug)}
           kind={0}

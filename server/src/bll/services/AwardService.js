@@ -50,5 +50,6 @@ export default class AwardService {
   async remove(id) {
     const deleted = await this.awardRepository.delete(id);
     if (!deleted) throw new NotFoundError('Distinction introuvable');
+    if (this.publications) await this.publications.retract({ kind: 'award', id });
   }
 }

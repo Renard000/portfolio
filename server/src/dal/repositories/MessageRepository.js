@@ -11,6 +11,7 @@ const fromRow = (r) =>
     sujet: r.sujet,
     message: r.message,
     lu: r.lu,
+    repliedAt: r.replied_at,
     createdAt: r.created_at,
   });
 
@@ -28,6 +29,27 @@ export default class MessageRepository {
         .order('created_at', { ascending: false })
     );
     return data.map(fromRow);
+  }
+
+  async findById(id) {
+    const data = unwrap(
+      await this.supabase.from(TABLE).select('*').eq('id', id).maybeSingle()
+    );
+    return data ? fromRow(data) : null;
+  }
+
+  /** Une réponse envoyée vaut lecture du message. */
+  async markReplied(id, repliedAt) {
+    return fromRow(
+      unwrap(
+        await this.supabase
+          .from(TABLE)
+          .update({ lu: true, replied_at: repliedAt })
+          .eq('id', id)
+          .select()
+          .single()
+      )
+    );
   }
 
   async setRead(id, lu) {

@@ -2,7 +2,11 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { restoreSession, signOut } from '../store/slices/authSlice.js';
-import { fetchComments, fetchMessages } from '../store/slices/moderationSlice.js';
+import {
+  fetchComments,
+  fetchMessages,
+  subscribeAdminAlerts,
+} from '../store/slices/moderationSlice.js';
 import { selectAdminBadges } from '../store/selectors.js';
 import AdminLayout from '../views/components/AdminLayout.jsx';
 import AdminDashboardController from './AdminDashboardController.jsx';
@@ -16,16 +20,33 @@ import AdminAwardsController from './AdminAwardsController.jsx';
 import AdminFormationsController from './AdminFormationsController.jsx';
 import AdminSeriesController from './AdminSeriesController.jsx';
 import AdminSubscribersController from './AdminSubscribersController.jsx';
+import AdminEmailsController from './AdminEmailsController.jsx';
 
 /** Garde de la zone /admin : session requise, sinon redirection vers la connexion. */
 class AdminAreaController extends Component {
   componentDidMount() {
     if (!this.props.ready) this.props.restoreSession();
-    else this.loadBadges();
+    else this.start();
   }
 
   componentDidUpdate(prev) {
-    if (!prev.user && this.props.user) this.loadBadges();
+    if (!prev.user && this.props.user) this.start();
+    if (prev.user && !this.props.user) this.stop();
+  }
+
+  componentWillUnmount() {
+    this.stop();
+  }
+
+  start() {
+    this.loadBadges();
+    if (this.props.user && !this.stopAlerts)
+      this.stopAlerts = this.props.subscribeAdminAlerts();
+  }
+
+  stop() {
+    if (this.stopAlerts) this.stopAlerts();
+    this.stopAlerts = null;
   }
 
   /** Pastilles « Commentaires » et « Messages » de la barre latérale. */
@@ -59,6 +80,7 @@ class AdminAreaController extends Component {
           <Route path="/admin/articles/:id" component={ArticleEditorController} />
           <Route path="/admin/commentaires" component={ModerationController} />
           <Route path="/admin/messages" component={ModerationController} />
+          <Route path="/admin/courriels" component={AdminEmailsController} />
           <Route path="/admin/certifications" component={AdminCertificationsController} />
           <Route
             path={['/admin/distinctions', '/admin/awards']}
@@ -89,4 +111,5 @@ export default connect(mapState, {
   signOut,
   fetchComments,
   fetchMessages,
+  subscribeAdminAlerts,
 })(AdminAreaController);

@@ -1,4 +1,4 @@
-const CHANNEL_LABELS = { email: 'courriels', push: 'push' };
+const CHANNEL_LABELS = { email: 'courriels', push: 'push', feed: 'fil' };
 
 const describe = (channel, r) =>
   `${CHANNEL_LABELS[channel] || channel} : ${r.sent} ok / ${r.failed} échecs` +
@@ -47,5 +47,17 @@ export default class PublicationSubject {
       .join(' ; ');
     this.logger.log(`[notifications] ${publication.kind} ${publication.id} — ${summary}`);
     return results;
+  }
+
+  /** Contenu dépublié ou supprimé ; ne rejette jamais, comme notify. */
+  async retract(reference) {
+    const settled = await Promise.allSettled(
+      [...this.observers]
+        .filter((o) => o.onRetraction)
+        .map(async (o) => o.onRetraction(reference))
+    );
+    for (const s of settled)
+      if (s.status === 'rejected')
+        this.logger.error(`[notifications] retrait en erreur : ${s.reason.message}`);
   }
 }

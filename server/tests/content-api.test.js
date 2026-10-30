@@ -178,7 +178,10 @@ beforeEach(() => {
   projectRepo = new MemoryCrudRepo(Project, [
     new Project({ id: uuid(), slug: 'ecotrack', title: 'EcoTrack' }),
   ]);
-  notifier = { notify: vi.fn().mockResolvedValue({}) };
+  notifier = {
+    notify: vi.fn().mockResolvedValue({}),
+    retract: vi.fn().mockResolvedValue(),
+  };
 
   const authService = new AuthService({
     getUserFromToken: async (t) =>

@@ -1,5 +1,8 @@
-import { chunk } from '../../shared/html.js';
 import { contentEmail } from '../emails.js';
+import { sendInBatches } from '../sendInBatches.js';
+
+export const unsubscribeLink = (publicApiUrl, subscriber) =>
+  `${publicApiUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(subscriber.unsubscribeToken)}`;
 
 /** Observateur : courriel aux abonnés confirmés de la newsletter, par lots. */
 export default class EmailPublicationObserver {
@@ -8,7 +11,7 @@ export default class EmailPublicationObserver {
   constructor(
     newsletterRepository,
     emailClient,
-    { siteUrl, publicApiUrl, batchSize = 50, sender }
+    { siteUrl, publicApiUrl, batchSize = 50, sender, templates = null }
   ) {
     this.newsletterRepository = newsletterRepository;
     this.emailClient = emailClient;
@@ -16,6 +19,7 @@ export default class EmailPublicationObserver {
     this.publicApiUrl = publicApiUrl.replace(/\/+$/, '');
     this.batchSize = batchSize;
     this.sender = sender;
+    this.templates = templates;
   }
 
   async onPublication(publication) {
@@ -23,29 +27,24 @@ export default class EmailPublicationObserver {
     const receivers = (await this.newsletterRepository.listReceivers()).filter((s) =>
       s.canReceive()
     );
-    let sent = 0;
-    let failed = 0;
-    for (const batch of chunk(receivers, this.batchSize)) {
-      const results = await Promise.allSettled(
-        batch.map((s) =>
-          this.emailClient.send({
-            to: s.email,
-            ...contentEmail({
-              kind: publication.kind,
-              title: publication.title,
-              excerpt: publication.excerpt,
-              url: publication.url(this.siteUrl),
-              sender: this.sender,
-              unsubscribeUrl: `${this.publicApiUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(
-                s.unsubscribeToken
-              )}`,
-            }),
-          })
-        )
-      );
-      sent += results.filter((r) => r.status === 'fulfilled').length;
-      failed += results.filter((r) => r.status === 'rejected').length;
-    }
+    const template = this.templates
+      ? await this.templates.get(publication.kind)
+      : undefined;
+    const { sent, failed } = await sendInBatches(
+      this.emailClient,
+      receivers,
+      this.batchSize,
+      (s) =>
+        contentEmail({
+          kind: publication.kind,
+          title: publication.title,
+          excerpt: publication.excerpt,
+          url: publication.url(this.siteUrl),
+          sender: this.sender,
+          template,
+          unsubscribeUrl: unsubscribeLink(this.publicApiUrl, s),
+        })
+    );
     return { sent, failed, deactivated: 0 };
   }
 }

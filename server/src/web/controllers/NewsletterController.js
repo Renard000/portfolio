@@ -68,6 +68,12 @@ export default class NewsletterController {
     res.redirect(303, `${this.siteUrl}${SITE_PAGES[action]}?statut=${status}`);
   }
 
+  /** Désinscription en un clic depuis Gmail ou Outlook (en-tête List-Unsubscribe-Post). */
+  async unsubscribeOneClick(req, res) {
+    await this.newsletterService.unsubscribe(req.validated.query.token);
+    res.json({ status: 'unsubscribed' });
+  }
+
   async pushSubscribe(req, res) {
     res
       .status(201)

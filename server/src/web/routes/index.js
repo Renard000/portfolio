@@ -33,6 +33,11 @@ import {
   projectUpdate,
   skillCreate,
   skillUpdate,
+  templateParams,
+  templateBody,
+  templateTestBody,
+  replyBody,
+  broadcastBody,
 } from '../../bll/schemas/index.js';
 
 const HOUR = 60 * 60 * 1000;
@@ -59,6 +64,8 @@ export function buildApiRouter(container) {
     projectController: projects,
     skillController: skills,
     adminContentController: content,
+    publicationController: publications,
+    emailAdminController: emails,
     authService,
   } = container;
   const router = Router();
@@ -123,6 +130,12 @@ export function buildApiRouter(container) {
     limiter(30),
     validate({ query: tokenQuery }),
     h(news, 'unsubscribe')
+  );
+  router.post(
+    '/newsletter/unsubscribe',
+    limiter(30),
+    validate({ query: tokenQuery }),
+    h(news, 'unsubscribeOneClick')
   );
 
   // --- Contact (public, limité : 5 messages par heure et par adresse IP) ---
@@ -256,8 +269,62 @@ export function buildApiRouter(container) {
   if (articles) buildBlogRoutes(router, articles);
   if (projects && skills) buildPortfolioRoutes(router, admin, projects, skills);
   if (content) buildAdminContentRoutes(router, admin, content);
+  if (publications)
+    router.get('/publications', limiter(300, 15 * 60 * 1000), h(publications, 'list'));
+  if (emails) buildEmailRoutes(router, admin, emails);
 
   return router;
+}
+
+// --- Administration : modèles de courriel, réponses et news ---
+function buildEmailRoutes(router, admin, emails) {
+  const template = { params: templateParams };
+  router.get('/admin/email-templates', ...admin, h(emails, 'listTemplates'));
+  router.put(
+    '/admin/email-templates/:key',
+    ...admin,
+    validate({ ...template, body: templateBody }),
+    h(emails, 'saveTemplate')
+  );
+  router.delete(
+    '/admin/email-templates/:key',
+    ...admin,
+    validate(template),
+    h(emails, 'resetTemplate')
+  );
+  router.post(
+    '/admin/email-templates/:key/preview',
+    ...admin,
+    validate({ ...template, body: templateBody }),
+    h(emails, 'preview')
+  );
+  router.post(
+    '/admin/email-templates/:key/test',
+    ...admin,
+    limiter(10),
+    validate({ ...template, body: templateTestBody }),
+    h(emails, 'sendTest')
+  );
+  router.get(
+    '/admin/messages/:id/reply',
+    ...admin,
+    validate({ params: idParams }),
+    h(emails, 'replyDraft')
+  );
+  router.post(
+    '/admin/messages/:id/reply',
+    ...admin,
+    limiter(60),
+    validate({ params: idParams, body: replyBody }),
+    h(emails, 'reply')
+  );
+  router.post(
+    '/admin/newsletter/broadcast',
+    ...admin,
+    limiter(5),
+    validate({ body: broadcastBody }),
+    h(emails, 'broadcast')
+  );
 }
 
 // --- Blog public : lecture limitée à 20 par page, écritures limitées en fréquence ---

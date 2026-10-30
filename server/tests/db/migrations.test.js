@@ -22,6 +22,7 @@ const read = (name) =>
 
 const STUBS = `
   create role anon nologin; create role authenticated nologin;
+  create publication supabase_realtime;
   create schema auth;
   create table auth.users (id uuid primary key default gen_random_uuid(), email text);
   create function auth.uid() returns uuid language sql stable as
@@ -518,6 +519,66 @@ describe('migrations Supabase (PGlite)', () => {
           db.query(`select public.reorder_videos('${SERIES}', array['${V(1)}']::uuid[])`)
         )
       ).rejects.toThrow(/permission denied/i);
+    });
+  });
+
+  describe('migration 8 : fil des publications et modèles de courriel', () => {
+    const REF = 'e0000000-0000-4000-8000-000000000001';
+
+    it('le fil se lit publiquement mais ne s’écrit pas avec la clé publique', async () => {
+      await db.exec(
+        `insert into public.publications (kind, ref_id, title, path) values ('article', '${REF}', 'T', '/blog/t')`
+      );
+      const rows = await as('anon', null, () =>
+        db.query(`select title from public.publications`)
+      );
+      expect(rows.rows).toEqual([{ title: 'T' }]);
+      await expect(
+        as('anon', null, () =>
+          db.exec(
+            `insert into public.publications (kind, ref_id, title, path) values ('article', gen_random_uuid(), 'X', '/x')`
+          )
+        )
+      ).rejects.toThrow(/row-level security/i);
+    });
+
+    it('une publication par contenu ; type inconnu refusé', async () => {
+      await expect(
+        db.exec(
+          `insert into public.publications (kind, ref_id, title, path) values ('article', '${REF}', 'T', '/blog/t')`
+        )
+      ).rejects.toThrow(/duplicate key|unique/i);
+      await expect(
+        db.exec(
+          `insert into public.publications (kind, ref_id, title, path) values ('autre', gen_random_uuid(), 'T', '/x')`
+        )
+      ).rejects.toThrow(/check/i);
+    });
+
+    it('modèles de courriel : réservés à l’admin', async () => {
+      await db.exec(
+        `insert into public.email_templates (key, subject, heading, body) values ('news', 'S', 'H', 'B')`
+      );
+      const anon = await as('anon', null, () =>
+        db.query(`select key from public.email_templates`)
+      );
+      expect(anon.rows).toHaveLength(0);
+      const admin = await as('authenticated', ADMIN, () =>
+        db.query(`select key from public.email_templates`)
+      );
+      expect(admin.rows).toEqual([{ key: 'news' }]);
+    });
+
+    it('temps réel : tables diffusées, RLS toujours appliquées', async () => {
+      const r = await db.query(
+        `select tablename from pg_publication_tables where pubname = 'supabase_realtime' order by 1`
+      );
+      expect(r.rows.map((x) => x.tablename)).toEqual([
+        'comments',
+        'messages',
+        'publications',
+        'subscribers',
+      ]);
     });
   });
 

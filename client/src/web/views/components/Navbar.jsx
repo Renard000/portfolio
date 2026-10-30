@@ -41,8 +41,17 @@ export default class Navbar extends Component {
     document.body.style.overflow = '';
   };
 
+  dot(to) {
+    if (!this.props.dots?.[to]) return null;
+    return (
+      <span className="pf-nav-dot">
+        <span className="visually-hidden">nouveautés</span>
+      </span>
+    );
+  }
+
   render() {
-    const { initials = 'VN' } = this.props;
+    const { initials = 'VN', dots = {}, muted, onToggleMuted } = this.props;
     const { open } = this.state;
     return (
       <header className="pf-nav">
@@ -61,6 +70,7 @@ export default class Navbar extends Component {
             {NAV_LINKS.map((l) => (
               <NavLink key={l.to} to={l.to} exact={l.exact} activeClassName="active">
                 {l.label}
+                {this.dot(l.to)}
               </NavLink>
             ))}
             <NavLink
@@ -71,6 +81,24 @@ export default class Navbar extends Component {
               Me contacter
             </NavLink>
           </div>
+          {onToggleMuted ? (
+            <button
+              type="button"
+              className="pf-sound"
+              aria-pressed={!muted}
+              aria-label={
+                muted
+                  ? 'Activer le son des notifications'
+                  : 'Couper le son des notifications'
+              }
+              onClick={onToggleMuted}
+            >
+              <i
+                className={`fa-solid ${muted ? 'fa-bell-slash' : 'fa-bell'}`}
+                aria-hidden="true"
+              />
+            </button>
+          ) : null}
           <button
             type="button"
             className="pf-burger"
@@ -79,6 +107,11 @@ export default class Navbar extends Component {
             onClick={this.toggle}
           >
             {open ? 'Fermer' : 'Menu'}
+            {!open && Object.keys(dots).length ? (
+              <span className="pf-nav-dot">
+                <span className="visually-hidden">nouveautés</span>
+              </span>
+            ) : null}
           </button>
         </nav>
         {open ? (
@@ -105,7 +138,10 @@ export default class Navbar extends Component {
                 activeClassName="active"
                 onClick={this.close}
               >
-                <span>{l.label}</span>
+                <span>
+                  {l.label}
+                  {this.dot(l.to)}
+                </span>
                 <span aria-hidden="true">→</span>
               </NavLink>
             ))}

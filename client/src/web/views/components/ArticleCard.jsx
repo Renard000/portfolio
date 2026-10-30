@@ -1,5 +1,6 @@
 import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
+import NewBadge from './NewBadge.jsx';
 import Thumb from './Thumb.jsx';
 
 /** Carte d'article (maquette P-04) : reçoit un modèle déjà formaté. */
@@ -13,6 +14,7 @@ export default class ArticleCard extends PureComponent {
         style={{ padding: 14, height: '100%' }}
         aria-label={`Lire l’article ${card.title}`}
       >
+        <NewBadge path={`/blog/${card.slug}`} />
         <Thumb
           color={card.color}
           kind={card.kind}

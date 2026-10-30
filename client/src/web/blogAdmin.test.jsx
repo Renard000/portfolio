@@ -226,14 +226,21 @@ describe('Admin : modération et messages', () => {
         true
       )
     );
-    expect(screen.getByRole('link', { name: 'Répondre' })).toHaveAttribute(
-      'href',
-      'mailto:grace%40ex.com?subject=Re%3A%20Mandat'
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Marquer comme lu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Répondre' }));
+    expect(await screen.findByLabelText('Objet')).toHaveValue('Re : Mandat');
+    fireEvent.change(screen.getByLabelText('Votre réponse'), {
+      target: { value: 'Avec plaisir.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Envoyer la réponse' }));
     await waitFor(() =>
-      expect(services.adminContentService.markMessage).toHaveBeenCalledWith('ms1', true)
+      expect(services.emailAdminService.reply).toHaveBeenCalledWith('ms1', {
+        subject: 'Re : Mandat',
+        body: 'Avec plaisir.',
+      })
     );
+    fireEvent.click(await screen.findByRole('button', { name: 'Tous' }));
+    expect(await screen.findByText('Répondu')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Non lus (0)' }));
   });
 
   it('suppression avec confirmation', async () => {

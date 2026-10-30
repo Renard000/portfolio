@@ -1,14 +1,22 @@
 import { PureComponent } from 'react';
 import Certification from '../../../domain/models/Certification.js';
+import NewItemsContext from '../../context/NewItemsContext.js';
+import NewBadge from './NewBadge.jsx';
 import StatusBadge from './StatusBadge.jsx';
 
 export default class CertificationCard extends PureComponent {
-  open = () => this.props.onOpen(this.props.certification);
+  static contextType = NewItemsContext;
+
+  open = () => {
+    this.context.markSeen(`certification:${this.props.certification.id}`);
+    this.props.onOpen(this.props.certification);
+  };
 
   render() {
     const cert = new Certification(this.props.certification);
     return (
       <article className="card h-100 certification-card">
+        <NewBadge itemKey={`certification:${cert.id}`} />
         {cert.imageUrl ? (
           <img
             src={cert.imageUrl}

@@ -43,5 +43,6 @@ export default class ProjectService {
   async remove(id) {
     if (!(await this.projectRepository.delete(id)))
       throw new NotFoundError('Projet introuvable');
+    if (this.publications) await this.publications.retract({ kind: 'project', id });
   }
 }

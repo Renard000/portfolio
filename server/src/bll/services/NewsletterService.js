@@ -1,5 +1,6 @@
 import { NotFoundError } from '../../domain/errors/index.js';
-import { confirmationEmail, testEmail } from '../emails.js';
+import { confirmationEmail, newsEmail, testEmail } from '../emails.js';
+import { sendInBatches } from '../sendInBatches.js';
 
 export default class NewsletterService {
   /**
@@ -9,12 +10,14 @@ export default class NewsletterService {
   constructor(
     newsletterRepository,
     emailClient,
-    { publicApiUrl, sender, clock = () => new Date() }
+    { publicApiUrl, sender, templates = null, batchSize = 50, clock = () => new Date() }
   ) {
     this.repo = newsletterRepository;
     this.emailClient = emailClient;
     this.publicApiUrl = publicApiUrl.replace(/\/+$/, '');
     this.sender = sender;
+    this.templates = templates;
+    this.batchSize = batchSize;
     this.clock = clock;
   }
 
@@ -50,6 +53,7 @@ export default class NewsletterService {
     const mail = confirmationEmail({
       confirmUrl: this.link('confirm', subscriber.confirmToken),
       sender: this.sender,
+      template: this.templates ? await this.templates.get('confirmation') : undefined,
     });
     await this.emailClient.send({ to: subscriber.email, ...mail });
     return { status: 'pending' };
@@ -82,6 +86,19 @@ export default class NewsletterService {
 
   /** Bouton admin « Envoyer un courriel de test » avant la première vraie diffusion. */
   async sendTest(to) {
-    await this.emailClient.send({ to, ...testEmail() });
+    await this.emailClient.send({ to, ...testEmail(this.sender) });
+  }
+
+  /** News rédigée dans l'admin : aux abonnés confirmés et actifs seulement. */
+  async broadcast({ ctaUrl, ...template }) {
+    const receivers = (await this.repo.listReceivers()).filter((s) => s.canReceive());
+    return sendInBatches(this.emailClient, receivers, this.batchSize, (s) =>
+      newsEmail({
+        template,
+        url: ctaUrl,
+        unsubscribeUrl: this.link('unsubscribe', s.unsubscribeToken),
+        sender: this.sender,
+      })
+    );
   }
 }

@@ -3,6 +3,13 @@ import { initializeApp } from 'firebase/app';
 import ApiClient from '../dal/clients/ApiClient.js';
 import SupabaseAuthClient from '../dal/clients/SupabaseAuthClient.js';
 import MessagingClient from '../dal/clients/MessagingClient.js';
+import RealtimeClient from '../dal/clients/RealtimeClient.js';
+import SoundClient from '../dal/clients/SoundClient.js';
+import EmailAdminRepository from '../dal/repositories/EmailAdminRepository.js';
+import SeenRepository from '../dal/repositories/SeenRepository.js';
+import FeedService from '../bll/services/FeedService.js';
+import AdminAlertService from '../bll/services/AdminAlertService.js';
+import EmailAdminService from '../bll/services/EmailAdminService.js';
 import ArticleRepository from '../dal/repositories/ArticleRepository.js';
 import CertificationRepository from '../dal/repositories/CertificationRepository.js';
 import AwardRepository from '../dal/repositories/AwardRepository.js';
@@ -87,6 +94,16 @@ export function createDependencies() {
     skillRepository,
   });
   const adminContentService = new AdminContentService(adminContentRepository);
+  const emailAdminRepository = new EmailAdminRepository(apiClient);
+  const realtimeClient = new RealtimeClient(supabase);
+  const soundClient = new SoundClient();
+  const feedService = new FeedService(
+    emailAdminRepository,
+    new SeenRepository(window.localStorage),
+    realtimeClient
+  );
+  const adminAlertService = new AdminAlertService(realtimeClient);
+  const emailAdminService = new EmailAdminService(emailAdminRepository);
   const portfolioAdminService = new PortfolioAdminService(
     projectRepository,
     skillRepository
@@ -116,6 +133,10 @@ export function createDependencies() {
     uploadService,
     adminContentService,
     portfolioAdminService,
+    feedService,
+    adminAlertService,
+    emailAdminService,
+    soundClient,
     authClient,
     messagingClient,
   };

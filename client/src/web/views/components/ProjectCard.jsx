@@ -1,5 +1,6 @@
 import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
+import NewBadge from './NewBadge.jsx';
 import Thumb from './Thumb.jsx';
 
 export default class ProjectCard extends PureComponent {
@@ -12,6 +13,7 @@ export default class ProjectCard extends PureComponent {
         style={{ padding: 14 }}
         aria-label={`Projet ${p.title}`}
       >
+        <NewBadge path={`/projets/${p.slug}`} />
         <Thumb
           color={p.color}
           kind={p.kind}

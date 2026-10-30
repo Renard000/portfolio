@@ -7,14 +7,22 @@ import {
   removeComment,
   markMessage,
   removeMessage,
+  fetchReplyDraft,
+  replyToMessage,
 } from '../store/slices/moderationSlice.js';
-import AdminContentService from '../../bll/services/AdminContentService.js';
 import ArticleService from '../../bll/services/ArticleService.js';
 import ModerationView from '../views/pages/admin/ModerationView.jsx';
 
 /** /admin/commentaires et /admin/messages : même écran (maquette A-05). */
 class ModerationController extends Component {
-  state = { commentTab: 'pending', messageTab: 'unread', deleting: null };
+  state = {
+    commentTab: 'pending',
+    messageTab: 'unread',
+    deleting: null,
+    replying: null,
+    replyError: null,
+    sending: false,
+  };
 
   componentDidMount() {
     // Les listes servent aussi aux pastilles de la barre latérale
@@ -25,6 +33,29 @@ class ModerationController extends Component {
   approve = (c) => this.props.moderateComment({ id: c.id, approved: true });
   unapprove = (c) => this.props.moderateComment({ id: c.id, approved: false });
   markRead = (m) => this.props.markMessage({ id: m.id, lu: !m.lu });
+  openReply = async (message) => {
+    try {
+      const draft = await this.props.fetchReplyDraft(message.id).unwrap();
+      this.setState({ replying: { message, draft }, replyError: null });
+    } catch (err) {
+      this.setState({
+        replying: { message, draft: { subject: '', body: '' } },
+        replyError: err.message,
+      });
+    }
+  };
+  closeReply = () => this.setState({ replying: null, replyError: null });
+  sendReply = async (dto) => {
+    const { message } = this.state.replying;
+    this.setState({ sending: true, replyError: null });
+    try {
+      await this.props.replyToMessage({ id: message.id, dto }).unwrap();
+      this.setState({ replying: null, sending: false });
+    } catch (err) {
+      this.setState({ replyError: err.message, sending: false });
+    }
+  };
+
   askDelete = (kind, item) => this.setState({ deleting: { kind, item } });
   cancelDelete = () => this.setState({ deleting: null });
   confirmDelete = async () => {
@@ -50,7 +81,6 @@ class ModerationController extends Component {
     const shownMessages = (messageTab === 'unread' ? unread : messages).map((m) => ({
       ...m,
       when: ArticleService.relative(m.createdAt, now),
-      replyHref: AdminContentService.replyHref(m),
     }));
     return (
       <ModerationView
@@ -69,6 +99,12 @@ class ModerationController extends Component {
         loading={loading}
         error={error}
         deleting={this.state.deleting}
+        replying={this.state.replying}
+        replyError={this.state.replyError}
+        sending={this.state.sending}
+        onReply={this.openReply}
+        onCloseReply={this.closeReply}
+        onSendReply={this.sendReply}
         onCommentTab={(commentTab) => this.setState({ commentTab })}
         onMessageTab={(messageTab) => this.setState({ messageTab })}
         onApprove={this.approve}
@@ -95,4 +131,6 @@ export default connect(mapState, {
   removeComment,
   markMessage,
   removeMessage,
+  fetchReplyDraft,
+  replyToMessage,
 })(ModerationController);

@@ -216,6 +216,46 @@ export const DASHBOARD = {
   publishedVideoSeconds: 51600,
 };
 
+export const TEMPLATES = [
+  {
+    key: 'news',
+    label: 'News aux abonnés',
+    group: 'Abonnement',
+    variables: ['site'],
+    subject: 'Des nouvelles',
+    heading: 'Quoi de neuf ?',
+    body: 'Bonjour',
+    ctaLabel: 'En savoir plus',
+    customized: false,
+  },
+  {
+    key: 'video',
+    label: 'Nouvelle vidéo',
+    group: 'Publications',
+    variables: ['titre', 'extrait', 'site'],
+    subject: 'Nouvelle vidéo : {{titre}}',
+    heading: '{{titre}}',
+    body: '{{extrait}}',
+    ctaLabel: 'Regarder',
+    customized: false,
+  },
+];
+
+/** Faux fil des publications : `publish` simule une arrivée en temps réel. */
+export function makeFeedService(items = [], seen = {}) {
+  let listener = null;
+  return {
+    list: vi.fn().mockResolvedValue(items),
+    loadSeen: vi.fn(() => ({ items: {}, sections: {}, muted: false, ...seen })),
+    saveSeen: vi.fn(),
+    subscribe: vi.fn((callback) => {
+      listener = callback;
+      return () => {};
+    }),
+    publish: (item) => listener(item),
+  };
+}
+
 export function makeServices(overrides = {}) {
   return {
     videoService: {
@@ -313,6 +353,23 @@ export function makeServices(overrides = {}) {
       listSkills: vi.fn().mockResolvedValue([{ id: 'k1', name: 'React', level: 90 }]),
       saveSkill: vi.fn(async (id, d) => ({ id: id || 'nk', ...d })),
       removeSkill: vi.fn().mockResolvedValue(null),
+    },
+    feedService: makeFeedService(),
+    soundClient: { play: vi.fn() },
+    adminAlertService: { subscribe: vi.fn(() => () => {}) },
+    emailAdminService: {
+      listTemplates: vi.fn().mockResolvedValue(TEMPLATES),
+      saveTemplate: vi.fn().mockResolvedValue({}),
+      resetTemplate: vi.fn(async (key) => ({ ...TEMPLATES[0], key, customized: false })),
+      previewTemplate: vi
+        .fn()
+        .mockResolvedValue({ subject: 'Objet rendu', html: '<p>Aperçu</p>' }),
+      testTemplate: vi.fn().mockResolvedValue({ status: 'sent' }),
+      broadcast: vi.fn().mockResolvedValue({ sent: 2, failed: 0 }),
+      replyDraft: vi
+        .fn()
+        .mockResolvedValue({ subject: 'Re : Mandat', body: 'Bonjour Grace,' }),
+      reply: vi.fn(async (id) => ({ id, lu: true, repliedAt: '2026-10-30T10:00:00Z' })),
     },
     authClient: {
       getSession: vi.fn().mockResolvedValue(null),

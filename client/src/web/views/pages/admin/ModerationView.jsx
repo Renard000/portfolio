@@ -1,6 +1,8 @@
 import { PureComponent } from 'react';
 import AdminHeader from '../../components/AdminHeader.jsx';
 import ConfirmModal from '../../components/ConfirmModal.jsx';
+import Modal from '../../components/Modal.jsx';
+import ReplyForm from '../../components/ReplyForm.jsx';
 
 /** Modération des commentaires et messages de contact (maquette A-05). */
 export default class ModerationView extends PureComponent {
@@ -70,7 +72,7 @@ export default class ModerationView extends PureComponent {
   }
 
   renderMessage(m) {
-    const { onMarkRead, onAskDelete } = this.props;
+    const { onMarkRead, onAskDelete, onReply } = this.props;
     return (
       <article
         key={m.id}
@@ -88,13 +90,19 @@ export default class ModerationView extends PureComponent {
           )}
         </div>
         {m.sujet ? <b>{m.sujet}</b> : null}
+        {m.repliedAt ? <span className="pf-mono pf-lime">Répondu</span> : null}
         <span className="pf-mu" style={{ whiteSpace: 'pre-line' }}>
           {m.message}
         </span>
         <div className="pf-row">
-          <a className="pf-btn pf-btn--pri" style={{ minHeight: 40 }} href={m.replyHref}>
-            Répondre
-          </a>
+          <button
+            type="button"
+            className="pf-btn pf-btn--pri"
+            style={{ minHeight: 40 }}
+            onClick={() => onReply(m)}
+          >
+            {m.repliedAt ? 'Répondre de nouveau' : 'Répondre'}
+          </button>
           <button
             type="button"
             className="pf-btn"
@@ -128,6 +136,11 @@ export default class ModerationView extends PureComponent {
       loading,
       error,
       deleting,
+      replying,
+      replyError,
+      sending,
+      onCloseReply,
+      onSendReply,
       onCommentTab,
       onMessageTab,
       onConfirmDelete,
@@ -164,6 +177,18 @@ export default class ModerationView extends PureComponent {
             {!messages.length ? <p className="pf-mu">Aucun message.</p> : null}
           </section>
         </div>
+        {replying ? (
+          <Modal title="Répondre au message" onClose={onCloseReply}>
+            <ReplyForm
+              message={replying.message}
+              draft={replying.draft}
+              saving={sending}
+              error={replyError}
+              onSubmit={onSendReply}
+              onCancel={onCloseReply}
+            />
+          </Modal>
+        ) : null}
         {deleting ? (
           <ConfirmModal
             title="Confirmer la suppression"

@@ -2,6 +2,7 @@ import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 import PageHero from '../../components/PageHero.jsx';
 import ArticleCard from '../../components/ArticleCard.jsx';
+import NewBadge from '../../components/NewBadge.jsx';
 import RevealOnScroll from '../../components/RevealOnScroll.jsx';
 import Thumb from '../../components/Thumb.jsx';
 
@@ -19,6 +20,7 @@ export default class BlogPage extends PureComponent {
           alignItems: 'center',
         }}
       >
+        <NewBadge path={`/blog/${card.slug}`} />
         <Thumb color={card.color} kind={0} height={380} imageUrl={card.coverUrl} />
         <div className="pf-col" style={{ gap: 18, paddingRight: 24 }}>
           <span className="pf-chip is-on" style={{ alignSelf: 'flex-start' }}>

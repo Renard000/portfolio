@@ -78,10 +78,4 @@ export default class AdminContentService {
       messages: messages.filter((m) => !m.lu).length,
     };
   }
-
-  /** Lien « Répondre » : courriel préparé, sans jamais exécuter de contenu reçu. */
-  static replyHref(message) {
-    const subject = message.sujet ? `Re: ${message.sujet}` : 'Re: votre message';
-    return `mailto:${encodeURIComponent(message.email)}?subject=${encodeURIComponent(subject)}`;
-  }
 }

@@ -14,6 +14,8 @@ import adminArticles from './slices/adminArticlesSlice.js';
 import moderation from './slices/moderationSlice.js';
 import dashboard from './slices/dashboardSlice.js';
 import adminPortfolio from './slices/adminPortfolioSlice.js';
+import feed from './slices/feedSlice.js';
+import emailTemplates from './slices/emailTemplatesSlice.js';
 
 export function createStore(services) {
   // Le contenu éditable (profil, projets) est local : on préremplit le store.
@@ -38,6 +40,8 @@ export function createStore(services) {
       moderation,
       dashboard,
       adminPortfolio,
+      feed,
+      emailTemplates,
     },
     middleware: (getDefault) => getDefault({ thunk: { extraArgument: services } }),
   });

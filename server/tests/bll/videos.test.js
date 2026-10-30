@@ -20,7 +20,10 @@ let store, storage, notifier, svc, logger;
 beforeEach(() => {
   store = new MemoryVideoStore();
   storage = new FakeStorage();
-  notifier = { notify: vi.fn().mockResolvedValue({}) };
+  notifier = {
+    notify: vi.fn().mockResolvedValue({}),
+    retract: vi.fn().mockResolvedValue(),
+  };
   logger = { error: vi.fn(), log: vi.fn() };
   svc = new VideoService(store.seriesRepo, store.videoRepo, storage, notifier, {
     cdnUrl: CDN,

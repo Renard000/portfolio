@@ -149,6 +149,10 @@ export default class VideoService {
         current.publishedVideos().length > 0;
       if (goingLive && this.publications)
         await this.publications.notify(Publication.fromSeries(updated));
+      if (current.isPublished() && !updated.isPublished()) {
+        await this.#retract('series', id);
+        for (const v of current.videos) await this.#retract('video', v.id);
+      }
       return updated;
     } catch (err) {
       if (isDuplicate(err))
@@ -162,7 +166,11 @@ export default class VideoService {
     const series = await this.seriesRepository.findById(id);
     if (!series) throw new NotFoundError('Série introuvable');
     await this.seriesRepository.delete(id);
-    for (const v of series.videos) await this.#removeFiles(v);
+    await this.#retract('series', id);
+    for (const v of series.videos) {
+      await this.#retract('video', v.id);
+      await this.#removeFiles(v);
+    }
   }
 
   // ---------------- Admin : vidéos ----------------
@@ -183,6 +191,10 @@ export default class VideoService {
         this.logger.error(`[videos] suppression S3 échouée (${key}) : ${err.message}`);
       }
     }
+  }
+
+  async #retract(kind, id) {
+    if (this.publications) await this.publications.retract({ kind, id });
   }
 
   async #notifyIfLive(video, series) {
@@ -253,6 +265,8 @@ export default class VideoService {
     }
     if (!updated) throw new NotFoundError('Vidéo introuvable');
     if (goingLive) await this.#notifyIfLive(updated, series);
+    if (dto.status === 'draft' && current.status === 'published')
+      await this.#retract('video', id);
     return updated;
   }
 
@@ -260,6 +274,7 @@ export default class VideoService {
     const video = await this.videoRepository.findById(id);
     if (!video) throw new NotFoundError('Vidéo introuvable');
     await this.videoRepository.delete(id);
+    await this.#retract('video', id);
     await this.#removeFiles(video);
   }
 

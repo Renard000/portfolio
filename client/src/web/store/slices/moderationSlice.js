@@ -1,4 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { alertUser } from './feedSlice.js';
+import { fetchSubscribers } from './subscribersSlice.js';
 
 export const fetchComments = createAsyncThunk(
   'moderation/fetchComments',
@@ -32,6 +34,25 @@ export const removeMessage = createAsyncThunk(
     return id;
   }
 );
+
+/** Envoie la réponse depuis l'admin ; le message passe en lu et répondu. */
+export const replyToMessage = createAsyncThunk(
+  'moderation/reply',
+  async ({ id, dto }, { extra }) => extra.emailAdminService.reply(id, dto)
+);
+export const fetchReplyDraft = createAsyncThunk(
+  'moderation/replyDraft',
+  async (id, { extra }) => extra.emailAdminService.replyDraft(id)
+);
+
+/** Alertes de l'admin en temps réel ; renvoie la fonction de désabonnement. */
+export const subscribeAdminAlerts = () => (dispatch, getState, extra) =>
+  extra.adminAlertService.subscribe((table, alert) => {
+    dispatch(alertUser(alert));
+    if (table === 'messages') dispatch(fetchMessages());
+    if (table === 'comments') dispatch(fetchComments());
+    if (table === 'subscribers') dispatch(fetchSubscribers());
+  });
 
 const replace = (list, item) =>
   list.map((x) => (x.id === item.id ? { ...x, ...item } : x));
@@ -76,6 +97,9 @@ const slice = createSlice({
         s.comments = s.comments.filter((c) => c.id !== payload);
       })
       .addCase(markMessage.fulfilled, (s, { payload }) => {
+        s.messages = replace(s.messages, payload);
+      })
+      .addCase(replyToMessage.fulfilled, (s, { payload }) => {
         s.messages = replace(s.messages, payload);
       })
       .addCase(removeMessage.fulfilled, (s, { payload }) => {

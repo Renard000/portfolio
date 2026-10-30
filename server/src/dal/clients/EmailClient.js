@@ -23,7 +23,7 @@ export default class EmailClient {
     this.provider = apiKey.startsWith(BREVO_KEY_PREFIX) ? 'brevo' : 'resend';
   }
 
-  #request({ to, subject, html }) {
+  #request({ to, subject, html, text, headers, replyTo }) {
     if (this.provider === 'brevo')
       return [
         'https://api.brevo.com/v3/smtp/email',
@@ -34,6 +34,9 @@ export default class EmailClient {
             to: [{ email: to }],
             subject,
             htmlContent: html,
+            textContent: text,
+            headers,
+            replyTo: replyTo ? { email: replyTo } : undefined,
           },
         },
       ];
@@ -41,7 +44,15 @@ export default class EmailClient {
       'https://api.resend.com/emails',
       {
         headers: { Authorization: `Bearer ${this.apiKey}` },
-        body: { from: this.from, to: [to], subject, html },
+        body: {
+          from: this.from,
+          to: [to],
+          subject,
+          html,
+          text,
+          headers,
+          reply_to: replyTo,
+        },
       },
     ];
   }
