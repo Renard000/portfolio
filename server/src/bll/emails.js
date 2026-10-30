@@ -6,14 +6,21 @@ const wrap = (body, footer = '') =>
     footer ? `<hr><p style="font-size:12px;color:#666">${footer}</p>` : ''
   }</div>`;
 
-export function confirmationEmail({ confirmUrl }) {
+/** Bas de courriel : qui écrit et comment le joindre. */
+const senderLine = ({ name, address, site } = {}) => {
+  const parts = [name, address, site].filter(Boolean).map(escapeHtml);
+  return parts.length ? `Expéditeur : ${parts.join(' · ')}.` : '';
+};
+
+export function confirmationEmail({ confirmUrl, sender }) {
   return {
     subject: 'Confirmez votre abonnement',
     html: wrap(
       `<h2>Confirmez votre abonnement</h2>
        <p>Vous (ou quelqu'un d'autre) avez demandé à recevoir un courriel à chaque nouvelle publication du portfolio.</p>
        <p><a href="${escapeHtml(confirmUrl)}">Confirmer mon abonnement</a></p>
-       <p>Sans clic de votre part, vous ne recevrez rien.</p>`
+       <p>Sans clic de votre part, vous ne recevrez rien.</p>`,
+      senderLine(sender)
     ),
   };
 }
@@ -28,14 +35,21 @@ const CALLS_TO_ACTION = {
 };
 
 /** Courriel de publication, quel qu'en soit le type : tout le texte dynamique est échappé. */
-export function contentEmail({ kind = 'article', title, excerpt, url, unsubscribeUrl }) {
+export function contentEmail({
+  kind = 'article',
+  title,
+  excerpt,
+  url,
+  unsubscribeUrl,
+  sender,
+}) {
   return {
     subject: `${PUBLICATION_LABELS[kind]} : ${title}`,
     html: wrap(
       `<h2>${escapeHtml(title)}</h2>
        ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
        <p><a href="${escapeHtml(url)}">${CALLS_TO_ACTION[kind]}</a></p>`,
-      `Vous recevez ce courriel car vous êtes abonné(e) à la newsletter. <a href="${escapeHtml(
+      `${senderLine(sender)} Vous recevez ce courriel car vous êtes abonné(e) à la newsletter. <a href="${escapeHtml(
         unsubscribeUrl
       )}">Me désabonner</a>`
     ),

@@ -12,18 +12,7 @@ firebase.initializeApp({
   appId: '1:44159864753:web:688a503be3e60087137790',
 });
 
-// 2. Initialisation de la messagerie en arrière-plan
-const messaging = firebase.messaging();
-
-// 3. Gestion de la réception d'une notification lorsque l'app est en arrière-plan ou fermée
-messaging.onBackgroundMessage((payload) => {
-  console.log('[firebase-messaging-sw.js] Message reçu en arrière-plan ', payload);
-
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: '/favicon.ico', // Icône affichée avec la notification
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+// 2. Initialisation de la messagerie en arrière-plan.
+// Le serveur envoie un bloc `notification` : Firebase l'affiche lui-même et ouvre le lien
+// au clic. Appeler showNotification ici afficherait chaque notification en double.
+firebase.messaging();

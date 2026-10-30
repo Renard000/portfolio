@@ -353,5 +353,6 @@ describe('FirebaseAdmin', () => {
     const msg = messaging.sendEachForMulticast.mock.calls[0][0];
     expect(msg.tokens).toEqual(['a', 'b', 'c', 'd']);
     expect(msg.notification).toEqual({ title: 'T', body: 'B' });
+    expect(msg.webpush.notification.icon).toBe('/favicon.png');
   });
 });

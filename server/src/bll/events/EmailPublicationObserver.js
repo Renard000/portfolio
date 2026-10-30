@@ -8,13 +8,14 @@ export default class EmailPublicationObserver {
   constructor(
     newsletterRepository,
     emailClient,
-    { siteUrl, publicApiUrl, batchSize = 50 }
+    { siteUrl, publicApiUrl, batchSize = 50, sender }
   ) {
     this.newsletterRepository = newsletterRepository;
     this.emailClient = emailClient;
     this.siteUrl = siteUrl.replace(/\/+$/, '');
     this.publicApiUrl = publicApiUrl.replace(/\/+$/, '');
     this.batchSize = batchSize;
+    this.sender = sender;
   }
 
   async onPublication(publication) {
@@ -34,6 +35,7 @@ export default class EmailPublicationObserver {
               title: publication.title,
               excerpt: publication.excerpt,
               url: publication.url(this.siteUrl),
+              sender: this.sender,
               unsubscribeUrl: `${this.publicApiUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(
                 s.unsubscribeToken
               )}`,

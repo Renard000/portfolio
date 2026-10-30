@@ -2,6 +2,7 @@ import { Component, createRef } from 'react';
 import { Link } from 'react-router-dom';
 import ArticleCard from '../../components/ArticleCard.jsx';
 import CommentForm from '../../components/CommentForm.jsx';
+import PageMeta from '../../components/PageMeta.jsx';
 import Thumb from '../../components/Thumb.jsx';
 
 /**
@@ -72,6 +73,7 @@ export default class ArticlePage extends Component {
     } = this.props;
     return (
       <>
+        <PageMeta title={article.title} description={article.excerpt} type="article" />
         <div
           className="pf-read-progress"
           role="progressbar"

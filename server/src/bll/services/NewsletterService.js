@@ -9,11 +9,12 @@ export default class NewsletterService {
   constructor(
     newsletterRepository,
     emailClient,
-    { publicApiUrl, clock = () => new Date() }
+    { publicApiUrl, sender, clock = () => new Date() }
   ) {
     this.repo = newsletterRepository;
     this.emailClient = emailClient;
     this.publicApiUrl = publicApiUrl.replace(/\/+$/, '');
+    this.sender = sender;
     this.clock = clock;
   }
 
@@ -48,6 +49,7 @@ export default class NewsletterService {
 
     const mail = confirmationEmail({
       confirmUrl: this.link('confirm', subscriber.confirmToken),
+      sender: this.sender,
     });
     await this.emailClient.send({ to: subscriber.email, ...mail });
     return { status: 'pending' };

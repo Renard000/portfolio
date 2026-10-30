@@ -8,8 +8,8 @@ const PALETTE = ['#3b2f8f', '#0f5e4d', '#8a3a24', '#24507a', '#6b3b8f'];
 const SHAPE_COUNT = 3;
 
 /**
- * Profil et projets du portfolio. Le fichier local sert de contenu initial et de repli ;
- * les projets et compétences gérés depuis l'admin (API) le remplacent dès qu'ils existent.
+ * Profil et projets du portfolio. Les projets et compétences de l'admin (API) passent
+ * d'abord ; ceux du fichier local restent affichés tant qu'ils n'existent pas en base.
  */
 export default class ContentService {
   constructor(content, { projectRepository = null, skillRepository = null } = {}) {
@@ -23,7 +23,7 @@ export default class ContentService {
     return { profile: this.content.profile, projects: this.content.projects };
   }
 
-  /** Contenu de l'API si disponible et non vide, sinon celui du fichier (panne incluse). */
+  /** Contenu de l'API fusionné avec le fichier ; le fichier seul en cas de panne. */
   async getAll() {
     const local = this.snapshot();
     const [projects, skills] = await Promise.all([
@@ -35,12 +35,20 @@ export default class ContentService {
         skills && skills.length
           ? {
               ...local.profile,
-              skills: skills.map((s) => ({ name: s.name, level: s.level })),
+              skills: ContentService.merge(
+                skills.map((s) => ({ name: s.name, level: s.level })),
+                local.profile.skills,
+                (s) => s.name.toLowerCase()
+              ),
             }
           : local.profile,
       projects:
         projects && projects.length
-          ? projects.map((p, i) => ContentService.fromApiProject(p, i))
+          ? ContentService.merge(
+              projects.map((p, i) => ContentService.fromApiProject(p, i)),
+              local.projects,
+              (p) => p.slug
+            )
           : local.projects,
     };
   }
@@ -52,6 +60,12 @@ export default class ContentService {
     } catch {
       return null;
     }
+  }
+
+  /** Éléments de l'API d'abord, puis ceux du fichier qui n'y sont pas (même clé = API). */
+  static merge(fromApi, local, key) {
+    const known = new Set(fromApi.map(key));
+    return [...fromApi, ...local.filter((item) => !known.has(key(item)))];
   }
 
   /** Projet de l'API → forme attendue par les vues (couleur et vignette par défaut). */

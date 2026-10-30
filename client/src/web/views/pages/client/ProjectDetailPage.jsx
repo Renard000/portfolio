@@ -1,4 +1,5 @@
 import { PureComponent } from 'react';
+import PageMeta from '../../components/PageMeta.jsx';
 import { Link } from 'react-router-dom';
 import AnimatedCounter from '../../components/AnimatedCounter.jsx';
 import Thumb from '../../components/Thumb.jsx';
@@ -25,6 +26,7 @@ export default class ProjectDetailPage extends PureComponent {
     const code = safeHref(p.githubUrl);
     return (
       <main className="pf-wrap" style={{ paddingTop: 'clamp(40px,6vw,70px)' }}>
+        <PageMeta title={p.title} description={p.summary} />
         <div className="pf-row pf-mono">
           <Link to="/projets" className="pf-mu">
             Projets
@@ -85,12 +87,14 @@ export default class ProjectDetailPage extends PureComponent {
                 ['Rôle', p.role],
                 ['Durée', p.duration],
                 ['Année', p.year],
-              ].map(([k, v]) => (
-                <div key={k} className="pf-col" style={{ gap: 4 }}>
-                  <dt className="pf-mono">{k}</dt>
-                  <dd style={{ margin: 0, fontWeight: 700 }}>{v}</dd>
-                </div>
-              ))}
+              ]
+                .filter(([, v]) => v)
+                .map(([k, v]) => (
+                  <div key={k} className="pf-col" style={{ gap: 4 }}>
+                    <dt className="pf-mono">{k}</dt>
+                    <dd style={{ margin: 0, fontWeight: 700 }}>{v}</dd>
+                  </div>
+                ))}
             </dl>
             <div className="pf-col" style={{ gap: 28 }}>
               <h2 className="pf-h2" style={{ fontSize: '2.5rem' }}>

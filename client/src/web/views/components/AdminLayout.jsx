@@ -17,12 +17,13 @@ export const ADMIN_LINKS = [
 
 export default class AdminLayout extends PureComponent {
   render() {
-    const { email, onSignOut, badges, children } = this.props;
+    const { email, initials, onSignOut, badges, children } = this.props;
     return (
       <div className="pf-admin">
         <aside className="pf-sb" aria-label="Administration">
           <span className="pf-logo" style={{ padding: '6px 14px 22px' }}>
-            [VN]<i>.</i>{' '}
+            {initials}
+            <i>.</i>{' '}
             <span className="pf-mono" style={{ color: 'var(--pf-vio)' }}>
               admin
             </span>

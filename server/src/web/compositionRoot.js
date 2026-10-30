@@ -108,12 +108,14 @@ export function buildContainer(config) {
   const dashboardRepository = new DashboardRepository(supabase);
 
   // BLL
+  const sender = { ...config.email.sender, site: config.siteUrl };
   // Observer : chaque service annonce ses publications, les canaux s'abonnent ici
   const publications = new PublicationSubject();
   publications.subscribe(
     new EmailPublicationObserver(newsletterRepository, emailClient, {
       siteUrl: config.siteUrl,
       publicApiUrl: config.email.publicApiUrl,
+      sender,
     })
   );
   publications.subscribe(
@@ -128,6 +130,7 @@ export function buildContainer(config) {
   const awardService = new AwardService(awardRepository, publications);
   const newsletterService = new NewsletterService(newsletterRepository, emailClient, {
     publicApiUrl: config.email.publicApiUrl,
+    sender,
   });
   const pushSubscriptionService = new PushSubscriptionService(pushSubscriptionRepository);
   const subscriberAdminService = new SubscriberAdminService(

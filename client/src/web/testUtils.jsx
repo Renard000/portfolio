@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { createStore } from './store/store.js';
 import AppRouter from './routes/AppRouter.jsx';
 import ProgressService from '../bll/services/ProgressService.js';
@@ -326,9 +327,11 @@ export function renderApp(path, services = makeServices()) {
   const store = createStore(services);
   const utils = render(
     <Provider store={store}>
-      <MemoryRouter initialEntries={[path]}>
-        <AppRouter />
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter initialEntries={[path]}>
+          <AppRouter />
+        </MemoryRouter>
+      </HelmetProvider>
     </Provider>
   );
   return { ...utils, store, services };

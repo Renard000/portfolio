@@ -90,6 +90,20 @@ describe('Publication : un événement par type de contenu', () => {
     expect(p.url('https://site.ex')).toBe(`https://site.ex${path}`);
   });
 
+  it('bas de courriel : identifie l’expéditeur, texte échappé', () => {
+    const { html } = contentEmail({
+      kind: 'article',
+      title: 'T',
+      url: 'https://site.ex/x',
+      unsubscribeUrl: 'https://api.ex/u',
+      sender: { name: 'Flo <b>', address: '1 rue X, Montréal', site: 'https://site.ex' },
+    });
+    expect(html).toContain(
+      'Expéditeur : Flo &lt;b&gt; · 1 rue X, Montréal · https://site.ex.'
+    );
+    expect(html).toContain('Me désabonner');
+  });
+
   it('chaque type a un courriel complet (objet et bouton)', () => {
     for (const kind of Object.keys(PUBLICATION_LABELS)) {
       const mail = contentEmail({

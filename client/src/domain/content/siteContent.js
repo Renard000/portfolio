@@ -2,10 +2,11 @@
  * CONTENU ÉDITABLE du portfolio (profil, compétences, parcours, projets).
  * Pas besoin de base de données pour ce contenu : plus tard, ce fichier
  * pourra être remplacé par un appel à l'API (seul ContentService changera).
- * Les champs encore entre [crochets] sont à compléter (années, durées, liens).
+ * Un champ vide (année, durée, lien) n'est simplement pas affiché.
  */
 
 import imgFlo from '../../assets/imgFlo.png';
+import cvFile from '../../assets/CV_Florwensky_Paniague.pdf';
 
 export const profile = {
   name: 'Florwensky Paniague',
@@ -18,7 +19,7 @@ export const profile = {
   bio: 'CTO chez Wozolab et développeur freelance depuis 2022, je suis aussi étudiant en Technologie de l’informatique au Collège LaSalle (DEC, 2024 – 2027). Curieux, fiable et persévérant, j’aime transformer un besoin en solution complète, de l’architecture à la mise en production.',
   email: 'pflorwensky@gmail.com',
   phone: '613 400 6107',
-  cvUrl: '../../assets/CV_Florwensky_Paniague.pdf',
+  cvUrl: cvFile,
   photoUrl: imgFlo,
   links: {
     github: 'https://github.com/Renard000',
@@ -134,9 +135,9 @@ export const projects = [
     slug: 'ecotrack',
     title: 'EcoTrack',
     category: 'Mobile',
-    year: '[Année]',
+    year: '',
     role: 'Développeur full-stack',
-    duration: '[Durée]',
+    duration: '',
     summary:
       'Application mobile de traçabilité de la collecte des déchets, avec API REST sécurisée.',
     challenge:
@@ -164,9 +165,9 @@ export const projects = [
     slug: 'finova',
     title: 'Finova',
     category: 'IA',
-    year: '[Année]',
+    year: '',
     role: 'Développeur full-stack et IA',
-    duration: '[Durée]',
+    duration: '',
     summary: 'Logiciel de prédiction et d’analyse du taux de change USD/CAD.',
     challenge:
       'Offrir à l’utilisateur une lecture claire de l’évolution du taux USD/CAD, appuyée par des modèles de prédiction.',
@@ -194,9 +195,9 @@ export const projects = [
     slug: 'canada-dirt-cleaning',
     title: 'Canada Dirt Cleaning',
     category: 'Mobile',
-    year: '[Année]',
+    year: '',
     role: 'Développeur full-stack',
-    duration: '[Durée]',
+    duration: '',
     summary: 'Plateforme de mise en relation entre clients et nettoyeurs.',
     challenge:
       'Connecter rapidement des clients et des nettoyeurs disponibles au sein d’une même application.',
@@ -214,9 +215,9 @@ export const projects = [
     slug: 'ecoroute',
     title: 'EcoRoute',
     category: 'Algorithmique',
-    year: '[Année]',
+    year: '',
     role: 'Développeur',
-    duration: '[Durée]',
+    duration: '',
     summary:
       'Application qui calcule le meilleur itinéraire selon les préférences de l’utilisateur.',
     challenge:
@@ -235,9 +236,9 @@ export const projects = [
     slug: 'api-cout-immobilier',
     title: 'API de prédiction du coût immobilier',
     category: 'IA',
-    year: '[Année]',
+    year: '',
     role: 'Développeur IA',
-    duration: '[Durée]',
+    duration: '',
     summary:
       'API qui estime le prix d’un bien immobilier à partir d’un réseau de neurones.',
     challenge:
@@ -256,9 +257,9 @@ export const projects = [
     slug: 'api-sentiment-marche',
     title: 'API de sentiment du marché',
     category: 'IA',
-    year: '[Année]',
+    year: '',
     role: 'Développeur IA',
-    duration: '[Durée]',
+    duration: '',
     summary: 'API d’analyse du sentiment financier basée sur FinBERT.',
     challenge:
       'Mesurer automatiquement le sentiment du marché à partir de textes financiers.',
@@ -275,9 +276,9 @@ export const projects = [
     slug: 'gestion-recettes-hotelieres',
     title: 'Gestion des recettes hôtelières',
     category: 'Logiciel',
-    year: '[Année]',
+    year: '',
     role: 'Développeur · Scrum',
-    duration: '[Durée]',
+    duration: '',
     summary: 'Système de gestion des recettes d’un hôtel, développé en méthode agile.',
     challenge:
       'Suivre et centraliser les recettes d’un hôtel dans un logiciel clair et maintenable.',
@@ -295,9 +296,9 @@ export const projects = [
     slug: 'scraping-livegood',
     title: 'Scraping du site Livegood',
     category: 'Data',
-    year: '[Année]',
+    year: '',
     role: 'Développeur freelance',
-    duration: '[Durée]',
+    duration: '',
     summary: 'Collecte automatisée de données sur un site MLM pour un client.',
     challenge:
       'Récupérer des données d’un site dynamique, difficile à extraire avec un simple scraper.',
@@ -315,9 +316,9 @@ export const projects = [
     slug: 'belle-maison',
     title: 'Belle Maison',
     category: 'Web',
-    year: '[Année]',
+    year: '',
     role: 'Développeur full-stack',
-    duration: '[Durée]',
+    duration: '',
     summary: 'Site de réservation de maisons.',
     challenge: 'Permettre de consulter et de réserver des maisons en ligne.',
     solution: 'Site en JavaScript, jQuery, HTML et CSS avec base de données MySQL.',
@@ -333,9 +334,9 @@ export const projects = [
     slug: 'reservation-appartements',
     title: 'Réservation d’appartements',
     category: 'Web',
-    year: '[Année]',
+    year: '',
     role: 'Développeur full-stack',
-    duration: '[Durée]',
+    duration: '',
     summary: 'Application web de réservation d’appartements.',
     challenge: 'Offrir un parcours simple de recherche et de réservation d’appartements.',
     solution: 'Application Django en Python avec base de données SQLite3.',
@@ -351,9 +352,9 @@ export const projects = [
     slug: 'quiz-marvel',
     title: 'Quiz Marvel',
     category: 'Web',
-    year: '[Année]',
+    year: '',
     role: 'Développeur front-end',
-    duration: '[Durée]',
+    duration: '',
     summary: 'Application de quiz interactive sur l’univers Marvel.',
     challenge: 'Créer une expérience de quiz fluide avec une gestion d’état propre.',
     solution:

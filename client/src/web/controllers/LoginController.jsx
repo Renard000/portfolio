@@ -11,6 +11,7 @@ class LoginController extends Component {
     if (this.props.user) return <Redirect to="/admin" />;
     return (
       <LoginView
+        initials={this.props.initials}
         loading={this.props.loading}
         error={this.props.error}
         onSubmit={this.submit}
@@ -21,6 +22,7 @@ class LoginController extends Component {
 
 const mapState = (state) => ({
   user: state.auth.user,
+  initials: state.content.profile.initials,
   loading: state.auth.loading,
   error: state.auth.error,
 });

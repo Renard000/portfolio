@@ -5,7 +5,7 @@
 export const legal = {
   conditions: {
     title: 'Conditions d’utilisation',
-    updated: '[Date de mise à jour]',
+    updated: '30 octobre 2026',
     sections: [
       {
         heading: 'Propriété du contenu',
@@ -21,13 +21,13 @@ export const legal = {
       },
       {
         heading: 'Contact',
-        body: '[Votre courriel] — pour toute demande d’autorisation ou de retrait.',
+        body: 'pflorwensky@gmail.com — pour toute demande d’autorisation ou de retrait.',
       },
     ],
   },
   confidentialite: {
     title: 'Politique de confidentialité',
-    updated: '[Date de mise à jour]',
+    updated: '30 octobre 2026',
     sections: [
       {
         heading: 'Renseignements recueillis',

@@ -3,6 +3,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   server:
@@ -37,4 +38,51 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
-      - run: npm run format
+      - run: npx prettier --check .
+
+  # Déploiement sur RapidNet (addendum D.6) : inactif tant que la variable de dépôt
+  # DEPLOY_ENABLED ne vaut pas 'true'. Les identifiants restent dans les secrets GitHub.
+  deploy:
+    needs: [server, client]
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    env:
+      APP_API_URL: ${{ vars.APP_API_URL }}
+      APP_SUPABASE_URL: ${{ vars.APP_SUPABASE_URL }}
+      APP_SUPABASE_ANON_KEY: ${{ vars.APP_SUPABASE_ANON_KEY }}
+      APP_FIREBASE_API_KEY: ${{ vars.APP_FIREBASE_API_KEY }}
+      APP_FIREBASE_AUTH_DOMAIN: ${{ vars.APP_FIREBASE_AUTH_DOMAIN }}
+      APP_FIREBASE_PROJECT_ID: ${{ vars.APP_FIREBASE_PROJECT_ID }}
+      APP_FIREBASE_STORAGE_BUCKET: ${{ vars.APP_FIREBASE_STORAGE_BUCKET }}
+      APP_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.APP_FIREBASE_MESSAGING_SENDER_ID }}
+      APP_FIREBASE_APP_ID: ${{ vars.APP_FIREBASE_APP_ID }}
+      APP_FIREBASE_VAPID_KEY: ${{ vars.APP_FIREBASE_VAPID_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Vérifier le contenu du build
+        run: test -f dist/.htaccess && test -f dist/robots.txt && test -f dist/firebase-messaging-sw.js
+      - name: Préparer SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_deploy
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      - name: Envoyer le site
+        run: rsync -az --delete --exclude='.well-known' -e 'ssh -i ~/.ssh/id_deploy' dist/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}

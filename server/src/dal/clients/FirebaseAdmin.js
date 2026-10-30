@@ -21,7 +21,10 @@ export default class FirebaseAdmin {
     const response = await this.getMessaging().sendEachForMulticast({
       tokens,
       notification: { title, body },
-      webpush: { fcmOptions: { link: url } },
+      webpush: {
+        notification: { icon: '/favicon.png' },
+        fcmOptions: { link: url },
+      },
       data: { url },
     });
     const invalidTokens = [];

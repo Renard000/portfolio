@@ -113,7 +113,7 @@ module.exports = (env, argv) => {
         },
 
         {
-          test: /\.(jpe?g|png|gif|svg)$/i,
+          test: /\.(jpe?g|png|gif|svg|pdf)$/i,
           type: 'asset/resource',
           generator: {
             filename: 'assets/[name].[contenthash][ext]',

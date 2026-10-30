@@ -229,7 +229,7 @@ describe('Page À propos', () => {
     }
   });
 
-  it('affiche le portrait s’il est configuré ; sans CV, conserve le bouton Contact', async () => {
+  it('affiche le portrait s’il est configuré et le lien de téléchargement du CV', async () => {
     renderApp('/a-propos');
 
     const main = await screen.findByRole('main');
@@ -244,7 +244,10 @@ describe('Page À propos', () => {
       expect(within(main).getByText(profile.initials)).toBeInTheDocument();
     }
 
-    expect(screen.queryByRole('link', { name: /Télécharger le CV/i })).toBeNull();
+    expect(screen.getByRole('link', { name: /Télécharger le CV/i })).toHaveAttribute(
+      'href',
+      expect.stringContaining('CV_Florwensky_Paniague')
+    );
 
     expect(screen.getAllByRole('link', { name: 'Me contacter' }).length).toBeGreaterThan(
       0

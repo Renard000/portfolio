@@ -45,7 +45,12 @@ class AdminAreaController extends Component {
       );
     if (!user) return <Redirect to="/admin/login" />;
     return (
-      <AdminLayout email={user.email} onSignOut={onSignOut} badges={badges}>
+      <AdminLayout
+        email={user.email}
+        initials={this.props.initials}
+        onSignOut={onSignOut}
+        badges={badges}
+      >
         <Switch>
           <Route exact path="/admin" component={AdminDashboardController} />
           <Route path="/admin/projets" component={AdminProjectsController} />
@@ -75,6 +80,7 @@ class AdminAreaController extends Component {
 const mapState = (state) => ({
   ready: state.auth.ready,
   user: state.auth.user,
+  initials: state.content.profile.initials,
   moderationLoaded: state.moderation.loaded,
   badges: selectAdminBadges(state),
 });

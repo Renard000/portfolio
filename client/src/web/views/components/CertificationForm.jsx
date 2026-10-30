@@ -155,11 +155,7 @@ export default class CertificationForm extends Component {
           </div>
         </div>
         {this.props.initial ? null : (
-          <NotifyCheckbox
-            id="notify"
-            checked={v.notify}
-            onChange={this.set('notify')}
-          />
+          <NotifyCheckbox id="notify" checked={v.notify} onChange={this.set('notify')} />
         )}
         {error ? (
           <div className="col-12">

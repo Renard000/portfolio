@@ -40,6 +40,32 @@ describe('Newsletter : pages d’arrivée des liens des courriels', () => {
   });
 });
 
+describe('SEO : titre et description par page', () => {
+  const metaDescription = () =>
+    document.head.querySelector('meta[name="description"][data-rh]')?.content;
+
+  it('page fixe : titre et description de la section', async () => {
+    renderApp('/blog');
+    await waitFor(() => expect(document.title).toBe('Blog — Florwensky Paniague'));
+    expect(metaDescription()).toMatch(/Notes de terrain/);
+  });
+
+  it('article : son titre et son extrait', async () => {
+    renderApp('/blog/redux-sans-hooks');
+    await waitFor(() =>
+      expect(document.title).toBe('Redux sans hooks — Florwensky Paniague')
+    );
+    expect(metaDescription()).toBe('connect et classes.');
+  });
+
+  it('administration : non indexée', async () => {
+    renderApp('/admin/login');
+    await waitFor(() =>
+      expect(document.head.querySelector('meta[name="robots"]')?.content).toBe('noindex')
+    );
+  });
+});
+
 describe('Blog public', () => {
   it('liste : article à la une, filtres, lien Blog actif dans la navigation', async () => {
     const { services } = renderApp('/blog');
@@ -312,9 +338,11 @@ describe('BLL client', () => {
       skillRepository: { list: async () => [{ name: 'Go', level: 70 }] },
     });
     const fromApi = await api.getAll();
-    expect(fromApi.projects).toHaveLength(1);
+    expect(fromApi.projects).toHaveLength(siteContent.projects.length + 1);
+    expect(fromApi.projects[0].slug).toBe('p');
     expect(fromApi.projects[0].color).toMatch(/^#/);
-    expect(fromApi.profile.skills).toEqual([{ name: 'Go', level: 70 }]);
+    expect(fromApi.profile.skills[0]).toEqual({ name: 'Go', level: 70 });
+    expect(fromApi.profile.skills).toHaveLength(siteContent.profile.skills.length + 1);
     expect(fromApi.profile.name).toBe(siteContent.profile.name);
 
     const down = new ContentService(siteContent, {
@@ -324,6 +352,18 @@ describe('BLL client', () => {
     const local = await down.getAll();
     expect(local.projects).toBe(siteContent.projects);
     expect(local.profile.skills).toBe(siteContent.profile.skills);
+  });
+
+  it('ContentService : un projet de l’admin remplace celui du fichier de même slug', () => {
+    const merged = ContentService.merge(
+      [{ slug: 'a', title: 'API' }],
+      [
+        { slug: 'a', title: 'Fichier' },
+        { slug: 'b', title: 'Fichier' },
+      ],
+      (p) => p.slug
+    );
+    expect(merged.map((p) => p.title)).toEqual(['API', 'Fichier']);
   });
 });
 

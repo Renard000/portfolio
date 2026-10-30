@@ -10,7 +10,7 @@ export default class LoginView extends Component {
   };
 
   render() {
-    const { loading, error } = this.props;
+    const { initials, loading, error } = this.props;
     return (
       <main className="pf-login">
         <div
@@ -41,7 +41,8 @@ export default class LoginView extends Component {
           onSubmit={this.submit}
         >
           <span className="pf-logo">
-            [VN]<i>.</i>{' '}
+            {initials}
+            <i>.</i>{' '}
             <span className="pf-mono" style={{ color: 'var(--pf-vio)' }}>
               admin
             </span>
