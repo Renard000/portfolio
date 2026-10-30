@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import NotificationService from '../../src/bll/services/NotificationService.js';
+import PublicationSubject from '../../src/bll/events/PublicationSubject.js';
+import EmailPublicationObserver from '../../src/bll/events/EmailPublicationObserver.js';
+import PushPublicationObserver from '../../src/bll/events/PushPublicationObserver.js';
+import Publication from '../../src/domain/entities/Publication.js';
 import ArticleService from '../../src/bll/services/ArticleService.js';
 import PushSubscriptionService from '../../src/bll/services/PushSubscriptionService.js';
 import SubscriberAdminService from '../../src/bll/services/SubscriberAdminService.js';
@@ -38,15 +41,21 @@ beforeEach(() => {
       .fn()
       .mockResolvedValue({ successCount: 0, failureCount: 0, invalidTokens: [] }),
   };
-  service = new NotificationService(news, push, email, fcm, {
-    siteUrl: 'https://site.ex/',
-    publicApiUrl: 'https://api.ex',
-    batchSize: 2,
-    logger,
-  });
+  const subject = new PublicationSubject({ logger });
+  subject.subscribe(
+    new EmailPublicationObserver(news, email, {
+      siteUrl: 'https://site.ex/',
+      publicApiUrl: 'https://api.ex',
+      batchSize: 2,
+    })
+  );
+  subject.subscribe(
+    new PushPublicationObserver(push, fcm, { siteUrl: 'https://site.ex/' })
+  );
+  service = { notifyPublished: (a) => subject.notify(Publication.fromArticle(a)) };
 });
 
-describe('NotificationService — courriels', () => {
+describe('Observateur courriel', () => {
   it("n'écrit qu'aux abonnés confirmés, actifs et non désinscrits", async () => {
     await addReceiver('ok@x.com');
     await addReceiver('pending@x.com', { confirmed: false });
@@ -102,7 +111,7 @@ describe('NotificationService — courriels', () => {
   });
 });
 
-describe('NotificationService — push FCM', () => {
+describe('Observateur push FCM', () => {
   it('envoie aux jetons ACTIFS seulement, avec titre, texte et lien', async () => {
     await push.upsert('tok-active-aaaaaaaaaaaa');
     await push.upsert('tok-off-bbbbbbbbbbbbbbb');
@@ -170,7 +179,7 @@ describe('NotificationService — push FCM', () => {
   });
 });
 
-describe('ArticleService.publish → NotificationService', () => {
+describe('ArticleService.publish → PublicationSubject', () => {
   const makeRepo = (a) => ({
     findById: vi.fn().mockResolvedValue(a),
     save: vi.fn(async (x) => x),
@@ -178,34 +187,39 @@ describe('ArticleService.publish → NotificationService', () => {
 
   it('publie le brouillon puis notifie', async () => {
     const a = new Article({ id: '1', title: 'T', slug: 't' });
-    const notifier = { notifyPublished: vi.fn().mockResolvedValue({}) };
+    const notifier = { notify: vi.fn().mockResolvedValue({}) };
     const result = await new ArticleService(makeRepo(a), notifier).publish('1');
     expect(result.status).toBe('published');
-    expect(notifier.notifyPublished).toHaveBeenCalledWith(result);
+    expect(notifier.notify).toHaveBeenCalledWith(Publication.fromArticle(result));
   });
 
   it('une panne de notification ne casse pas la publication', async () => {
     const a = new Article({ id: '1', title: 'T', slug: 't' });
-    const notifier = { notifyPublished: vi.fn().mockRejectedValue(new Error('x')) };
-    const r = await new ArticleService(makeRepo(a), notifier).publish('1');
+    const subject = new PublicationSubject({ logger });
+    subject.subscribe({
+      channel: 'email',
+      onPublication: vi.fn().mockRejectedValue(new Error('x')),
+    });
+    const r = await new ArticleService(makeRepo(a), subject).publish('1');
     expect(r.status).toBe('published');
+    expect(logger.error).toHaveBeenCalled();
   });
 
   it('article inconnu : NotFoundError, aucune notification', async () => {
-    const notifier = { notifyPublished: vi.fn() };
+    const notifier = { notify: vi.fn() };
     await expect(
       new ArticleService(makeRepo(null), notifier).publish('x')
     ).rejects.toBeInstanceOf(NotFoundError);
-    expect(notifier.notifyPublished).not.toHaveBeenCalled();
+    expect(notifier.notify).not.toHaveBeenCalled();
   });
 
   it('article déjà publié : refus, aucune notification en double', async () => {
     const a = new Article({ id: '1', title: 'T', slug: 't', status: 'published' });
-    const notifier = { notifyPublished: vi.fn() };
+    const notifier = { notify: vi.fn() };
     await expect(
       new ArticleService(makeRepo(a), notifier).publish('1')
     ).rejects.toThrow();
-    expect(notifier.notifyPublished).not.toHaveBeenCalled();
+    expect(notifier.notify).not.toHaveBeenCalled();
   });
 });
 

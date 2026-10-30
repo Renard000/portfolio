@@ -1,8 +1,10 @@
 import { NotFoundError } from '../../domain/errors/index.js';
+import Publication from '../../domain/entities/Publication.js';
 
 export default class AwardService {
-  constructor(awardRepository) {
+  constructor(awardRepository, publications = null) {
     this.awardRepository = awardRepository;
+    this.publications = publications;
   }
 
   /** Liste triée (plus récente d'abord) + totaux calculés ici, jamais dans la vue. */
@@ -31,8 +33,12 @@ export default class AwardService {
     return { count: items.length, scholarshipAmounts };
   }
 
-  create(dto) {
-    return this.awardRepository.create(dto);
+  /** notify : décoché dans l'admin pour ajouter un ancien contenu sans écrire aux abonnés. */
+  async create({ notify = true, ...dto }) {
+    const created = await this.awardRepository.create(dto);
+    if (notify && this.publications)
+      await this.publications.notify(Publication.fromAward(created));
+    return created;
   }
 
   async update(id, dto) {

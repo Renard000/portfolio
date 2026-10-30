@@ -22,22 +22,37 @@ import PushSubscriptionRepository from '../dal/repositories/PushSubscriptionRepo
 import ContactRepository from '../dal/repositories/ContactRepository.js';
 import ArticleRepository from '../dal/repositories/ArticleRepository.js';
 import AuthRepository from '../dal/repositories/AuthRepository.js';
+import CommentRepository from '../dal/repositories/CommentRepository.js';
+import MessageRepository from '../dal/repositories/MessageRepository.js';
+import ProjectRepository from '../dal/repositories/ProjectRepository.js';
+import SkillRepository from '../dal/repositories/SkillRepository.js';
+import DashboardRepository from '../dal/repositories/DashboardRepository.js';
 
 import CertificationService from '../bll/services/CertificationService.js';
 import AwardService from '../bll/services/AwardService.js';
 import NewsletterService from '../bll/services/NewsletterService.js';
 import PushSubscriptionService from '../bll/services/PushSubscriptionService.js';
 import SubscriberAdminService from '../bll/services/SubscriberAdminService.js';
-import NotificationService from '../bll/services/NotificationService.js';
+import PublicationSubject from '../bll/events/PublicationSubject.js';
+import EmailPublicationObserver from '../bll/events/EmailPublicationObserver.js';
+import PushPublicationObserver from '../bll/events/PushPublicationObserver.js';
 import ContactService from '../bll/services/ContactService.js';
 import ArticleService from '../bll/services/ArticleService.js';
 import AuthService from '../bll/services/AuthService.js';
+import CommentService from '../bll/services/CommentService.js';
+import MessageService from '../bll/services/MessageService.js';
+import ProjectService from '../bll/services/ProjectService.js';
+import SkillService from '../bll/services/SkillService.js';
+import DashboardService from '../bll/services/DashboardService.js';
 
 import CertificationController from './controllers/CertificationController.js';
 import AwardController from './controllers/AwardController.js';
 import NewsletterController from './controllers/NewsletterController.js';
 import ContactController from './controllers/ContactController.js';
 import SubscriberAdminController from './controllers/SubscriberAdminController.js';
+import ArticleController from './controllers/ArticleController.js';
+import AdminContentController from './controllers/AdminContentController.js';
+import CrudController from './controllers/CrudController.js';
 
 /** Seul fichier qui fait des `new` sur clients, repositories, services et contrôleurs. */
 export function buildContainer(config) {
@@ -86,10 +101,31 @@ export function buildContainer(config) {
   const articleRepository = new ArticleRepository(supabase);
   const authRepository = new AuthRepository(supabase);
   const contactRepository = new ContactRepository(supabase);
+  const commentRepository = new CommentRepository(supabase);
+  const messageRepository = new MessageRepository(supabase);
+  const projectRepository = new ProjectRepository(supabase);
+  const skillRepository = new SkillRepository(supabase);
+  const dashboardRepository = new DashboardRepository(supabase);
 
   // BLL
-  const certificationService = new CertificationService(certificationRepository);
-  const awardService = new AwardService(awardRepository);
+  // Observer : chaque service annonce ses publications, les canaux s'abonnent ici
+  const publications = new PublicationSubject();
+  publications.subscribe(
+    new EmailPublicationObserver(newsletterRepository, emailClient, {
+      siteUrl: config.siteUrl,
+      publicApiUrl: config.email.publicApiUrl,
+    })
+  );
+  publications.subscribe(
+    new PushPublicationObserver(pushSubscriptionRepository, firebaseAdmin, {
+      siteUrl: config.siteUrl,
+    })
+  );
+  const certificationService = new CertificationService(
+    certificationRepository,
+    publications
+  );
+  const awardService = new AwardService(awardRepository, publications);
   const newsletterService = new NewsletterService(newsletterRepository, emailClient, {
     publicApiUrl: config.email.publicApiUrl,
   });
@@ -98,18 +134,11 @@ export function buildContainer(config) {
     newsletterRepository,
     pushSubscriptionRepository
   );
-  const notificationService = new NotificationService(
-    newsletterRepository,
-    pushSubscriptionRepository,
-    emailClient,
-    firebaseAdmin,
-    { siteUrl: config.siteUrl, publicApiUrl: config.email.publicApiUrl }
-  );
   const videoService = new VideoService(
     videoSeriesRepository,
     videoRepository,
     storage,
-    notificationService,
+    publications,
     {
       cdnUrl: cloudfront.url,
     }
@@ -127,7 +156,16 @@ export function buildContainer(config) {
     videoSeriesRepository,
     cdnSigner
   );
-  const articleService = new ArticleService(articleRepository, notificationService);
+  const articleService = new ArticleService(
+    articleRepository,
+    publications,
+    commentRepository
+  );
+  const commentService = new CommentService(commentRepository, articleRepository);
+  const messageService = new MessageService(messageRepository);
+  const projectService = new ProjectService(projectRepository, publications);
+  const skillService = new SkillService(skillRepository);
+  const dashboardService = new DashboardService(dashboardRepository);
   const authService = new AuthService(authRepository);
   const contactService = new ContactService(contactRepository, emailClient, {
     notifyTo: config.contact.notifyTo,
@@ -142,11 +180,21 @@ export function buildContainer(config) {
     awardController: new AwardController(awardService),
     newsletterController: new NewsletterController(
       newsletterService,
-      pushSubscriptionService
+      pushSubscriptionService,
+      { siteUrl: config.siteUrl }
     ),
     videoController: new VideoController(videoService, playbackService),
     videoAdminController: new VideoAdminController(videoService, videoUploadService),
     contactController: new ContactController(contactService),
+    articleController: new ArticleController(articleService, commentService),
+    projectController: new CrudController(projectService),
+    skillController: new CrudController(skillService),
+    adminContentController: new AdminContentController({
+      articleService,
+      commentService,
+      messageService,
+      dashboardService,
+    }),
     subscriberAdminController: new SubscriberAdminController(
       subscriberAdminService,
       newsletterService

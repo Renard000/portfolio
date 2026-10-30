@@ -1,4 +1,5 @@
 import { escapeHtml } from '../shared/html.js';
+import { PUBLICATION_LABELS } from '../domain/entities/Publication.js';
 
 const wrap = (body, footer = '') =>
   `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;line-height:1.5">${body}${
@@ -17,20 +18,23 @@ export function confirmationEmail({ confirmUrl }) {
   };
 }
 
-const KINDS = {
-  article: { subject: 'Nouvel article', cta: "Lire l'article" },
-  video: { subject: 'Nouvelle vidéo', cta: 'Regarder la vidéo' },
+const CALLS_TO_ACTION = {
+  article: "Lire l'article",
+  video: 'Regarder la vidéo',
+  series: 'Découvrir la formation',
+  certification: 'Voir les certifications',
+  award: 'Voir les distinctions',
+  project: 'Découvrir le projet',
 };
 
-/** Courriel de publication (article ou vidéo) : tout le texte dynamique est échappé. */
+/** Courriel de publication, quel qu'en soit le type : tout le texte dynamique est échappé. */
 export function contentEmail({ kind = 'article', title, excerpt, url, unsubscribeUrl }) {
-  const k = KINDS[kind];
   return {
-    subject: `${k.subject} : ${title}`,
+    subject: `${PUBLICATION_LABELS[kind]} : ${title}`,
     html: wrap(
       `<h2>${escapeHtml(title)}</h2>
        ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
-       <p><a href="${escapeHtml(url)}">${k.cta}</a></p>`,
+       <p><a href="${escapeHtml(url)}">${CALLS_TO_ACTION[kind]}</a></p>`,
       `Vous recevez ce courriel car vous êtes abonné(e) à la newsletter. <a href="${escapeHtml(
         unsubscribeUrl
       )}">Me désabonner</a>`

@@ -47,10 +47,12 @@ const expiryMessage = {
   path: ['expiryDate'],
 };
 
-export const certificationCreate = certificationShape.refine(
-  expiryAfterIssue,
-  expiryMessage
-);
+// Création seulement : false pour ajouter un ancien contenu sans écrire aux abonnés
+const notifyOption = { notify: z.boolean().optional() };
+
+export const certificationCreate = certificationShape
+  .extend(notifyOption)
+  .refine(expiryAfterIssue, expiryMessage);
 export const certificationUpdate = certificationShape
   .partial()
   .refine((v) => Object.keys(v).length > 0, 'Aucun champ à modifier')
@@ -82,7 +84,7 @@ const awardShape = z.object({
   featured: z.boolean().optional(),
   sortOrder: z.number().int().min(-100000).max(100000).optional(),
 });
-export const awardCreate = awardShape;
+export const awardCreate = awardShape.extend(notifyOption);
 export const awardUpdate = awardShape
   .partial()
   .refine((v) => Object.keys(v).length > 0, 'Aucun champ à modifier');
@@ -198,3 +200,80 @@ export const uploadUrlBody = z.object({
   size: z.number().int().min(1),
   position: z.number().int().min(1).max(999).optional(),
 });
+
+// ---------- Blog (articles, commentaires) ----------
+const tagList = z.array(z.string().trim().min(1).max(40)).max(20).optional();
+
+export const articleQuery = z.object({
+  category: z.string().trim().max(100).optional(),
+  q: z.string().trim().max(100).optional(),
+  page: z.coerce.number().int().min(1).max(1000).optional(),
+  // E.7 : pages de taille limitée (20 maximum)
+  limit: z.coerce.number().int().min(1).max(20).optional(),
+});
+
+const articleShape = z.object({
+  title: z.string().trim().min(1).max(200),
+  slug,
+  excerpt: optText(500),
+  content: z.string().max(200000),
+  coverUrl: optUrl,
+  category: optText(100),
+  tags: tagList,
+});
+export const articleCreate = articleShape;
+export const articleUpdate = articleShape
+  .partial()
+  .refine((v) => Object.keys(v).length > 0, 'Aucun champ à modifier');
+
+export const commentBody = z.object({
+  author: z.string().trim().min(1).max(80),
+  content: z.string().trim().min(2).max(2000),
+  // Honeypot : champ invisible que seuls les robots remplissent.
+  website: z.string().max(500).optional(),
+});
+export const approveBody = z.object({ approved: z.boolean() });
+export const readBody = z.object({ lu: z.boolean() });
+
+// ---------- Projets et compétences ----------
+const hexColor = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, 'Couleur hexadécimale attendue (#RRGGBB)')
+  .nullable()
+  .optional();
+
+const projectShape = z.object({
+  slug,
+  title: z.string().trim().min(1).max(200),
+  category: optText(100),
+  summary: optText(500),
+  description: optText(5000),
+  challenge: optText(5000),
+  solution: optText(5000),
+  role: optText(120),
+  duration: optText(60),
+  year: optText(20),
+  tech: z.array(z.string().trim().min(1).max(60)).max(30).optional(),
+  results: z.array(z.string().trim().min(1).max(200)).max(10).optional(),
+  githubUrl: optUrl,
+  liveUrl: optUrl,
+  imageUrl: optUrl,
+  color: hexColor,
+  featured: z.boolean().optional(),
+  sortOrder: z.number().int().min(-100000).max(100000).optional(),
+});
+export const projectCreate = projectShape.extend(notifyOption);
+export const projectUpdate = projectShape
+  .partial()
+  .refine((v) => Object.keys(v).length > 0, 'Aucun champ à modifier');
+
+const skillShape = z.object({
+  name: z.string().trim().min(1).max(100),
+  level: z.number().int().min(0).max(100),
+  icon: optText(60),
+  sortOrder: z.number().int().min(-100000).max(100000).optional(),
+});
+export const skillCreate = skillShape;
+export const skillUpdate = skillShape
+  .partial()
+  .refine((v) => Object.keys(v).length > 0, 'Aucun champ à modifier');

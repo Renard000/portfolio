@@ -520,4 +520,76 @@ describe('migrations Supabase (PGlite)', () => {
       ).rejects.toThrow(/permission denied/i);
     });
   });
+
+  describe('migration 7 : projets, compétences, journal des vues', () => {
+    const ART = 'd0000000-0000-4000-8000-000000000001';
+    const DRAFT = 'd0000000-0000-4000-8000-000000000002';
+    beforeAll(async () => {
+      await db.exec(`
+        insert into public.articles (id, title, slug, status, published_at)
+          values ('${ART}', 'Publié', 'publie', 'published', now()),
+                 ('${DRAFT}', 'Brouillon', 'brouillon', 'draft', null);
+      `);
+    });
+
+    it('projets : slug obligatoire et unique, couleur #RRGGBB', async () => {
+      await db.exec(
+        `insert into public.projects (title, slug, color) values ('EcoTrack', 'ecotrack', '#0f5e4d')`
+      );
+      await expect(
+        db.exec(`insert into public.projects (title, slug) values ('Autre', 'ecotrack')`)
+      ).rejects.toThrow(/duplicate key|unique/i);
+      await expect(
+        db.exec(`insert into public.projects (title) values ('Sans slug')`)
+      ).rejects.toThrow(/null value/i);
+      await expect(
+        db.exec(
+          `insert into public.projects (title, slug, color) values ('X', 'x', 'rouge')`
+        )
+      ).rejects.toThrow(/projects_color_check/);
+    });
+
+    it('compétences : ordre d’affichage par défaut à 0', async () => {
+      const r = await db.query(
+        `insert into public.skills (name, level) values ('React', 90) returning sort_order`
+      );
+      expect(r.rows[0].sort_order).toBe(0);
+    });
+
+    it('increment_views journalise seulement les vues d’articles publiés', async () => {
+      await db.exec(
+        `select public.increment_views('${ART}'); select public.increment_views('${ART}'); select public.increment_views('${DRAFT}');`
+      );
+      const views = await db.query(
+        `select article_id, count(*)::int as n from public.article_views group by article_id`
+      );
+      expect(views.rows).toEqual([{ article_id: ART, n: 2 }]);
+      const a = await db.query(`select views from public.articles where id = '${ART}'`);
+      expect(a.rows[0].views).toBe(2);
+    });
+
+    it('article_views_by_month : 12 mois, le mois courant compte les vues', async () => {
+      const r = await db.query(
+        `select month, views from public.article_views_by_month()`
+      );
+      expect(r.rows).toHaveLength(12);
+      expect(Number(r.rows.at(-1).views)).toBe(2);
+      expect(Number(r.rows[0].views)).toBe(0);
+    });
+
+    it('journal des vues et statistiques : invisibles et inaccessibles avec la clé publique', async () => {
+      const rows = await as('anon', null, () =>
+        db.query(`select * from public.article_views`)
+      );
+      expect(rows.rows).toHaveLength(0);
+      await expect(
+        as('anon', null, () => db.query(`select * from public.article_views_by_month()`))
+      ).rejects.toThrow(/permission denied/i);
+      await expect(
+        as('authenticated', ADMIN, () =>
+          db.query(`select public.increment_views('${ART}')`)
+        )
+      ).rejects.toThrow(/permission denied/i);
+    });
+  });
 });

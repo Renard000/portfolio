@@ -18,7 +18,7 @@ let store, storage, signer, series, app;
 
 function build({ signerOverride } = {}) {
   const sig = signerOverride || signer;
-  const notifier = { notifyVideoPublished: vi.fn().mockResolvedValue({}) };
+  const notifier = { notify: vi.fn().mockResolvedValue({}) };
   const videoService = new VideoService(
     store.seriesRepo,
     store.videoRepo,

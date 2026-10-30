@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from '../../domain/errors/index.js';
+import Publication from '../../domain/entities/Publication.js';
 import { normalize } from './CertificationService.js';
 
 const DEFAULT_LIMIT = 12;
@@ -17,17 +18,11 @@ export function validateChapters(chapters, durationSeconds) {
 }
 
 export default class VideoService {
-  constructor(
-    seriesRepository,
-    videoRepository,
-    storage,
-    notificationService,
-    options = {}
-  ) {
+  constructor(seriesRepository, videoRepository, storage, publications, options = {}) {
     this.seriesRepository = seriesRepository;
     this.videoRepository = videoRepository;
     this.storage = storage;
-    this.notificationService = notificationService;
+    this.publications = publications;
     this.cdnUrl = options.cdnUrl || '';
     this.logger = options.logger || console;
     this.clock = options.clock || (() => new Date());
@@ -132,8 +127,16 @@ export default class VideoService {
 
   async updateSeries(id, dto) {
     try {
+      const current = await this.seriesRepository.findById(id);
       const updated = await this.seriesRepository.update(id, dto);
       if (!updated) throw new NotFoundError('Série introuvable');
+      // Une série n'est visible qu'avec au moins une vidéo publiée
+      const goingLive =
+        updated.isPublished() &&
+        !current.isPublished() &&
+        current.publishedVideos().length > 0;
+      if (goingLive && this.publications)
+        await this.publications.notify(Publication.fromSeries(updated));
       return updated;
     } catch (err) {
       if (isDuplicate(err))
@@ -171,12 +174,8 @@ export default class VideoService {
   }
 
   async #notifyIfLive(video, series) {
-    if (!this.notificationService || !series.isPublished()) return;
-    try {
-      await this.notificationService.notifyVideoPublished(video, series);
-    } catch (err) {
-      this.logger.error(`[videos] notification échouée : ${err.message}`);
-    }
+    if (!this.publications || !series.isPublished()) return;
+    await this.publications.notify(Publication.fromVideo(video, series));
   }
 
   async createVideo(dto) {

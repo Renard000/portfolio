@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../domain/errors/index.js';
+import Publication from '../../domain/entities/Publication.js';
 
 /** Minuscules sans accents : « Sécurité » trouve « securite ». */
 export const normalize = (s) =>
@@ -8,8 +9,9 @@ export const normalize = (s) =>
     .toLowerCase();
 
 export default class CertificationService {
-  constructor(certificationRepository) {
+  constructor(certificationRepository, publications = null) {
     this.certificationRepository = certificationRepository;
+    this.publications = publications;
   }
 
   /** Filtres : issuer, category (égalité), q (texte libre), featured, sort. */
@@ -34,8 +36,12 @@ export default class CertificationService {
     return items;
   }
 
-  create(dto) {
-    return this.certificationRepository.create(dto);
+  /** notify : décoché dans l'admin pour ajouter un ancien contenu sans écrire aux abonnés. */
+  async create({ notify = true, ...dto }) {
+    const created = await this.certificationRepository.create(dto);
+    if (notify && this.publications)
+      await this.publications.notify(Publication.fromCertification(created));
+    return created;
   }
 
   async update(id, dto) {

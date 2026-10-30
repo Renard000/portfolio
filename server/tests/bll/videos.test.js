@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import VideoService, { validateChapters } from '../../src/bll/services/VideoService.js';
 import VideoUploadService from '../../src/bll/services/VideoUploadService.js';
 import PlaybackService from '../../src/bll/services/PlaybackService.js';
-import NotificationService from '../../src/bll/services/NotificationService.js';
+import PublicationSubject from '../../src/bll/events/PublicationSubject.js';
+import EmailPublicationObserver from '../../src/bll/events/EmailPublicationObserver.js';
+import PushPublicationObserver from '../../src/bll/events/PushPublicationObserver.js';
+import Publication from '../../src/domain/entities/Publication.js';
 import Video from '../../src/domain/entities/Video.js';
 import { NotFoundError, ValidationError } from '../../src/domain/errors/index.js';
 import {
@@ -17,7 +20,7 @@ let store, storage, notifier, svc, logger;
 beforeEach(() => {
   store = new MemoryVideoStore();
   storage = new FakeStorage();
-  notifier = { notifyVideoPublished: vi.fn().mockResolvedValue({}) };
+  notifier = { notify: vi.fn().mockResolvedValue({}) };
   logger = { error: vi.fn(), log: vi.fn() };
   svc = new VideoService(store.seriesRepo, store.videoRepo, storage, notifier, {
     cdnUrl: CDN,
@@ -206,7 +209,7 @@ describe('VideoService — administration des vidéos', () => {
     expect(v.position).toBe(1);
     expect(v.status).toBe('draft');
     expect(v.publishedAt).toBeNull();
-    expect(notifier.notifyVideoPublished).not.toHaveBeenCalled();
+    expect(notifier.notify).not.toHaveBeenCalled();
   });
   it('refuse un fichier absent du bucket', async () => {
     storage.files.clear();
@@ -239,8 +242,8 @@ describe('VideoService — administration des vidéos', () => {
       dto({ status: 'published', posterKey: 'posters/react-avance/01-intro.jpg' })
     );
     expect(v.publishedAt).toBe('2026-05-01T10:00:00.000Z');
-    expect(notifier.notifyVideoPublished).toHaveBeenCalledTimes(1);
-    expect(notifier.notifyVideoPublished.mock.calls[0][1].slug).toBe('react-avance');
+    expect(notifier.notify).toHaveBeenCalledTimes(1);
+    expect(notifier.notify.mock.calls[0][0].path).toContain('/formations/react-avance/');
   });
   it('vidéo publiée dans une série en brouillon : aucune notification', async () => {
     const draft = store.addSeries({ slug: 'brouillon', status: 'draft' });
@@ -253,15 +256,15 @@ describe('VideoService — administration des vidéos', () => {
       durationSeconds: 60,
       status: 'published',
     });
-    expect(notifier.notifyVideoPublished).not.toHaveBeenCalled();
+    expect(notifier.notify).not.toHaveBeenCalled();
   });
   it('passage brouillon → publié notifie UNE fois ; republier ou modifier ne renotifie pas', async () => {
     const v = await svc.createVideo(dto());
     await svc.updateVideo(v.id, { status: 'published' });
-    expect(notifier.notifyVideoPublished).toHaveBeenCalledTimes(1);
+    expect(notifier.notify).toHaveBeenCalledTimes(1);
     await svc.updateVideo(v.id, { status: 'published', title: 'Titre modifié' });
     await svc.updateVideo(v.id, { title: 'Encore' });
-    expect(notifier.notifyVideoPublished).toHaveBeenCalledTimes(1);
+    expect(notifier.notify).toHaveBeenCalledTimes(1);
   });
   it('retour en brouillon : publishedAt effacé', async () => {
     const v = await svc.createVideo(dto({ status: 'published' }));
@@ -269,8 +272,21 @@ describe('VideoService — administration des vidéos', () => {
     expect(d.publishedAt).toBeNull();
   });
   it("une panne de notification n'annule pas la publication", async () => {
-    notifier.notifyVideoPublished.mockRejectedValue(new Error('x'));
-    const v = await svc.createVideo(dto({ status: 'published' }));
+    const subject = new PublicationSubject({ logger: { log() {}, error: logger.error } });
+    subject.subscribe({
+      channel: 'email',
+      onPublication: vi.fn().mockRejectedValue(new Error('x')),
+    });
+    const service = new VideoService(
+      store.seriesRepo,
+      store.videoRepo,
+      storage,
+      subject,
+      {
+        logger,
+      }
+    );
+    const v = await service.createVideo(dto({ status: 'published' }));
     expect(v.status).toBe('published');
     expect(logger.error).toHaveBeenCalled();
   });
@@ -451,7 +467,7 @@ describe('PlaybackService (URL signées, addendum E)', () => {
   });
 });
 
-describe('NotificationService.notifyVideoPublished', () => {
+describe("Publication d'une vidéo : courriel et push", () => {
   it('courriel (échappé, lien de la vidéo) + push « Nouvelle vidéo »', async () => {
     const news = new MemoryNewsletterRepo();
     const push = new MemoryPushRepo();
@@ -464,17 +480,20 @@ describe('NotificationService.notifyVideoPublished', () => {
     const s = await news.create('ok@x.com');
     await news.update(s.id, { confirmedAt: '2026-01-01T00:00:00Z' });
     await push.upsert('tok-aaaaaaaaaaaaaaaaaaaa');
-    const n = new NotificationService(news, push, email, fcm, {
-      siteUrl: 'https://site.ex',
-      publicApiUrl: 'https://api.ex',
-      logger,
-    });
+    const n = new PublicationSubject({ logger: { log() {}, error() {} } });
+    n.subscribe(
+      new EmailPublicationObserver(news, email, {
+        siteUrl: 'https://site.ex',
+        publicApiUrl: 'https://api.ex',
+      })
+    );
+    n.subscribe(new PushPublicationObserver(push, fcm, { siteUrl: 'https://site.ex' }));
     const series = store.addSeries();
     const video = store.addVideo(series, {
       title: 'Hooks <b>avancés</b>',
       description: 'Un <script>x</script> résumé',
     });
-    await n.notifyVideoPublished(video, series);
+    await n.notify(Publication.fromVideo(video, series));
     const mail = email.send.mock.calls[0][0];
     expect(mail.subject).toBe('Nouvelle vidéo : Hooks <b>avancés</b>');
     expect(mail.html).not.toContain('<script>');

@@ -23,6 +23,16 @@ import {
   orderBody,
   uploadUrlBody,
   testEmailBody,
+  articleQuery,
+  articleCreate,
+  articleUpdate,
+  commentBody,
+  approveBody,
+  readBody,
+  projectCreate,
+  projectUpdate,
+  skillCreate,
+  skillUpdate,
 } from '../../bll/schemas/index.js';
 
 const HOUR = 60 * 60 * 1000;
@@ -45,6 +55,10 @@ export function buildApiRouter(container) {
     contactController: contact,
     videoController: video,
     videoAdminController: videoAdmin,
+    articleController: articles,
+    projectController: projects,
+    skillController: skills,
+    adminContentController: content,
     authService,
   } = container;
   const router = Router();
@@ -238,5 +252,115 @@ export function buildApiRouter(container) {
     h(videoAdmin, 'uploadUrl')
   );
 
+  // Les routes suivantes ne sont montées que si la composition root fournit les contrôleurs
+  if (articles) buildBlogRoutes(router, articles);
+  if (projects && skills) buildPortfolioRoutes(router, admin, projects, skills);
+  if (content) buildAdminContentRoutes(router, admin, content);
+
   return router;
+}
+
+// --- Blog public : lecture limitée à 20 par page, écritures limitées en fréquence ---
+function buildBlogRoutes(router, articles) {
+  router.get(
+    '/articles',
+    limiter(120, 15 * 60 * 1000),
+    validate({ query: articleQuery }),
+    h(articles, 'list')
+  );
+  router.get('/articles/:slug', validate({ params: slugParams }), h(articles, 'get'));
+  router.post(
+    '/articles/:id/view',
+    limiter(60),
+    validate({ params: idParams }),
+    h(articles, 'view')
+  );
+  router.post(
+    '/articles/:id/like',
+    limiter(30),
+    validate({ params: idParams }),
+    h(articles, 'like')
+  );
+  // Commentaires : 5 par heure et par IP, publiés après modération
+  router.post(
+    '/articles/:id/comments',
+    limiter(5),
+    validate({ params: idParams, body: commentBody }),
+    h(articles, 'comment')
+  );
+}
+
+// --- Projets et compétences : lecture publique, écriture admin ---
+function buildPortfolioRoutes(router, admin, projects, skills) {
+  for (const [path, ctrl, create, update] of [
+    ['/projects', projects, projectCreate, projectUpdate],
+    ['/skills', skills, skillCreate, skillUpdate],
+  ]) {
+    router.get(path, h(ctrl, 'list'));
+    router.post(path, ...admin, validate({ body: create }), h(ctrl, 'create'));
+    router.put(
+      `${path}/:id`,
+      ...admin,
+      validate({ params: idParams, body: update }),
+      h(ctrl, 'update')
+    );
+    router.delete(
+      `${path}/:id`,
+      ...admin,
+      validate({ params: idParams }),
+      h(ctrl, 'remove')
+    );
+  }
+}
+
+// --- Administration : tableau de bord, articles, commentaires, messages ---
+function buildAdminContentRoutes(router, admin, content) {
+  const byId = validate({ params: idParams });
+  router.get('/admin/dashboard', ...admin, h(content, 'getDashboard'));
+
+  router.get('/admin/articles', ...admin, h(content, 'listArticles'));
+  router.get('/admin/articles/:id', ...admin, byId, h(content, 'getArticle'));
+  router.post(
+    '/admin/articles',
+    ...admin,
+    validate({ body: articleCreate }),
+    h(content, 'createArticle')
+  );
+  router.put(
+    '/admin/articles/:id',
+    ...admin,
+    validate({ params: idParams, body: articleUpdate }),
+    h(content, 'updateArticle')
+  );
+  router.delete('/admin/articles/:id', ...admin, byId, h(content, 'deleteArticle'));
+  router.post(
+    '/admin/articles/:id/publish',
+    ...admin,
+    byId,
+    h(content, 'publishArticle')
+  );
+  router.post(
+    '/admin/articles/:id/unpublish',
+    ...admin,
+    byId,
+    h(content, 'unpublishArticle')
+  );
+
+  router.get('/admin/comments', ...admin, h(content, 'listComments'));
+  router.put(
+    '/admin/comments/:id',
+    ...admin,
+    validate({ params: idParams, body: approveBody }),
+    h(content, 'moderateComment')
+  );
+  router.delete('/admin/comments/:id', ...admin, byId, h(content, 'deleteComment'));
+
+  router.get('/admin/messages', ...admin, h(content, 'listMessages'));
+  router.put(
+    '/admin/messages/:id',
+    ...admin,
+    validate({ params: idParams, body: readBody }),
+    h(content, 'markMessage')
+  );
+  router.delete('/admin/messages/:id', ...admin, byId, h(content, 'deleteMessage'));
 }
