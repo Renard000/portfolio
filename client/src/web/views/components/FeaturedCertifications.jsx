@@ -7,7 +7,7 @@ export default class FeaturedCertifications extends PureComponent {
     const { items, onOpen } = this.props;
     if (!items.length) return null;
     return (
-      <section className="mb-5" aria-labelledby="featured-title">
+      <section className="pf-sec" aria-labelledby="featured-title">
         <div className="d-flex justify-content-between align-items-baseline">
           <h2 id="featured-title" className="h4">
             Certifications en vedette

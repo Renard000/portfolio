@@ -223,9 +223,9 @@ describe('Accueil', () => {
     expect(
       await within(certs.closest('section')).findByText('Scrum Master')
     ).toBeInTheDocument();
-    expect(
-      await screen.findByRole('heading', { name: 'Dernières distinctions' })
-    ).toBeInTheDocument();
+    const awards = await screen.findByRole('heading', { name: 'Bourses et mérites' });
+    expect(awards).toHaveClass('pf-h2');
+    expect(screen.queryByRole('heading', { name: 'Dernières distinctions' })).toBeNull();
     expect(
       screen.getByRole('heading', { name: 'Projets en vedette' })
     ).toBeInTheDocument();

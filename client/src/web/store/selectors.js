@@ -59,9 +59,6 @@ export const selectHomeFeaturedCertifications = createSelector(
   [selectFeaturedCertifications, selectRecentCertifications],
   (featured, recent) => featured.filter((c) => !recent.some((r) => r.id === c.id))
 );
-export const selectRecentAwards = createSelector([awardItems], (items) =>
-  RecentService.latest(items, { date: (a) => a.createdAt || a.awardedAt })
-);
 const latestArticles = (s) => s.articles.latest;
 export const selectRecentArticleCards = createSelector([latestArticles], (items) =>
   items.map((a, i) => ArticleService.toCard(a, i))

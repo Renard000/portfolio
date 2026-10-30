@@ -15,7 +15,6 @@ import Modal from '../../components/Modal.jsx';
 import NewsletterForm from '../../components/NewsletterForm.jsx';
 import ProjectCard from '../../components/ProjectCard.jsx';
 import PushOptIn from '../../components/PushOptIn.jsx';
-import RecentAwardCard from '../../components/RecentAwardCard.jsx';
 import RevealOnScroll from '../../components/RevealOnScroll.jsx';
 import SectionHeading from '../../components/SectionHeading.jsx';
 import { safeHref } from '../../../utils/url.js';
@@ -29,7 +28,6 @@ export default class HomePage extends PureComponent {
       latestSeries,
       recentArticles,
       recentCertifications,
-      recentAwards,
       stats,
       loadAwards,
       selected,
@@ -198,30 +196,14 @@ export default class HomePage extends PureComponent {
             </HomeRecentSection>
           </ErrorBoundary>
 
-          <section className="pf-wrap pf-sec">
+          <div className="pf-wrap">
             <ErrorBoundary>
               <FeaturedCertifications items={featured} onOpen={onSelect} />
             </ErrorBoundary>
             <ErrorBoundary>
               {loadAwards ? <AwardsSummary load={loadAwards} /> : null}
             </ErrorBoundary>
-          </section>
-
-          <ErrorBoundary>
-            <HomeRecentSection
-              id="home-recent-awards"
-              kicker="Reconnaissance"
-              title="Dernières distinctions"
-              to="/distinctions"
-              linkLabel="Toutes les distinctions"
-              count={recentAwards.length}
-              emptyMessage="Aucune distinction ajoutée pour l’instant."
-            >
-              {recentAwards.map((a) => (
-                <RecentAwardCard key={a.id} award={a} />
-              ))}
-            </HomeRecentSection>
-          </ErrorBoundary>
+          </div>
 
           <section className="pf-wrap pf-sec" aria-labelledby="newsletter-title">
             <div
@@ -273,7 +255,6 @@ HomePage.defaultProps = {
   projects: [],
   recentArticles: [],
   recentCertifications: [],
-  recentAwards: [],
   stats: { projects: 0, certifications: 0, distinctions: 0, technologies: 0 },
   newsletterStatus: 'idle',
   pushStatus: 'idle',

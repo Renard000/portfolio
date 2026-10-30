@@ -9,7 +9,6 @@ import {
   selectHomeFeaturedCertifications,
   selectFeaturedProjects,
   selectRecentArticleCards,
-  selectRecentAwards,
   selectRecentCertifications,
 } from '../store/selectors.js';
 import HomePage from '../views/pages/client/HomePage.jsx';
@@ -38,7 +37,6 @@ class HomeController extends Component {
         latestSeries={p.latestSeries}
         recentArticles={p.recentArticles}
         recentCertifications={p.recentCertifications}
-        recentAwards={p.recentAwards}
         stats={p.stats}
         loadAwards={this.loadAwards}
         selected={this.state.selected}
@@ -61,7 +59,6 @@ const mapState = (state) => ({
   latestSeries: state.videos.latest,
   recentArticles: selectRecentArticleCards(state),
   recentCertifications: selectRecentCertifications(state),
-  recentAwards: selectRecentAwards(state),
   stats: {
     projects: state.content.projects.length,
     certifications: state.certifications.items.length,
