@@ -43,7 +43,7 @@ export const legal = {
       },
       {
         heading: 'Témoins et stockage local',
-        body: 'Le site conserve dans votre navigateur uniquement votre progression de lecture des vidéos. Aucun témoin publicitaire n’est utilisé.',
+        body: 'Le site conserve dans votre navigateur uniquement votre progression de lecture des vidéos et vos préférences (langue, son des notifications, contenus déjà vus). Aucun témoin publicitaire n’est utilisé.',
       },
     ],
   },

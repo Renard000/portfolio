@@ -147,6 +147,7 @@ describe('CertificationService (client)', () => {
       { imageUrl: 'https://new/img.png' }
     );
     expect(dto).toEqual({
+      en: {},
       title: 'T',
       issuer: 'I',
       category: null,

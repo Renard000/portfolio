@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { createDependencies } from './compositionRoot.js';
 import AppRouter from './routes/AppRouter.jsx';
+import { LocaleContext } from './context/withLocale.jsx';
 
 export class App extends Component {
   constructor(props) {
@@ -14,11 +15,13 @@ export class App extends Component {
   render() {
     return (
       <Provider store={this.deps.store}>
-        <HelmetProvider>
-          <BrowserRouter>
-            <AppRouter />
-          </BrowserRouter>
-        </HelmetProvider>
+        <LocaleContext.Provider value={this.deps.services.localeService}>
+          <HelmetProvider>
+            <BrowserRouter>
+              <AppRouter />
+            </BrowserRouter>
+          </HelmetProvider>
+        </LocaleContext.Provider>
       </Provider>
     );
   }

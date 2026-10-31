@@ -1,6 +1,7 @@
 import { PureComponent } from 'react';
+import withLocale from '../../context/withLocale.jsx';
 
-export default class CertificationFilters extends PureComponent {
+class CertificationFilters extends PureComponent {
   change = (key) => (e) => this.props.onChange({ [key]: e.target.value });
 
   render() {
@@ -13,20 +14,20 @@ export default class CertificationFilters extends PureComponent {
       >
         <div className="col-12 col-md-4">
           <label htmlFor="cert-q" className="form-label small mb-0">
-            Recherche
+            {this.props.t('Recherche')}
           </label>
           <input
             id="cert-q"
             type="search"
             className="form-control"
-            placeholder="Titre, émetteur, compétence…"
+            placeholder={this.props.t('Titre, émetteur, compétence…')}
             value={filters.q}
             onChange={this.change('q')}
           />
         </div>
         <div className="col-6 col-md-2">
           <label htmlFor="cert-issuer" className="form-label small mb-0">
-            Émetteur
+            {this.props.t('Émetteur')}
           </label>
           <select
             id="cert-issuer"
@@ -34,7 +35,7 @@ export default class CertificationFilters extends PureComponent {
             value={filters.issuer}
             onChange={this.change('issuer')}
           >
-            <option value="">Tous</option>
+            <option value="">{this.props.t('Tous')}</option>
             {facets.issuers.map((i) => (
               <option key={i} value={i}>
                 {i}
@@ -44,7 +45,7 @@ export default class CertificationFilters extends PureComponent {
         </div>
         <div className="col-6 col-md-2">
           <label htmlFor="cert-category" className="form-label small mb-0">
-            Catégorie
+            {this.props.t('Catégorie')}
           </label>
           <select
             id="cert-category"
@@ -52,7 +53,7 @@ export default class CertificationFilters extends PureComponent {
             value={filters.category}
             onChange={this.change('category')}
           >
-            <option value="">Toutes</option>
+            <option value="">{this.props.t('Toutes')}</option>
             {facets.categories.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -62,7 +63,7 @@ export default class CertificationFilters extends PureComponent {
         </div>
         <div className="col-6 col-md-2">
           <label htmlFor="cert-sort" className="form-label small mb-0">
-            Tri
+            {this.props.t('Tri')}
           </label>
           <select
             id="cert-sort"
@@ -70,19 +71,24 @@ export default class CertificationFilters extends PureComponent {
             value={filters.sort}
             onChange={this.change('sort')}
           >
-            <option value="date_desc">Plus récentes</option>
-            <option value="date_asc">Plus anciennes</option>
+            <option value="date_desc">{this.props.t('Plus récentes')}</option>
+            <option value="date_asc">{this.props.t('Plus anciennes')}</option>
           </select>
         </div>
         <div className="col-6 col-md-2 d-flex gap-1 justify-content-end">
-          <div className="btn-group" role="group" aria-label="Mode d'affichage">
+          <div
+            className="btn-group"
+            role="group"
+            aria-label={this.props.t("Mode d'affichage")}
+          >
             <button
               type="button"
               className={`btn btn-outline-secondary ${view === 'grid' ? 'active' : ''}`}
               aria-pressed={view === 'grid'}
               onClick={() => onViewChange('grid')}
             >
-              <i className="fa-solid fa-table-cells-large" aria-hidden="true" /> Grille
+              <i className="fa-solid fa-table-cells-large" aria-hidden="true" />{' '}
+              {this.props.t('Grille')}
             </button>
             <button
               type="button"
@@ -90,16 +96,19 @@ export default class CertificationFilters extends PureComponent {
               aria-pressed={view === 'carousel'}
               onClick={() => onViewChange('carousel')}
             >
-              <i className="fa-solid fa-images" aria-hidden="true" /> Carrousel
+              <i className="fa-solid fa-images" aria-hidden="true" />{' '}
+              {this.props.t('Carrousel')}
             </button>
           </div>
         </div>
         <div className="col-12">
           <button type="button" className="btn btn-link btn-sm p-0" onClick={onReset}>
-            Réinitialiser les filtres
+            {this.props.t('Réinitialiser les filtres')}
           </button>
         </div>
       </form>
     );
   }
 }
+
+export default withLocale(CertificationFilters);

@@ -5,6 +5,7 @@ import { toColumns } from '../columns.js';
 const TABLE = 'projects';
 
 const COLUMNS = {
+  en: 'en',
   slug: 'slug',
   title: 'title',
   category: 'category',
@@ -47,6 +48,7 @@ const fromRow = (r) =>
     featured: r.featured,
     sortOrder: r.sort_order,
     createdAt: r.created_at,
+    en: r.en,
   });
 
 export default class ProjectRepository {

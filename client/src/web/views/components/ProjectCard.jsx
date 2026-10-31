@@ -2,8 +2,9 @@ import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 import NewBadge from './NewBadge.jsx';
 import Thumb from './Thumb.jsx';
+import withLocale from '../../context/withLocale.jsx';
 
-export default class ProjectCard extends PureComponent {
+class ProjectCard extends PureComponent {
   render() {
     const { project: p, height = 220 } = this.props;
     return (
@@ -11,7 +12,7 @@ export default class ProjectCard extends PureComponent {
         to={`/projets/${p.slug}`}
         className="pf-card"
         style={{ padding: 14 }}
-        aria-label={`Projet ${p.title}`}
+        aria-label={this.props.t('Projet {title}', { title: p.title })}
       >
         <NewBadge path={`/projets/${p.slug}`} />
         <Thumb
@@ -41,3 +42,5 @@ export default class ProjectCard extends PureComponent {
     );
   }
 }
+
+export default withLocale(ProjectCard);

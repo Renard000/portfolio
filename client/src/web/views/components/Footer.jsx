@@ -1,8 +1,9 @@
 import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 import { safeHref } from '../../utils/url.js';
+import withLocale from '../../context/withLocale.jsx';
 
-export default class Footer extends PureComponent {
+class Footer extends PureComponent {
   render() {
     const { profile } = this.props;
     const name = profile ? profile.name : '';
@@ -26,37 +27,38 @@ export default class Footer extends PureComponent {
             </span>
           </div>
           <div className="pf-col">
-            <span className="pf-mono">Explorer</span>
-            <Link to="/projets">Projets</Link>
-            <Link to="/blog">Blog</Link>
-            <Link to="/formations">Formations</Link>
-            <Link to="/a-propos">À propos</Link>
-            <Link to="/contact">Contact</Link>
+            <span className="pf-mono">{this.props.t('Explorer')}</span>
+            <Link to="/projets">{this.props.t('Projets')}</Link>
+            <Link to="/blog">{this.props.t('Blog')}</Link>
+            <Link to="/formations">{this.props.t('Formations')}</Link>
+            <Link to="/a-propos">{this.props.t('À propos')}</Link>
+            <Link to="/contact">{this.props.t('Contact')}</Link>
           </div>
           <div className="pf-col">
-            <span className="pf-mono">Parcours</span>
-            <Link to="/certifications">Certifications</Link>
-            <Link to="/distinctions">Distinctions</Link>
+            <span className="pf-mono">{this.props.t('Parcours')}</span>
+            <Link to="/certifications">{this.props.t('Certifications')}</Link>
+            <Link to="/distinctions">{this.props.t('Distinctions')}</Link>
             {github ? (
               <a href={github} target="_blank" rel="noopener noreferrer">
-                GitHub
+                {this.props.t('GitHub')}
               </a>
             ) : null}
             {linkedin ? (
               <a href={linkedin} target="_blank" rel="noopener noreferrer">
-                LinkedIn
+                {this.props.t('LinkedIn')}
               </a>
             ) : null}
           </div>
           <div className="pf-col">
-            <span className="pf-mono">Site</span>
+            <span className="pf-mono">{this.props.t('Site')}</span>
             <span className="pf-mu">
-              © {new Date().getFullYear()} {name}. Tous droits réservés.
+              © {new Date().getFullYear()} {name}
+              {this.props.t('. Tous droits réservés.')}
             </span>
-            <Link to="/conditions">Conditions d’utilisation</Link>
-            <Link to="/confidentialite">Confidentialité</Link>
+            <Link to="/conditions">{this.props.t('Conditions d’utilisation')}</Link>
+            <Link to="/confidentialite">{this.props.t('Confidentialité')}</Link>
             <Link to="/admin" className="pf-mu" style={{ fontSize: 13 }}>
-              Espace administrateur
+              {this.props.t('Espace administrateur')}
             </Link>
           </div>
         </div>
@@ -64,3 +66,5 @@ export default class Footer extends PureComponent {
     );
   }
 }
+
+export default withLocale(Footer);

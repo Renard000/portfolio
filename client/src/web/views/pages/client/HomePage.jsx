@@ -18,8 +18,9 @@ import PushOptIn from '../../components/PushOptIn.jsx';
 import RevealOnScroll from '../../components/RevealOnScroll.jsx';
 import SectionHeading from '../../components/SectionHeading.jsx';
 import { safeHref } from '../../../utils/url.js';
+import withLocale from '../../../context/withLocale.jsx';
 
-export default class HomePage extends PureComponent {
+class HomePage extends PureComponent {
   render() {
     const {
       profile,
@@ -86,7 +87,7 @@ export default class HomePage extends PureComponent {
               <p className="pf-lead">{profile.intro}</p>
               <div className="pf-row">
                 <Link className="pf-btn pf-btn--pri" to="/projets">
-                  Voir mes projets ↗
+                  {this.props.t('Voir mes projets ↗')}
                 </Link>
                 {cv ? (
                   <a
@@ -95,30 +96,30 @@ export default class HomePage extends PureComponent {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Télécharger le CV
+                    {this.props.t('Télécharger le CV')}
                   </a>
                 ) : (
                   <Link className="pf-btn" to="/contact">
-                    Me contacter
+                    {this.props.t('Me contacter')}
                   </Link>
                 )}
               </div>
             </div>
             <span className="pf-scroll" aria-hidden="true">
-              Scroll ↓
+              {this.props.t('Scroll ↓')}
             </span>
           </header>
         </HeroGlow>
         <Marquee items={profile.tech} />
 
         <main>
-          <section className="pf-wrap pf-sec" aria-label="Chiffres clés">
+          <section className="pf-wrap pf-sec" aria-label={this.props.t('Chiffres clés')}>
             <div className="pf-grid4">
               {[
-                [stats.projects, 'Projets'],
-                [stats.certifications, 'Certifications'],
-                [stats.distinctions, 'Distinctions'],
-                [stats.technologies, 'Technologies'],
+                [stats.projects, this.props.t('Projets')],
+                [stats.certifications, this.props.t('Certifications')],
+                [stats.distinctions, this.props.t('Distinctions')],
+                [stats.technologies, this.props.t('Technologies')],
               ].map(([n, label]) => (
                 <div
                   key={label}
@@ -141,12 +142,12 @@ export default class HomePage extends PureComponent {
 
           <section className="pf-wrap pf-sec" aria-labelledby="home-projects">
             <SectionHeading
-              kicker="01 — Sélection"
-              title="Projets en vedette"
+              kicker={this.props.t('01 — Sélection')}
+              title={this.props.t('Projets en vedette')}
               id="home-projects"
             >
               <Link className="pf-btn" to="/projets">
-                Tous les projets →
+                {this.props.t('Tous les projets →')}
               </Link>
             </SectionHeading>
             <div className="pf-grid3">
@@ -161,12 +162,12 @@ export default class HomePage extends PureComponent {
           <ErrorBoundary>
             <HomeRecentSection
               id="home-recent-articles"
-              kicker="Blog"
-              title="Derniers articles"
+              kicker={this.props.t('Blog')}
+              title={this.props.t('Derniers articles')}
               to="/blog"
-              linkLabel="Tous les articles"
+              linkLabel={this.props.t('Tous les articles')}
               count={recentArticles.length}
-              emptyMessage="Aucun article publié pour l’instant."
+              emptyMessage={this.props.t('Aucun article publié pour l’instant.')}
             >
               {recentArticles.map((card) => (
                 <RevealOnScroll key={card.id}>
@@ -183,12 +184,12 @@ export default class HomePage extends PureComponent {
           <ErrorBoundary>
             <HomeRecentSection
               id="home-recent-certifications"
-              kicker="Certifications"
-              title="Dernières certifications"
+              kicker={this.props.t('Certifications')}
+              title={this.props.t('Dernières certifications')}
               to="/certifications"
-              linkLabel="Toutes les certifications"
+              linkLabel={this.props.t('Toutes les certifications')}
               count={recentCertifications.length}
-              emptyMessage="Aucune certification ajoutée pour l’instant."
+              emptyMessage={this.props.t('Aucune certification ajoutée pour l’instant.')}
             >
               {recentCertifications.map((c) => (
                 <CertificationCard key={c.id} certification={c} onOpen={onSelect} />
@@ -217,13 +218,14 @@ export default class HomePage extends PureComponent {
               }}
             >
               <div className="pf-col">
-                <span className="pf-kicker">Newsletter</span>
+                <span className="pf-kicker">{this.props.t('Newsletter')}</span>
                 <h2 id="newsletter-title" className="pf-h2">
-                  Recevoir mes nouvelles publications
+                  {this.props.t('Recevoir mes nouvelles publications')}
                 </h2>
                 <p className="pf-mu" style={{ margin: 0 }}>
-                  Articles, formations, projets, certifications et distinctions : un
-                  courriel à chaque nouveauté.
+                  {this.props.t(
+                    'Articles, formations, projets, certifications et distinctions : un courriel à chaque nouveauté.'
+                  )}
                 </p>
                 <ErrorBoundary>
                   <NewsletterForm
@@ -234,7 +236,7 @@ export default class HomePage extends PureComponent {
                 </ErrorBoundary>
               </div>
               <div className="pf-col">
-                <h2 className="pf-h3">Notifications</h2>
+                <h2 className="pf-h3">{this.props.t('Notifications')}</h2>
                 <PushOptIn status={pushStatus} onEnable={onEnablePush} />
               </div>
             </div>
@@ -259,3 +261,5 @@ HomePage.defaultProps = {
   newsletterStatus: 'idle',
   pushStatus: 'idle',
 };
+
+export default withLocale(HomePage);

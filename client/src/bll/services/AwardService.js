@@ -1,3 +1,4 @@
+import { cleanTranslation } from '../../domain/translation.js';
 const asData = (r) => ({
   items: (r && r.items) || [],
   totals: (r && r.totals) || { count: 0, scholarshipAmounts: {} },
@@ -86,6 +87,7 @@ export default class AwardService {
       awardedAt: values.awardedAt,
       imageUrl: urls.imageUrl ?? text(values.imageUrl),
       documentUrl: urls.documentUrl ?? text(values.documentUrl),
+      en: cleanTranslation(values.en),
       featured: Boolean(values.featured),
       sortOrder: parseInt(values.sortOrder, 10) || 0,
     };

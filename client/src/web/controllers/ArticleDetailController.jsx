@@ -6,9 +6,10 @@ import ArticleService from '../../bll/services/ArticleService.js';
 import MarkdownService from '../../bll/services/MarkdownService.js';
 import ArticlePage from '../views/pages/client/ArticlePage.jsx';
 import NotFoundPage from '../views/pages/client/NotFoundPage.jsx';
+import withLocale from '../context/withLocale.jsx';
 
 class ArticleDetailController extends Component {
-  state = { shareLabel: null };
+  state = { copied: false };
 
   componentDidMount() {
     this.props.fetchArticle(this.props.match.params.slug);
@@ -17,7 +18,7 @@ class ArticleDetailController extends Component {
   componentDidUpdate(prev) {
     // « À lire ensuite » : même composant, autre article
     if (prev.match.params.slug !== this.props.match.params.slug) {
-      this.setState({ shareLabel: null });
+      this.setState({ copied: false });
       this.props.fetchArticle(this.props.match.params.slug);
     }
   }
@@ -28,25 +29,17 @@ class ArticleDetailController extends Component {
 
   like = () => this.props.likeArticle(this.props.data.article.id);
 
-  share = async () => {
-    const url = window.location.href;
-    const title = this.props.data.article.title;
+  /** En cas de refus du navigateur, l'adresse reste affichée et sélectionnable. */
+  copyLink = async () => {
     try {
-      if (navigator.share) await navigator.share({ title, url });
-      else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
-        this.flash('Lien copié');
-      }
+      await navigator.clipboard.writeText(window.location.href);
+      this.setState({ copied: true });
+      clearTimeout(this.shareTimer);
+      this.shareTimer = setTimeout(() => this.setState({ copied: false }), 2000);
     } catch {
-      // Partage annulé par l'utilisateur : rien à faire
+      document.getElementById('share-url')?.select();
     }
   };
-
-  flash(label) {
-    this.setState({ shareLabel: label });
-    clearTimeout(this.shareTimer);
-    this.shareTimer = setTimeout(() => this.setState({ shareLabel: null }), 2000);
-  }
 
   comment = (dto) => this.props.postComment({ id: this.props.data.article.id, ...dto });
 
@@ -60,19 +53,20 @@ class ArticleDetailController extends Component {
   }
 
   render() {
-    const { data, loading, error, liked, commentStatus, commentError } = this.props;
+    const { data, loading, error, liked, commentStatus, commentError, locale } =
+      this.props;
     if (error && !loading) return <NotFoundPage />;
     if (!data || data.article.slug !== this.props.match.params.slug)
       return (
         <p className="pf-wrap pf-mu" role="status" style={{ paddingTop: 80 }}>
-          Chargement…
+          {this.props.t('Chargement…')}
         </p>
       );
     const a = data.article;
     const article = {
-      ...ArticleService.toCard(a),
-      date: ArticleService.formatDate(a.publishedAt),
-      views: ArticleService.thousands(a.views),
+      ...ArticleService.toCard(a, 0, locale),
+      date: ArticleService.formatDate(a.publishedAt, true, locale),
+      views: ArticleService.thousands(a.views, locale),
       html: this.renderMarkdown(a.content),
     };
     const now = new Date();
@@ -81,15 +75,17 @@ class ArticleDetailController extends Component {
         article={article}
         comments={data.comments.map((c) => ({
           ...c,
-          when: ArticleService.relative(c.createdAt, now),
+          when: ArticleService.relative(c.createdAt, now, locale),
         }))}
-        related={data.related.map((r, i) => ArticleService.toCard(r, i + 1))}
+        related={data.related.map((r, i) => ArticleService.toCard(r, i + 1, locale))}
         liked={liked}
-        shareLabel={this.state.shareLabel}
+        shareUrl={window.location.href}
+        shareLinks={ArticleService.shareLinks(window.location.href, a.title)}
+        copied={this.state.copied}
         commentStatus={commentStatus}
         commentError={commentError}
         onLike={this.like}
-        onShare={this.share}
+        onCopyLink={this.copyLink}
         onComment={this.comment}
       />
     );
@@ -98,6 +94,7 @@ class ArticleDetailController extends Component {
 
 const mapState = (s) => ({
   data: s.articles.current,
+  locale: s.content.locale,
   loading: s.articles.currentLoading,
   error: s.articles.currentError,
   liked: s.articles.liked,
@@ -105,5 +102,7 @@ const mapState = (s) => ({
   commentError: s.articles.commentError,
 });
 export default withRouter(
-  connect(mapState, { fetchArticle, likeArticle, postComment })(ArticleDetailController)
+  connect(mapState, { fetchArticle, likeArticle, postComment })(
+    withLocale(ArticleDetailController)
+  )
 );

@@ -1,11 +1,12 @@
 import { Component, createRef } from 'react';
 import CertificationCard from './CertificationCard.jsx';
+import withLocale from '../../context/withLocale.jsx';
 
 const isEditable = (el) =>
   el && el.closest && el.closest('input, textarea, select, [contenteditable=true]');
 
 /** Carrousel en classe : state.index, boutons, flèches du clavier (écouteur de document). */
-export default class CertificationCarousel extends Component {
+class CertificationCarousel extends Component {
   state = { index: 0, prevItems: this.props.items };
   dotRefs = [];
   rootRef = createRef();
@@ -49,7 +50,9 @@ export default class CertificationCarousel extends Component {
   render() {
     const { items, onOpen } = this.props;
     if (!items.length)
-      return <p className="text-muted">Aucune certification à afficher.</p>;
+      return (
+        <p className="text-muted">{this.props.t('Aucune certification à afficher.')}</p>
+      );
     const current = items[this.state.index];
     this.dotRefs = [];
     return (
@@ -62,7 +65,7 @@ export default class CertificationCarousel extends Component {
           <button
             type="button"
             className="btn btn-outline-secondary"
-            aria-label="Précédente"
+            aria-label={this.props.t('Précédente')}
             onClick={this.prev}
           >
             <i className="fa-solid fa-chevron-left" aria-hidden="true" />
@@ -73,7 +76,7 @@ export default class CertificationCarousel extends Component {
           <button
             type="button"
             className="btn btn-outline-secondary"
-            aria-label="Suivante"
+            aria-label={this.props.t('Suivante')}
             onClick={this.next}
           >
             <i className="fa-solid fa-chevron-right" aria-hidden="true" />
@@ -89,7 +92,7 @@ export default class CertificationCarousel extends Component {
               type="button"
               ref={(el) => (this.dotRefs[i] = el)}
               className={`carousel-dot ${i === this.state.index ? 'active' : ''}`}
-              aria-label={`Aller à ${c.title}`}
+              aria-label={this.props.t('Aller à {title}', { title: c.title })}
               aria-current={i === this.state.index}
               onClick={() => this.setState({ index: i })}
             />
@@ -99,3 +102,5 @@ export default class CertificationCarousel extends Component {
     );
   }
 }
+
+export default withLocale(CertificationCarousel);

@@ -6,10 +6,11 @@ import AwardTotals from './AwardTotals.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import Modal from './Modal.jsx';
 import PageHero from './PageHero.jsx';
+import withLocale from '../../context/withLocale.jsx';
 
 const TABS = [['all', 'Toutes'], ...Object.entries(AWARD_TYPE_LABELS)];
 
-export default class AwardListView extends PureComponent {
+class AwardListView extends PureComponent {
   render() {
     const {
       groups,
@@ -25,9 +26,13 @@ export default class AwardListView extends PureComponent {
         className="pf-wrap"
         style={{ paddingTop: 'clamp(48px,8vw,90px)', paddingBottom: 48 }}
       >
-        <PageHero kicker="Distinctions" title="Bourses" outline="et mérites." />
+        <PageHero
+          kicker={this.props.t('Distinctions')}
+          title={this.props.t('Bourses')}
+          outline={this.props.t('et mérites.')}
+        />
         <div style={{ height: 36 }} />
-        <ErrorBoundary message="Les totaux ne peuvent pas être affichés.">
+        <ErrorBoundary message={this.props.t('Les totaux ne peuvent pas être affichés.')}>
           <AwardTotals totals={totals} />
         </ErrorBoundary>
         <ul className="nav nav-tabs mb-3" role="tablist">
@@ -40,12 +45,14 @@ export default class AwardListView extends PureComponent {
                 className={`nav-link ${activeType === type ? 'active' : ''}`}
                 onClick={() => onTypeChange(type)}
               >
-                {label}
+                {this.props.t(label)}
               </button>
             </li>
           ))}
         </ul>
-        <ErrorBoundary message="La frise chronologique ne peut pas être affichée.">
+        <ErrorBoundary
+          message={this.props.t('La frise chronologique ne peut pas être affichée.')}
+        >
           <AwardTimeline groups={groups} onSelect={onSelect} />
         </ErrorBoundary>
         {selected ? (
@@ -63,3 +70,5 @@ AwardListView.defaultProps = {
   activeType: 'all',
   totals: { count: 0, scholarshipAmounts: {} },
 };
+
+export default withLocale(AwardListView);

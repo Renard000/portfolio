@@ -5,9 +5,10 @@ import ArticleCard from '../../components/ArticleCard.jsx';
 import NewBadge from '../../components/NewBadge.jsx';
 import RevealOnScroll from '../../components/RevealOnScroll.jsx';
 import Thumb from '../../components/Thumb.jsx';
+import withLocale from '../../../context/withLocale.jsx';
 
 /** Liste du blog (maquette P-04) : filtres, article à la une, grille, pagination. */
-export default class BlogPage extends PureComponent {
+class BlogPage extends PureComponent {
   renderFeatured(card) {
     return (
       <div
@@ -24,7 +25,7 @@ export default class BlogPage extends PureComponent {
         <Thumb color={card.color} kind={0} height={380} imageUrl={card.coverUrl} />
         <div className="pf-col" style={{ gap: 18, paddingRight: 24 }}>
           <span className="pf-chip is-on" style={{ alignSelf: 'flex-start' }}>
-            À la une
+            {this.props.t('À la une')}
           </span>
           <h2 className="pf-h2" style={{ fontSize: 'clamp(2rem,3.4vw,2.9rem)' }}>
             {card.title}
@@ -36,7 +37,9 @@ export default class BlogPage extends PureComponent {
           ) : null}
           <div className="pf-row pf-mono" style={{ gap: 18 }}>
             <span>{card.fullDate}</span>
-            <span>{card.minutes} min</span>
+            <span>
+              {card.minutes} {this.props.t('min')}
+            </span>
             <span>♥ {card.likes}</span>
           </div>
           <Link
@@ -44,7 +47,7 @@ export default class BlogPage extends PureComponent {
             to={`/blog/${card.slug}`}
             style={{ alignSelf: 'flex-start' }}
           >
-            Lire l’article →
+            {this.props.t('Lire l’article →')}
           </Link>
         </div>
       </div>
@@ -59,14 +62,14 @@ export default class BlogPage extends PureComponent {
       <nav
         className="pf-row pf-pages"
         style={{ marginTop: 56, gap: 10 }}
-        aria-label="Pagination"
+        aria-label={this.props.t('Pagination')}
       >
         <button
           type="button"
           className="pf-btn"
           disabled={page <= 1}
           onClick={() => onPage(page - 1)}
-          aria-label="Page précédente"
+          aria-label={this.props.t('Page précédente')}
         >
           ‹
         </button>
@@ -86,7 +89,7 @@ export default class BlogPage extends PureComponent {
           className="pf-btn"
           disabled={page >= pages}
           onClick={() => onPage(page + 1)}
-          aria-label="Page suivante"
+          aria-label={this.props.t('Page suivante')}
         >
           ›
         </button>
@@ -99,13 +102,17 @@ export default class BlogPage extends PureComponent {
       this.props;
     return (
       <main className="pf-wrap" style={{ paddingTop: 'clamp(48px,8vw,90px)' }}>
-        <PageHero kicker="Blog" title="Notes de" outline="terrain." />
+        <PageHero
+          kicker={this.props.t('Blog')}
+          title={this.props.t('Notes de')}
+          outline={this.props.t('terrain.')}
+        />
         <div className="pf-row pf-between" style={{ margin: '36px 0 0' }}>
           <div
             className="pf-row"
             style={{ gap: 10 }}
             role="group"
-            aria-label="Catégories"
+            aria-label={this.props.t('Catégories')}
           >
             <button
               type="button"
@@ -113,7 +120,7 @@ export default class BlogPage extends PureComponent {
               aria-pressed={filters.category === 'all'}
               onClick={() => onFilter({ category: 'all' })}
             >
-              Tout
+              {this.props.t('Tout')}
             </button>
             {categories.map((c) => (
               <button
@@ -129,14 +136,14 @@ export default class BlogPage extends PureComponent {
           </div>
           <div>
             <label htmlFor="article-search" className="visually-hidden">
-              Rechercher un article
+              {this.props.t('Rechercher un article')}
             </label>
             <input
               id="article-search"
               type="search"
               className="pf-input"
               style={{ minWidth: 280, borderRadius: 999 }}
-              placeholder="Rechercher un article…"
+              placeholder={this.props.t('Rechercher un article…')}
               value={filters.q}
               onChange={(e) => onFilter({ q: e.target.value })}
             />
@@ -145,10 +152,12 @@ export default class BlogPage extends PureComponent {
 
         <div style={{ paddingTop: 48 }} role="status" aria-live="polite">
           {loading && !cards.length && !featured ? (
-            <p className="pf-mu">Chargement…</p>
+            <p className="pf-mu">{this.props.t('Chargement…')}</p>
           ) : null}
           {!loading && !error && !cards.length && !featured ? (
-            <p className="pf-mu">Aucun article ne correspond à cette recherche.</p>
+            <p className="pf-mu">
+              {this.props.t('Aucun article ne correspond à cette recherche.')}
+            </p>
           ) : null}
         </div>
         {error ? (
@@ -157,12 +166,12 @@ export default class BlogPage extends PureComponent {
             role="alert"
             style={{ alignItems: 'flex-start' }}
           >
-            <span className="pf-mono pf-lime">Erreur</span>
+            <span className="pf-mono pf-lime">{this.props.t('Erreur')}</span>
             <p className="pf-mu" style={{ margin: 0 }}>
-              Section indisponible. {error}
+              {this.props.t('Section indisponible.')} {error}
             </p>
             <button type="button" className="pf-btn" onClick={onRetry}>
-              Réessayer
+              {this.props.t('Réessayer')}
             </button>
           </div>
         ) : null}
@@ -183,3 +192,5 @@ export default class BlogPage extends PureComponent {
   }
 }
 BlogPage.defaultProps = { cards: [], categories: [] };
+
+export default withLocale(BlogPage);

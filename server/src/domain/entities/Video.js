@@ -16,6 +16,7 @@ export default class Video {
     views = 0,
     publishedAt = null,
     createdAt = null,
+    en = {},
   }) {
     Object.assign(this, {
       id,
@@ -34,6 +35,7 @@ export default class Video {
       views,
       publishedAt,
       createdAt,
+      en: en || {},
     });
   }
 
@@ -80,6 +82,7 @@ export default class Video {
       resources: this.resources,
       views: this.views,
       publishedAt: this.publishedAt,
+      en: this.en,
       posterUrl: baseUrl ? this.posterUrl(baseUrl) : null,
     };
   }

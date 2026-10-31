@@ -3,10 +3,11 @@ import { Component } from 'react';
 import { Link } from 'react-router-dom';
 
 import Video, { SPEEDS } from '../../../../domain/models/Video.js';
+import withLocale from '../../../context/withLocale.jsx';
 
 /** Présentation du lecteur. L'élément <video> est piloté par le contrôleur via videoRef. */
 
-export default class VideoPlayerView extends Component {
+class VideoPlayerView extends Component {
   chapterRefs = [];
 
   componentDidUpdate(prevProps) {
@@ -46,7 +47,7 @@ export default class VideoPlayerView extends Component {
       <main className="pf-wrap" style={{ paddingTop: 'clamp(24px,4vw,48px)' }}>
         <div className="pf-row pf-mono" style={{ marginBottom: 20 }}>
           <Link to="/formations" className="pf-mu">
-            Formations
+            {this.props.t('Formations')}
           </Link>
 
           <span>/</span>
@@ -86,17 +87,17 @@ export default class VideoPlayerView extends Component {
 
                 onContextMenu={this.blockContextMenu}
 
-                aria-label={video ? video.title : 'Lecteur vidéo'}
+                aria-label={video ? video.title : this.props.t('Lecteur vidéo')}
 
                 {...handlers}
               />
 
               {error || mediaError ? (
                 <div className="pf-player__overlay" role="alert">
-                  <b>{mediaError ? 'La lecture a échoué.' : error}</b>
+                  <b>{mediaError ? this.props.t('La lecture a échoué.') : error}</b>
 
                   <button type="button" className="pf-btn pf-btn--pri" onClick={onRetry}>
-                    Réessayer
+                    {this.props.t('Réessayer')}
                   </button>
                 </div>
               ) : null}
@@ -104,16 +105,18 @@ export default class VideoPlayerView extends Component {
               {ended ? (
                 <div className="pf-player__overlay">
                   <b>
-                    {next ? 'Vidéo terminée ✓' : 'Dernière vidéo de la série terminée ✓'}
+                    {next
+                      ? this.props.t('Vidéo terminée ✓')
+                      : this.props.t('Dernière vidéo de la série terminée ✓')}
                   </b>
 
                   {next ? (
                     <Link className="pf-btn pf-btn--pri" to={`${base}/${next.slug}`}>
-                      Vidéo suivante : {next.title} ›
+                      {this.props.t('Vidéo suivante :')} {next.title} ›
                     </Link>
                   ) : (
                     <Link className="pf-btn pf-btn--pri" to={base}>
-                      Retour à la série
+                      {this.props.t('Retour à la série')}
                     </Link>
                   )}
                 </div>
@@ -122,7 +125,7 @@ export default class VideoPlayerView extends Component {
 
             {playbackLoading ? (
               <span className="pf-mono" role="status">
-                Préparation de la lecture…
+                {this.props.t('Préparation de la lecture…')}
               </span>
             ) : null}
 
@@ -137,9 +140,9 @@ export default class VideoPlayerView extends Component {
 
               role="group"
 
-              aria-label="Vitesse de lecture"
+              aria-label={this.props.t('Vitesse de lecture')}
             >
-              <span className="pf-mono">Vitesse</span>
+              <span className="pf-mono">{this.props.t('Vitesse')}</span>
 
               {SPEEDS.map((v) => (
                 <button
@@ -159,7 +162,9 @@ export default class VideoPlayerView extends Component {
             </div>
 
             <p className="pf-mono" style={{ margin: 0 }}>
-              Raccourcis : espace · ← → ±10 s · F plein écran · + − vitesse
+              {this.props.t(
+                'Raccourcis : espace · ← → ±10 s · F plein écran · + − vitesse'
+              )}
             </p>
 
             {video && video.description ? (
@@ -172,7 +177,7 @@ export default class VideoPlayerView extends Component {
               {video && video.resources.length ? (
                 <div className="pf-card pf-col" style={{ gap: 0 }}>
                   <span className="pf-kicker" style={{ marginBottom: 8 }}>
-                    Ressources
+                    {this.props.t('Ressources')}
                   </span>
 
                   {video.resources.map((r) => (
@@ -198,7 +203,7 @@ export default class VideoPlayerView extends Component {
               <div className="pf-card pf-row pf-between">
                 {previous ? (
                   <Link className="pf-btn" to={`${base}/${previous.slug}`}>
-                    ‹ Précédente
+                    {this.props.t('‹ Précédente')}
                   </Link>
                 ) : (
                   <span />
@@ -206,7 +211,7 @@ export default class VideoPlayerView extends Component {
 
                 {next ? (
                   <Link className="pf-btn pf-btn--pri" to={`${base}/${next.slug}`}>
-                    Suivante ›
+                    {this.props.t('Suivante ›')}
                   </Link>
                 ) : (
                   <span />
@@ -220,10 +225,10 @@ export default class VideoPlayerView extends Component {
 
             style={{ alignSelf: 'start', gap: 4 }}
 
-            aria-label="Chapitres"
+            aria-label={this.props.t('Chapitres')}
           >
             <span className="pf-kicker" style={{ marginBottom: 8 }}>
-              Chapitres
+              {this.props.t('Chapitres')}
             </span>
 
             {video && video.chapters.length ? (
@@ -251,7 +256,9 @@ export default class VideoPlayerView extends Component {
                 ))}
               </div>
             ) : (
-              <span className="pf-mu">Cette vidéo n’a pas de chapitres.</span>
+              <span className="pf-mu">
+                {this.props.t('Cette vidéo n’a pas de chapitres.')}
+              </span>
             )}
 
             <span className="pf-mono" style={{ marginTop: 12 }}>
@@ -266,3 +273,5 @@ export default class VideoPlayerView extends Component {
 }
 
 VideoPlayerView.defaultProps = { speed: 1, currentTime: 0, chapterIndex: -1 };
+
+export default withLocale(VideoPlayerView);

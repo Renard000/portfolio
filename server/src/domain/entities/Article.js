@@ -18,6 +18,7 @@ export default class Article {
     likes = 0,
     publishedAt = null,
     createdAt = null,
+    en = {},
     ...rest
   }) {
     Object.assign(this, {
@@ -34,6 +35,7 @@ export default class Article {
       likes: likes ?? 0,
       publishedAt,
       createdAt,
+      en: en || {},
       ...rest,
     });
   }
@@ -64,7 +66,9 @@ export default class Article {
   toSummary() {
     // eslint-disable-next-line no-unused-vars
     const { content, ...rest } = this.toJSON();
-    return rest;
+    // eslint-disable-next-line no-unused-vars
+    const { content: enContent, ...en } = rest.en;
+    return { ...rest, en };
   }
 
   toJSON() {

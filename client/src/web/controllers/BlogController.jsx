@@ -34,8 +34,9 @@ class BlogController extends Component {
   };
 
   render() {
-    const { items, filters, page, pages, categories, loading, error } = this.props;
-    const cards = items.map((a, i) => ArticleService.toCard(a, i));
+    const { items, filters, page, pages, categories, loading, error, locale } =
+      this.props;
+    const cards = items.map((a, i) => ArticleService.toCard(a, i, locale));
     // « À la une » : le plus récent, en première page et sans filtre
     const showFeatured = page === 1 && filters.category === 'all' && !filters.q.trim();
     const [featured, ...rest] = showFeatured ? cards : [null, ...cards];
@@ -59,6 +60,7 @@ class BlogController extends Component {
 
 const mapState = (s) => ({
   items: s.articles.items,
+  locale: s.content.locale,
   filters: s.articles.filters,
   page: s.articles.page,
   pages: s.articles.pages,

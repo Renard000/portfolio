@@ -2,20 +2,25 @@ import { PureComponent } from 'react';
 import PageHero from '../../components/PageHero.jsx';
 import ProjectCard from '../../components/ProjectCard.jsx';
 import RevealOnScroll from '../../components/RevealOnScroll.jsx';
+import withLocale from '../../../context/withLocale.jsx';
 
-export default class ProjectsPage extends PureComponent {
+class ProjectsPage extends PureComponent {
   render() {
     const { projects, total, categories, filters, onFilter } = this.props;
     const [first, second, ...rest] = projects;
     return (
       <main className="pf-wrap" style={{ paddingTop: 'clamp(48px,8vw,90px)' }}>
-        <PageHero kicker="Projets" title="Travaux" outline="sélectionnés." />
+        <PageHero
+          kicker={this.props.t('Projets')}
+          title={this.props.t('Travaux')}
+          outline={this.props.t('sélectionnés.')}
+        />
         <div className="pf-row pf-between" style={{ margin: '36px 0 0' }}>
           <div
             className="pf-row"
             style={{ gap: 10 }}
             role="group"
-            aria-label="Catégories"
+            aria-label={this.props.t('Catégories')}
           >
             <button
               type="button"
@@ -23,7 +28,8 @@ export default class ProjectsPage extends PureComponent {
               aria-pressed={filters.category === 'all'}
               onClick={() => onFilter({ category: 'all' })}
             >
-              Tous ({total})
+              {this.props.t('Tous (')}
+              {total})
             </button>
             {categories.map((c) => (
               <button
@@ -39,14 +45,14 @@ export default class ProjectsPage extends PureComponent {
           </div>
           <div>
             <label htmlFor="project-search" className="visually-hidden">
-              Rechercher un projet
+              {this.props.t('Rechercher un projet')}
             </label>
             <input
               id="project-search"
               type="search"
               className="pf-input"
               style={{ minWidth: 280, borderRadius: 999 }}
-              placeholder="Rechercher un projet…"
+              placeholder={this.props.t('Rechercher un projet…')}
               value={filters.q}
               onChange={(e) => onFilter({ q: e.target.value })}
             />
@@ -54,7 +60,9 @@ export default class ProjectsPage extends PureComponent {
         </div>
         <div style={{ paddingTop: 48 }} role="status" aria-live="polite">
           {projects.length === 0 ? (
-            <p className="pf-mu">Aucun projet ne correspond à cette recherche.</p>
+            <p className="pf-mu">
+              {this.props.t('Aucun projet ne correspond à cette recherche.')}
+            </p>
           ) : null}
         </div>
         {first ? (
@@ -95,3 +103,5 @@ ProjectsPage.defaultProps = {
   total: 0,
   filters: { category: 'all', q: '' },
 };
+
+export default withLocale(ProjectsPage);

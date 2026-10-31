@@ -1,3 +1,4 @@
+import { cleanTranslation } from '../../domain/translation.js';
 import { withScheme } from '../../domain/url.js';
 /** Minuscules sans accents. */
 const norm = (s) =>
@@ -101,6 +102,7 @@ export default class CertificationService {
             .filter(Boolean)
         ),
       ],
+      en: cleanTranslation(values.en),
       featured: Boolean(values.featured),
       sortOrder: parseInt(values.sortOrder, 10) || 0,
     };

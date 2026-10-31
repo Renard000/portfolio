@@ -1,3 +1,4 @@
+import { cleanTranslation } from '../../domain/translation.js';
 import { withScheme } from '../../domain/url.js';
 const text = (v) => {
   const t = String(v ?? '').trim();
@@ -68,6 +69,7 @@ export default class PortfolioAdminService {
       liveUrl: withScheme(text(values.liveUrl)),
       imageUrl: urls.imageUrl ?? text(values.imageUrl),
       color: text(values.color),
+      en: cleanTranslation(values.en),
       featured: Boolean(values.featured),
       sortOrder: parseInt(values.sortOrder, 10) || 0,
     };

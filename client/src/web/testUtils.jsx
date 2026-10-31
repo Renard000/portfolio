@@ -354,6 +354,7 @@ export function makeServices(overrides = {}) {
       saveSkill: vi.fn(async (id, d) => ({ id: id || 'nk', ...d })),
       removeSkill: vi.fn().mockResolvedValue(null),
     },
+    localeService: { toggle: vi.fn() },
     feedService: makeFeedService(),
     soundClient: { play: vi.fn() },
     adminAlertService: { subscribe: vi.fn(() => () => {}) },

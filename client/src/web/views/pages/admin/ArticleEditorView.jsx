@@ -1,6 +1,13 @@
 import { PureComponent, createRef } from 'react';
 import { Link } from 'react-router-dom';
 import AdminHeader from '../../components/AdminHeader.jsx';
+import EnglishFields from '../../components/EnglishFields.jsx';
+
+const ENGLISH_FIELDS = [
+  { key: 'title', label: 'Titre' },
+  { key: 'excerpt', label: 'Extrait' },
+  { key: 'content', label: 'Contenu en Markdown', rows: 12 },
+];
 
 /**
  * Éditeur d'article (maquette A-04) : Markdown à gauche, aperçu en direct à droite.
@@ -233,6 +240,12 @@ export default class ArticleEditorView extends PureComponent {
               />
             </div>
             {coverName ? <span className="pf-mono">Couverture : {coverName}</span> : null}
+            <EnglishFields
+              idPrefix="article"
+              fields={ENGLISH_FIELDS}
+              value={values.en}
+              onChange={(en) => this.props.onChange('en', en)}
+            />
           </div>
 
           <div className="pf-card pf-col" style={{ minHeight: 560 }} aria-live="polite">

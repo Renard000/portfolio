@@ -1,4 +1,5 @@
 import { PureComponent } from 'react';
+import withLocale from '../../context/withLocale.jsx';
 
 const MESSAGES = {
   subscribed: ['text-success', 'Notifications activées.'],
@@ -9,7 +10,7 @@ const MESSAGES = {
   error: ['text-danger', "Impossible d'activer les notifications."],
 };
 
-export default class PushOptIn extends PureComponent {
+class PushOptIn extends PureComponent {
   render() {
     const { status, onEnable } = this.props;
     const msg = MESSAGES[status];
@@ -21,8 +22,8 @@ export default class PushOptIn extends PureComponent {
           onClick={onEnable}
           disabled={status === 'loading' || status === 'subscribed'}
         >
-          <i className="fa-regular fa-bell me-1" aria-hidden="true" /> Activer les
-          notifications
+          <i className="fa-regular fa-bell me-1" aria-hidden="true" />{' '}
+          {this.props.t('Activer les notifications')}
         </button>
         {msg ? (
           <p className={`small mt-2 mb-0 ${msg[0]}`} role="status">
@@ -33,3 +34,5 @@ export default class PushOptIn extends PureComponent {
     );
   }
 }
+
+export default withLocale(PushOptIn);

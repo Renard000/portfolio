@@ -6,7 +6,7 @@ const TABLE = 'articles';
 // Le texte est lu pour estimer la durée de lecture, mais les listes renvoyées
 // par l'API n'exposent jamais le texte complet (E.7 : Article.toSummary()).
 const SUMMARY_COLUMNS =
-  'id, title, slug, excerpt, content, cover_url, category, tags, status, views, likes, published_at, created_at';
+  'id, title, slug, excerpt, content, cover_url, category, tags, status, views, likes, published_at, created_at, en';
 
 const COLUMNS = {
   title: 'title',
@@ -18,6 +18,7 @@ const COLUMNS = {
   tags: 'tags',
   status: 'status',
   publishedAt: 'published_at',
+  en: 'en',
 };
 
 const fromRow = (r) =>
@@ -35,6 +36,7 @@ const fromRow = (r) =>
     likes: r.likes,
     publishedAt: r.published_at,
     createdAt: r.created_at,
+    en: r.en,
   });
 
 export default class ArticleRepository {

@@ -4,6 +4,7 @@ import Certification from '../../../domain/models/Certification.js';
 import NewItemsContext from '../../context/NewItemsContext.js';
 import NewBadge from './NewBadge.jsx';
 import RevealOnScroll from './RevealOnScroll.jsx';
+import withLocale from '../../context/withLocale.jsx';
 
 const TYPE_STYLE = {
   scholarship: 'bg-success',
@@ -12,7 +13,7 @@ const TYPE_STYLE = {
   honor: 'bg-secondary',
 };
 
-export default class TimelineItem extends PureComponent {
+class TimelineItem extends PureComponent {
   static contextType = NewItemsContext;
 
   open = () => {
@@ -31,20 +32,24 @@ export default class TimelineItem extends PureComponent {
               <div className="d-flex justify-content-between align-items-start gap-2">
                 <h4 className="h6 mb-1">{award.title}</h4>
                 <span className={`badge ${TYPE_STYLE[award.type] || 'bg-secondary'}`}>
-                  {award.typeLabel()}
+                  {this.props.t(award.typeLabel())}
                 </span>
               </div>
               <p className="text-muted small mb-1">{award.organization}</p>
-              <p className="small mb-2">{Certification.formatDate(award.awardedAt)}</p>
+              <p className="small mb-2">
+                {Certification.formatDate(award.awardedAt, this.props.locale)}
+              </p>
               {award.hasAmount() ? (
-                <p className="fw-semibold mb-2">{award.formattedAmount()}</p>
+                <p className="fw-semibold mb-2">
+                  {award.formattedAmount(this.props.locale)}
+                </p>
               ) : null}
               <button
                 type="button"
                 className="btn btn-outline-primary btn-sm"
                 onClick={this.open}
               >
-                Voir le détail
+                {this.props.t('Voir le détail')}
               </button>
             </div>
           </article>
@@ -53,3 +58,5 @@ export default class TimelineItem extends PureComponent {
     );
   }
 }
+
+export default withLocale(TimelineItem);

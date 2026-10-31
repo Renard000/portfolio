@@ -20,10 +20,12 @@ const fromRow = (r) =>
     featured: r.featured,
     sortOrder: r.sort_order,
     createdAt: r.created_at,
+    en: r.en,
   });
 
 const toRow = (d) => {
   const map = {
+    en: 'en',
     title: 'title',
     issuer: 'issuer',
     category: 'category',

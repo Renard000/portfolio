@@ -1,7 +1,8 @@
 import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
+import withLocale from '../../../context/withLocale.jsx';
 
-export default class LegalPage extends PureComponent {
+class LegalPage extends PureComponent {
   render() {
     const { doc } = this.props;
     return (
@@ -9,11 +10,13 @@ export default class LegalPage extends PureComponent {
         className="pf-wrap"
         style={{ paddingTop: 'clamp(48px,8vw,90px)', maxWidth: 860 }}
       >
-        <span className="pf-kicker">Légal</span>
+        <span className="pf-kicker">{this.props.t('Légal')}</span>
         <h1 className="pf-h1 pf-h1--md" style={{ margin: '14px 0 12px' }}>
           {doc.title}
         </h1>
-        <p className="pf-mono">Dernière mise à jour : {doc.updated}</p>
+        <p className="pf-mono">
+          {this.props.t('Dernière mise à jour :')} {doc.updated}
+        </p>
         <div className="pf-col" style={{ gap: 32, marginTop: 40 }}>
           {doc.sections.map((s) => (
             <section key={s.heading}>
@@ -27,9 +30,11 @@ export default class LegalPage extends PureComponent {
           ))}
         </div>
         <p style={{ marginTop: 48 }}>
-          <Link to="/">← Retour à l’accueil</Link>
+          <Link to="/">{this.props.t('← Retour à l’accueil')}</Link>
         </p>
       </main>
     );
   }
 }
+
+export default withLocale(LegalPage);

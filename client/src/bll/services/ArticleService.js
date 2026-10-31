@@ -1,3 +1,5 @@
+import { cleanTranslation } from '../../domain/translation.js';
+
 const MONTHS = [
   'janv.',
   'févr.',
@@ -119,6 +121,7 @@ export default class ArticleService {
       content: values.content,
       coverUrl: urls.coverUrl ?? text(values.coverUrl),
       category: text(values.category),
+      en: cleanTranslation(values.en),
       tags: [
         ...new Set(
           String(values.tags || '')
@@ -128,6 +131,22 @@ export default class ArticleService {
         ),
       ],
     };
+  }
+
+  /** Liens de partage d'un article. */
+  static shareLinks(url, title) {
+    const u = encodeURIComponent(url);
+    const t = encodeURIComponent(title);
+    return [
+      {
+        label: 'LinkedIn',
+        href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
+      },
+      { label: 'X', href: `https://x.com/intent/post?url=${u}&text=${t}` },
+      { label: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${u}` },
+      { label: 'WhatsApp', href: `https://wa.me/?text=${t}%20${u}` },
+      { label: 'Courriel', href: `mailto:?subject=${t}&body=${u}` },
+    ];
   }
 
   /** Insère des images Markdown à la position du curseur, séparées du texte voisin. */
@@ -144,18 +163,32 @@ export default class ArticleService {
   }
 
   /** « 23 oct. 2026 » */
-  static formatDate(iso, withYear = true) {
+  static formatDate(iso, withYear = true, locale = 'fr-CA') {
     if (!iso) return '—';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '—';
+    if (locale !== 'fr-CA')
+      return new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'short',
+        ...(withYear ? { year: 'numeric' } : {}),
+      }).format(d);
     const day = String(d.getDate()).padStart(2, '0');
     return `${day} ${MONTHS[d.getMonth()]}${withYear ? ` ${d.getFullYear()}` : ''}`;
   }
 
   /** « il y a 2 h », « hier », « il y a 5 j » */
-  static relative(iso, now = new Date()) {
+  static relative(iso, now = new Date(), locale = 'fr-CA') {
     const diff = Math.max(0, now.getTime() - new Date(iso).getTime());
     const hours = Math.floor(diff / (60 * 60 * 1000));
+    if (locale !== 'fr-CA') {
+      const days = Math.floor(diff / DAY);
+      if (hours < 1) return 'just now';
+      if (hours < 24) return `${hours} h ago`;
+      if (days === 1) return 'yesterday';
+      if (days < 30) return `${days} days ago`;
+      return ArticleService.formatDate(iso, true, locale);
+    }
     if (hours < 1) return 'à l’instant';
     if (hours < 24) return `il y a ${hours} h`;
     const days = Math.floor(diff / DAY);
@@ -165,19 +198,20 @@ export default class ArticleService {
   }
 
   /** 1248 → « 1,2 k » ; 932 → « 932 » */
-  static compact(n) {
+  static compact(n, locale = 'fr-CA') {
     const v = Number(n) || 0;
     if (v < 1000) return String(v);
-    return `${(v / 1000).toFixed(1).replace('.', ',').replace(',0', '')} k`;
+    const short = (v / 1000).toFixed(1).replace('.0', '');
+    return locale === 'fr-CA' ? `${short.replace('.', ',')} k` : `${short}k`;
   }
 
   /** 1248 → « 1 248 » (espace fine insécable) */
-  static thousands(n) {
-    return new Intl.NumberFormat('fr-CA').format(Number(n) || 0);
+  static thousands(n, locale = 'fr-CA') {
+    return new Intl.NumberFormat(locale).format(Number(n) || 0);
   }
 
   /** Modèle d'affichage d'une carte d'article (les vues ne formatent rien). */
-  static toCard(a, index = 0) {
+  static toCard(a, index = 0, locale = 'fr-CA') {
     return {
       id: a.id,
       slug: a.slug,
@@ -187,11 +221,11 @@ export default class ArticleService {
       coverUrl: a.coverUrl || null,
       color: CARD_COLORS[index % CARD_COLORS.length],
       kind: index % 3,
-      date: ArticleService.formatDate(a.publishedAt, false),
-      fullDate: ArticleService.formatDate(a.publishedAt),
+      date: ArticleService.formatDate(a.publishedAt, false, locale),
+      fullDate: ArticleService.formatDate(a.publishedAt, true, locale),
       minutes: a.readingMinutes || 1,
       likes: a.likes || 0,
-      views: ArticleService.compact(a.views),
+      views: ArticleService.compact(a.views, locale),
       comments: a.comments || 0,
     };
   }

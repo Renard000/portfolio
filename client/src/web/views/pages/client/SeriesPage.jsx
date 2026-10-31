@@ -3,27 +3,29 @@ import { Link } from 'react-router-dom';
 import Video from '../../../../domain/models/Video.js';
 import Thumb from '../../components/Thumb.jsx';
 import { seriesColor } from '../../components/SeriesCard.jsx';
+import withLocale from '../../../context/withLocale.jsx';
 
-export default class SeriesPage extends PureComponent {
+class SeriesPage extends PureComponent {
   render() {
     const { series: s, loading, error, progress } = this.props;
     if (loading && !s)
       return (
         <main className="pf-wrap" style={{ paddingTop: 96 }} role="status">
-          <p className="pf-mu">Chargement…</p>
+          <p className="pf-mu">{this.props.t('Chargement…')}</p>
         </main>
       );
     if (error || !s)
       return (
         <main className="pf-wrap" style={{ paddingTop: 96 }}>
           <h1 className="pf-h1 pf-h1--md">
-            Série <span className="pf-out">introuvable.</span>
+            {this.props.t('Série')}{' '}
+            <span className="pf-out">{this.props.t('introuvable.')}</span>
           </h1>
           <p className="pf-lead" style={{ margin: '24px 0' }}>
-            {error || 'Cette série n’existe pas.'}
+            {error || this.props.t('Cette série n’existe pas.')}
           </p>
           <Link className="pf-btn pf-btn--pri" to="/formations">
-            ← Toutes les formations
+            {this.props.t('← Toutes les formations')}
           </Link>
         </main>
       );
@@ -51,7 +53,7 @@ export default class SeriesPage extends PureComponent {
           <div className="pf-col" style={{ gap: 20 }}>
             <div className="pf-row">
               <span className="pf-chip is-on" style={{ cursor: 'default' }}>
-                {Video.levelLabel(s.level)}
+                {this.props.t(Video.levelLabel(s.level))}
               </span>
               {s.category ? (
                 <span className="pf-chip" style={{ cursor: 'default' }}>
@@ -62,14 +64,16 @@ export default class SeriesPage extends PureComponent {
             <h1 className="pf-h1 pf-h1--md">{s.title}</h1>
             {s.description ? <p className="pf-lead">{s.description}</p> : null}
             <div className="pf-row pf-mono" style={{ gap: 24 }}>
-              <span>{s.videoCount} vidéos</span>
+              <span>
+                {s.videoCount} {this.props.t('vidéos')}
+              </span>
               <span>{Video.formatTotal(s.totalDurationSeconds)}</span>
               <span>{String(s.language || 'fr').toUpperCase()}</span>
             </div>
             <div
               className="pf-bar"
               role="progressbar"
-              aria-label="Progression"
+              aria-label={this.props.t('Progression')}
               aria-valuenow={progress.percent}
               aria-valuemin="0"
               aria-valuemax="100"
@@ -82,13 +86,20 @@ export default class SeriesPage extends PureComponent {
                   className="pf-btn pf-btn--pri"
                   to={`/formations/${s.slug}/${resume.slug}`}
                 >
-                  ▶ {progress.watchedCount ? 'Reprendre' : 'Commencer'} : vidéo{' '}
-                  {resume.position}
+                  ▶{' '}
+                  {progress.watchedCount
+                    ? this.props.t('Reprendre')
+                    : this.props.t('Commencer')}{' '}
+                  {this.props.t(': vidéo')} {resume.position}
                 </Link>
               ) : (
-                <span className="pf-mono pf-lime">Série terminée ✓</span>
+                <span className="pf-mono pf-lime">
+                  {this.props.t('Série terminée ✓')}
+                </span>
               )}
-              <span className="pf-mono">{progress.percent} % terminé</span>
+              <span className="pf-mono">
+                {progress.percent} {this.props.t('% terminé')}
+              </span>
             </div>
           </div>
         </div>
@@ -103,7 +114,7 @@ export default class SeriesPage extends PureComponent {
             className="pf-h2"
             style={{ fontSize: '2.5rem', marginBottom: 24 }}
           >
-            Vidéos de la série
+            {this.props.t('Vidéos de la série')}
           </h2>
           <ol
             className="pf-col"
@@ -126,7 +137,11 @@ export default class SeriesPage extends PureComponent {
                     <span
                       className={`pf-h3 ${seen ? 'pf-lime' : 'pf-mu'}`}
                       style={{ minWidth: 36 }}
-                      aria-label={seen ? 'Vue' : `Vidéo ${v.position}`}
+                      aria-label={
+                        seen
+                          ? this.props.t('Vue')
+                          : this.props.t('Vidéo {position}', { position: v.position })
+                      }
                     >
                       {seen ? '✓' : v.position}
                     </span>
@@ -156,3 +171,5 @@ export default class SeriesPage extends PureComponent {
 SeriesPage.defaultProps = {
   progress: { watchedIds: [], watchedCount: 0, total: 0, percent: 0, nextSlug: null },
 };
+
+export default withLocale(SeriesPage);

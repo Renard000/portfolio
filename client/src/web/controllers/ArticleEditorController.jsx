@@ -14,6 +14,7 @@ import MarkdownService from '../../bll/services/MarkdownService.js';
 import ArticleEditorView from '../views/pages/admin/ArticleEditorView.jsx';
 
 const EMPTY = {
+  en: {},
   title: '',
   slug: '',
   category: '',
@@ -32,6 +33,7 @@ const fromArticle = (a) => ({
   content: a.content || '',
   tags: (a.tags || []).join(', '),
   coverUrl: a.coverUrl || '',
+  en: a.en || {},
 });
 
 /** /admin/articles/nouveau ou /admin/articles/:id */

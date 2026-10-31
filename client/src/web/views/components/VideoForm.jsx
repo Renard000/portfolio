@@ -1,5 +1,11 @@
 import { Component, createRef } from 'react';
 import Video from '../../../domain/models/Video.js';
+import EnglishFields from './EnglishFields.jsx';
+
+const ENGLISH_FIELDS = [
+  { key: 'title', label: 'Titre' },
+  { key: 'description', label: 'Description', rows: 3 },
+];
 
 const EMPTY = {
   title: '',
@@ -54,6 +60,8 @@ export default class VideoForm extends Component {
   addRow = (list, row) => () => this.setState((s) => ({ [list]: [...s[list], row] }));
   removeRow = (list, i) => () =>
     this.setState((s) => ({ [list]: s[list].filter((_, j) => j !== i) }));
+
+  setEnglish = (en) => this.setState((s) => ({ values: { ...s.values, en } }));
 
   submit = (e) => {
     e.preventDefault();
@@ -282,6 +290,12 @@ export default class VideoForm extends Component {
           </button>
         </fieldset>
 
+        <EnglishFields
+          idPrefix="video"
+          fields={ENGLISH_FIELDS}
+          value={this.state.values.en}
+          onChange={this.setEnglish}
+        />
         {error ? (
           <div className="col-12">
             <div className="alert alert-danger mb-0" role="alert">

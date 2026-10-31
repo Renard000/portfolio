@@ -7,8 +7,9 @@ import CertificationFilters from './CertificationFilters.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import Modal from './Modal.jsx';
 import PageHero from './PageHero.jsx';
+import withLocale from '../../context/withLocale.jsx';
 
-export default class CertificationListView extends PureComponent {
+class CertificationListView extends PureComponent {
   render() {
     const { items, totalCount, filters, facets, view, selected } = this.props;
     const { onFilterChange, onReset, onViewChange, onSelect, onCloseDetail } = this.props;
@@ -17,7 +18,11 @@ export default class CertificationListView extends PureComponent {
         className="pf-wrap"
         style={{ paddingTop: 'clamp(48px,8vw,90px)', paddingBottom: 48 }}
       >
-        <PageHero kicker="Certifications" title="Validé" outline="par les pairs.">
+        <PageHero
+          kicker={this.props.t('Certifications')}
+          title={this.props.t('Validé')}
+          outline={this.props.t('par les pairs.')}
+        >
           <div className="pf-col" style={{ alignItems: 'flex-end', gap: 0 }}>
             <span
               className="pf-h1 pf-lime"
@@ -26,7 +31,7 @@ export default class CertificationListView extends PureComponent {
             >
               <AnimatedCounter value={totalCount} />
             </span>
-            <span className="pf-mono">Certifications</span>
+            <span className="pf-mono">{this.props.t('Certifications')}</span>
           </div>
         </PageHero>
         <div style={{ height: 36 }} />
@@ -39,9 +44,12 @@ export default class CertificationListView extends PureComponent {
           onViewChange={onViewChange}
         />
         <p className="text-muted small" role="status">
-          {items.length} résultat{items.length > 1 ? 's' : ''}
+          {items.length} {this.props.t('résultat')}
+          {items.length > 1 ? 's' : ''}
         </p>
-        <ErrorBoundary message="La liste des certifications ne peut pas être affichée.">
+        <ErrorBoundary
+          message={this.props.t('La liste des certifications ne peut pas être affichée.')}
+        >
           {view === 'carousel' ? (
             <CertificationCarousel items={items} onOpen={onSelect} />
           ) : items.length ? (
@@ -54,7 +62,7 @@ export default class CertificationListView extends PureComponent {
             </div>
           ) : (
             <p className="text-muted">
-              Aucune certification ne correspond à ces filtres.
+              {this.props.t('Aucune certification ne correspond à ces filtres.')}
             </p>
           )}
         </ErrorBoundary>
@@ -69,3 +77,5 @@ export default class CertificationListView extends PureComponent {
 }
 
 CertificationListView.defaultProps = { items: [], totalCount: 0, view: 'grid' };
+
+export default withLocale(CertificationListView);

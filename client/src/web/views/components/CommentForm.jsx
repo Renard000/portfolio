@@ -1,7 +1,8 @@
 import { Component } from 'react';
+import withLocale from '../../context/withLocale.jsx';
 
 /** Formulaire de commentaire (maquette P-05) : publié après modération, honeypot invisible. */
-export default class CommentForm extends Component {
+class CommentForm extends Component {
   state = { author: '', content: '', website: '' };
 
   set = (key) => (e) => this.setState({ [key]: e.target.value });
@@ -16,7 +17,7 @@ export default class CommentForm extends Component {
     if (status === 'pending')
       return (
         <div className="pf-card" role="status">
-          Merci ! Votre commentaire sera publié après modération.
+          {this.props.t('Merci ! Votre commentaire sera publié après modération.')}
         </div>
       );
     return (
@@ -24,16 +25,16 @@ export default class CommentForm extends Component {
         className="pf-card pf-col"
         style={{ gap: 14 }}
         onSubmit={this.submit}
-        aria-label="Ajouter un commentaire"
+        aria-label={this.props.t('Ajouter un commentaire')}
       >
         <div>
           <label htmlFor="comment-author" className="visually-hidden">
-            Votre nom
+            {this.props.t('Votre nom')}
           </label>
           <input
             id="comment-author"
             className="pf-input"
-            placeholder="Votre nom"
+            placeholder={this.props.t('Votre nom')}
             autoComplete="name"
             maxLength={80}
             required
@@ -43,13 +44,13 @@ export default class CommentForm extends Component {
         </div>
         <div>
           <label htmlFor="comment-content" className="visually-hidden">
-            Votre commentaire
+            {this.props.t('Votre commentaire')}
           </label>
           <textarea
             id="comment-content"
             className="pf-input"
             style={{ minHeight: 110 }}
-            placeholder="Votre commentaire…"
+            placeholder={this.props.t('Votre commentaire…')}
             maxLength={2000}
             required
             value={this.state.content}
@@ -58,7 +59,7 @@ export default class CommentForm extends Component {
         </div>
         {/* Honeypot : invisible pour les humains, rempli par les robots */}
         <div className="visually-hidden" aria-hidden="true">
-          <label htmlFor="comment-website">Ne pas remplir</label>
+          <label htmlFor="comment-website">{this.props.t('Ne pas remplir')}</label>
           <input
             id="comment-website"
             type="text"
@@ -75,17 +76,19 @@ export default class CommentForm extends Component {
         ) : null}
         <div className="pf-row pf-between">
           <span className="pf-mu" style={{ fontSize: 13 }}>
-            Publié après modération.
+            {this.props.t('Publié après modération.')}
           </span>
           <button
             type="submit"
             className="pf-btn pf-btn--pri"
             disabled={status === 'loading'}
           >
-            {status === 'loading' ? 'Envoi…' : 'Envoyer'}
+            {status === 'loading' ? this.props.t('Envoi…') : this.props.t('Envoyer')}
           </button>
         </div>
       </form>
     );
   }
 }
+
+export default withLocale(CommentForm);

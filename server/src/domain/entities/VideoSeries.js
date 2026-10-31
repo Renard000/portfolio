@@ -15,6 +15,7 @@ export default class VideoSeries {
     featured = false,
     sortOrder = 0,
     createdAt = null,
+    en = {},
     videos = [],
   }) {
     Object.assign(this, {
@@ -31,6 +32,7 @@ export default class VideoSeries {
       featured: Boolean(featured),
       sortOrder: sortOrder ?? 0,
       createdAt,
+      en: en || {},
       videos,
     });
   }
@@ -67,6 +69,7 @@ export default class VideoSeries {
       language: this.language,
       featured: this.featured,
       createdAt: this.createdAt,
+      en: this.en,
       videoCount: vids.length,
       totalDurationSeconds: this.totalDurationSeconds(),
       posterUrl: first && baseUrl ? first.posterUrl(baseUrl) : null,

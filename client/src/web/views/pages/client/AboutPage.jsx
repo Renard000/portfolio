@@ -2,8 +2,9 @@ import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 import RevealOnScroll from '../../components/RevealOnScroll.jsx';
 import { safeHref } from '../../../utils/url.js';
+import withLocale from '../../../context/withLocale.jsx';
 
-export default class AboutPage extends PureComponent {
+class AboutPage extends PureComponent {
   render() {
     const { profile: p } = this.props;
     const cv = safeHref(p.cvUrl);
@@ -41,7 +42,10 @@ export default class AboutPage extends PureComponent {
               }}
             >
               {p.photoUrl ? (
-                <img src={p.photoUrl} alt={`Portrait de ${p.name}`} />
+                <img
+                  src={p.photoUrl}
+                  alt={this.props.t('Portrait de {name}', { name: p.name })}
+                />
               ) : (
                 <span
                   aria-hidden="true"
@@ -61,10 +65,10 @@ export default class AboutPage extends PureComponent {
               )}
             </div>
             <div className="pf-col pf-rise pf-d1" style={{ gap: 28 }}>
-              <span className="pf-kicker">À propos</span>
+              <span className="pf-kicker">{this.props.t('À propos')}</span>
               <h1 className="pf-h1 pf-h1--md">
-                Je construis des interfaces qu’on{' '}
-                <span className="pf-out">n’oublie pas.</span>
+                {this.props.t('Je construis des interfaces qu’on')}{' '}
+                <span className="pf-out">{this.props.t('n’oublie pas.')}</span>
               </h1>
               <p className="pf-lead">{p.bio}</p>
               <div className="pf-row">
@@ -75,11 +79,11 @@ export default class AboutPage extends PureComponent {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Télécharger le CV ↗
+                    {this.props.t('Télécharger le CV ↗')}
                   </a>
                 ) : null}
                 <Link className={cv ? 'pf-btn' : 'pf-btn pf-btn--pri'} to="/contact">
-                  Me contacter
+                  {this.props.t('Me contacter')}
                 </Link>
               </div>
             </div>
@@ -89,7 +93,7 @@ export default class AboutPage extends PureComponent {
         <section className="pf-wrap pf-sec">
           <div className="pf-grid2" style={{ gap: 'clamp(32px,6vw,72px)' }}>
             <div className="pf-col" style={{ gap: 24 }}>
-              <h2 className="pf-h2">Compétences</h2>
+              <h2 className="pf-h2">{this.props.t('Compétences')}</h2>
               {p.skills.map((s) => (
                 <div key={s.name} className="pf-col" style={{ gap: 8 }}>
                   <div className="pf-row pf-between">
@@ -111,7 +115,7 @@ export default class AboutPage extends PureComponent {
             </div>
             <div className="pf-col">
               <h2 className="pf-h2" style={{ marginBottom: 16 }}>
-                Parcours
+                {this.props.t('Parcours')}
               </h2>
               {p.timeline.map((t) => (
                 <RevealOnScroll key={t.period + t.title}>
@@ -130,7 +134,7 @@ export default class AboutPage extends PureComponent {
           </div>
         </section>
 
-        <section className="pf-wrap pf-sec" aria-label="Valeurs">
+        <section className="pf-wrap pf-sec" aria-label={this.props.t('Valeurs')}>
           <div className="pf-grid3">
             {p.values.map((v, i) => (
               <RevealOnScroll key={v.title}>
@@ -147,3 +151,5 @@ export default class AboutPage extends PureComponent {
     );
   }
 }
+
+export default withLocale(AboutPage);

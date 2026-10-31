@@ -1,3 +1,4 @@
+import { cleanTranslation } from '../../domain/translation.js';
 import Video from '../../domain/models/Video.js';
 
 const text = (v) => {
@@ -83,6 +84,7 @@ export default class VideoAdminService {
       language: (text(v.language) || 'fr').toLowerCase(),
       status: v.status || 'draft',
       featured: Boolean(v.featured),
+      en: cleanTranslation(v.en),
       sortOrder: parseInt(v.sortOrder, 10) || 0,
     };
   }
@@ -124,6 +126,7 @@ export default class VideoAdminService {
         .filter((r) => r.label.trim() && r.url.trim())
         .map((r) => ({ label: r.label.trim(), url: r.url.trim() })),
       status: v.status || 'draft',
+      en: cleanTranslation(v.en),
     };
   }
 

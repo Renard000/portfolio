@@ -176,6 +176,7 @@ describe('VideoAdminService (formulaires et envoi)', () => {
         sortOrder: '3',
       })
     ).toEqual({
+      en: {},
       title: 'T',
       slug: 'ok',
       description: null,
@@ -240,6 +241,7 @@ describe('VideoAdminService (formulaires et envoi)', () => {
       { videoKey: 'videos/s/09-new.mp4' }
     );
     expect(dto).toEqual({
+      en: {},
       title: 'Intro',
       slug: 'intro',
       description: null,

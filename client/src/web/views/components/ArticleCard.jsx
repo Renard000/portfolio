@@ -2,9 +2,10 @@ import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 import NewBadge from './NewBadge.jsx';
 import Thumb from './Thumb.jsx';
+import withLocale from '../../context/withLocale.jsx';
 
 /** Carte d'article (maquette P-04) : reçoit un modèle déjà formaté. */
-export default class ArticleCard extends PureComponent {
+class ArticleCard extends PureComponent {
   render() {
     const { card, height } = this.props;
     return (
@@ -12,7 +13,7 @@ export default class ArticleCard extends PureComponent {
         to={`/blog/${card.slug}`}
         className="pf-card"
         style={{ padding: 14, height: '100%' }}
-        aria-label={`Lire l’article ${card.title}`}
+        aria-label={this.props.t('Lire l’article {title}', { title: card.title })}
       >
         <NewBadge path={`/blog/${card.slug}`} />
         <Thumb
@@ -25,7 +26,7 @@ export default class ArticleCard extends PureComponent {
           <div className="pf-row pf-between">
             {card.category ? <span className="pf-chip">{card.category}</span> : <span />}
             <span className="pf-mono">
-              {card.date} · {card.minutes} min
+              {card.date} · {card.minutes} {this.props.t('min')}
             </span>
           </div>
           <h3 className="pf-h3" style={{ fontSize: 22 }}>
@@ -37,9 +38,9 @@ export default class ArticleCard extends PureComponent {
             </p>
           ) : null}
           <div className="pf-row pf-mono" style={{ gap: 18 }}>
-            <span title="J’aime">♥ {card.likes}</span>
-            <span title="Vues">◉ {card.views}</span>
-            <span title="Commentaires">✎ {card.comments}</span>
+            <span title={this.props.t('J’aime')}>♥ {card.likes}</span>
+            <span title={this.props.t('Vues')}>◉ {card.views}</span>
+            <span title={this.props.t('Commentaires')}>✎ {card.comments}</span>
           </div>
         </div>
       </Link>
@@ -47,3 +48,5 @@ export default class ArticleCard extends PureComponent {
   }
 }
 ArticleCard.defaultProps = { height: 190 };
+
+export default withLocale(ArticleCard);

@@ -15,11 +15,13 @@ export default class ApiClient {
   constructor(
     baseUrl,
     getToken = async () => null,
-    fetchImpl = (...args) => fetch(...args)
+    fetchImpl = (...args) => fetch(...args),
+    transform = (data) => data
   ) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
     this.getToken = getToken;
     this.fetchImpl = fetchImpl;
+    this.transform = transform;
   }
 
   async request(method, path, { params, body } = {}) {
@@ -59,7 +61,7 @@ export default class ApiClient {
         data
       );
     }
-    return data;
+    return this.transform(data);
   }
 
   get(path, params) {

@@ -9,6 +9,7 @@ const slice = createSlice({
   initialState: {
     profile: null,
     projects: [],
+    locale: 'fr-CA',
     loaded: false,
     filters: { category: 'all', q: '' },
   },
@@ -27,4 +28,9 @@ const slice = createSlice({
 });
 
 export const { setProjectFilter } = slice.actions;
+
+/** Change la langue du site ; la page se recharge dans la nouvelle langue. */
+export const toggleLanguage = () => (dispatch, getState, extra) =>
+  extra.localeService.toggle();
+
 export default slice.reducer;

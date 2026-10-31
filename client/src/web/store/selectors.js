@@ -61,8 +61,10 @@ export const selectHomeFeaturedCertifications = createSelector(
   (featured, recent) => featured.filter((c) => !recent.some((r) => r.id === c.id))
 );
 const latestArticles = (s) => s.articles.latest;
-export const selectRecentArticleCards = createSelector([latestArticles], (items) =>
-  items.map((a, i) => ArticleService.toCard(a, i))
+const contentLocale = (s) => s.content.locale;
+export const selectRecentArticleCards = createSelector(
+  [latestArticles, contentLocale],
+  (items, locale) => items.map((a, i) => ArticleService.toCard(a, i, locale))
 );
 
 const feedItems = (s) => s.feed.items;

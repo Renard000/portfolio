@@ -1,8 +1,9 @@
 import { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
+import withLocale from '../../../context/withLocale.jsx';
 
 /** Confirmation ou désinscription de la newsletter (maquette P-14). */
-export default class NewsletterStatusPage extends PureComponent {
+class NewsletterStatusPage extends PureComponent {
   render() {
     const { page } = this.props;
     const ok = page.symbol === '✓';
@@ -19,7 +20,7 @@ export default class NewsletterStatusPage extends PureComponent {
           }}
           role={ok ? 'status' : 'alert'}
         >
-          <span className="pf-mono pf-lime">{page.kicker}</span>
+          <span className="pf-mono pf-lime">{this.props.t(page.kicker)}</span>
           <span
             className="pf-h1 pf-lime"
             style={{ fontSize: 'clamp(4.5rem,12vw,7rem)' }}
@@ -28,16 +29,18 @@ export default class NewsletterStatusPage extends PureComponent {
             {page.symbol}
           </span>
           <h1 className="pf-h2" style={{ fontSize: '2.25rem' }}>
-            {page.title}
+            {this.props.t(page.title)}
           </h1>
           <p className="pf-mu" style={{ margin: 0, maxWidth: '40rem' }}>
-            {page.message}
+            {this.props.t(page.message)}
           </p>
           <Link className={`pf-btn${ok ? '' : ' pf-btn--pri'}`} to={page.action.to}>
-            {page.action.label}
+            {this.props.t(page.action.label)}
           </Link>
         </div>
       </main>
     );
   }
 }
+
+export default withLocale(NewsletterStatusPage);

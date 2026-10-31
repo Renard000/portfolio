@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { LocaleContext } from '../../context/withLocale.jsx';
 
 /**
  * HOC : affiche un chargement / une erreur à la place du composant enveloppé.
@@ -6,6 +7,7 @@ import { Component } from 'react';
  */
 export default function withLoader(Wrapped) {
   return class WithLoader extends Component {
+    static contextType = LocaleContext;
     static displayName = `withLoader(${Wrapped.displayName || Wrapped.name || 'Component'})`;
 
     render() {
@@ -14,7 +16,7 @@ export default function withLoader(Wrapped) {
         return (
           <div className="text-center py-5" role="status">
             <div className="spinner-border" aria-hidden="true" />
-            <p className="text-muted mt-2">Chargement…</p>
+            <p className="text-muted mt-2">{this.context.t('Chargement…')}</p>
           </div>
         );
       if (error && !hasData)

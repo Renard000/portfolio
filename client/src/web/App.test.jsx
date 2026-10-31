@@ -17,6 +17,7 @@ describe('App', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("affiche la page d'accueil", async () => {
+    window.localStorage.setItem('locale:v1', 'fr');
     render(<App />);
     expect(
       await screen.findByRole('heading', { level: 1, name: /full-stack/i })

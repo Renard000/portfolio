@@ -36,6 +36,10 @@ import PortfolioRepository from '../dal/repositories/PortfolioRepository.js';
 import AdminContentService from '../bll/services/AdminContentService.js';
 import PortfolioAdminService from '../bll/services/PortfolioAdminService.js';
 import * as siteContent from '../domain/content/siteContent.js';
+import * as english from '../domain/content/en.js';
+import { applyTranslation } from '../domain/translation.js';
+import LocaleRepository from '../dal/repositories/LocaleRepository.js';
+import LocaleService from '../bll/services/LocaleService.js';
 import { createStore } from './store/store.js';
 
 // Webpack remplace chaque `process.env.APP_...` par sa valeur (liste blanche dans webpack.config.js).
@@ -69,7 +73,23 @@ export function createDependencies() {
   // DAL
   const supabase = createClient(env.supabaseUrl, env.supabaseAnonKey);
   const authClient = new SupabaseAuthClient(supabase);
-  const apiClient = new ApiClient(env.apiUrl, () => authClient.getAccessToken());
+  const localeService = new LocaleService(
+    new LocaleRepository(window.localStorage, navigator.language),
+    { en: english.ui },
+    () => window.location.reload()
+  );
+  const isEnglish = localeService.lang === 'en';
+  // L'admin garde toujours les deux versions : la fusion ne vaut que pour le site public
+  const translate = (data) =>
+    isEnglish && !window.location.pathname.startsWith('/admin')
+      ? applyTranslation(data)
+      : data;
+  const apiClient = new ApiClient(
+    env.apiUrl,
+    () => authClient.getAccessToken(),
+    undefined,
+    translate
+  );
   const firebaseApp = env.firebase.apiKey ? initializeApp(env.firebase) : null;
   const messagingClient = new MessagingClient(firebaseApp, env.vapidKey);
 
@@ -89,9 +109,11 @@ export function createDependencies() {
   const projectRepository = new PortfolioRepository(apiClient, '/projects');
   const skillRepository = new PortfolioRepository(apiClient, '/skills');
   // Fichier local = contenu initial et repli ; l'API (gérée par l'admin) le remplace
-  const contentService = new ContentService(siteContent, {
+  const content = isEnglish ? ContentService.localize(siteContent, english) : siteContent;
+  const contentService = new ContentService(content, {
     projectRepository,
     skillRepository,
+    locale: localeService.locale,
   });
   const adminContentService = new AdminContentService(adminContentRepository);
   const emailAdminRepository = new EmailAdminRepository(apiClient);
@@ -133,6 +155,7 @@ export function createDependencies() {
     uploadService,
     adminContentService,
     portfolioAdminService,
+    localeService,
     feedService,
     adminAlertService,
     emailAdminService,

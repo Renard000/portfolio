@@ -3,24 +3,26 @@ import { Link } from 'react-router-dom';
 import AwardTotals from './AwardTotals.jsx';
 import DataFetcher from './DataFetcher.jsx';
 import SectionHeading from './SectionHeading.jsx';
+import withLocale from '../../context/withLocale.jsx';
 
 /** Résumé des distinctions pour l'accueil : charge ses données via le render prop DataFetcher. */
-export default class AwardsSummary extends PureComponent {
+class AwardsSummary extends PureComponent {
   render() {
     return (
       <section className="pf-sec" aria-labelledby="awards-title">
         <SectionHeading
-          kicker="Distinctions"
-          title="Bourses et mérites"
+          kicker={this.props.t('Distinctions')}
+          title={this.props.t('Bourses et mérites')}
           id="awards-title"
         >
           <Link className="pf-btn" to="/distinctions">
-            Voir la frise →
+            {this.props.t('Voir la frise →')}
           </Link>
         </SectionHeading>
         <DataFetcher load={this.props.load}>
           {({ data, loading, error }) => {
-            if (loading) return <p className="text-muted">Chargement…</p>;
+            if (loading)
+              return <p className="text-muted">{this.props.t('Chargement…')}</p>;
             if (error) return <p className="text-danger">{error}</p>;
             return <AwardTotals totals={data.totals} />;
           }}
@@ -29,3 +31,5 @@ export default class AwardsSummary extends PureComponent {
     );
   }
 }
+
+export default withLocale(AwardsSummary);

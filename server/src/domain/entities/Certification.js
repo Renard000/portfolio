@@ -18,6 +18,7 @@ export default class Certification {
     featured = false,
     sortOrder = 0,
     createdAt = null,
+    en = {},
   }) {
     Object.assign(this, {
       id,
@@ -35,6 +36,7 @@ export default class Certification {
       featured: Boolean(featured),
       sortOrder: sortOrder ?? 0,
       createdAt,
+      en: en || {},
     });
   }
 

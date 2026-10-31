@@ -313,7 +313,7 @@ describe('AwardTimeline (shouldComponentUpdate) et RevealOnScroll', () => {
   const groups = (items) => [{ year: 2024, items }];
 
   it('ne se re-rend pas si les données sont identiques, se re-rend si elles changent', () => {
-    const spy = vi.spyOn(AwardTimeline.prototype, 'render');
+    const spy = vi.spyOn(AwardTimeline.Wrapped.prototype, 'render');
     const onSelect = () => {};
     const a = AWARDS.items.slice(0, 2);
     const { rerender } = render(<AwardTimeline groups={groups(a)} onSelect={onSelect} />);

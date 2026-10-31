@@ -3,6 +3,7 @@ import { Switch, Route } from 'react-router-dom';
 
 import withContentProtection from '../views/components/withContentProtection.jsx';
 import LayoutController from '../controllers/LayoutController.jsx';
+import { LocaleContext } from '../context/withLocale.jsx';
 
 // Chargement différé des pages et contrôleurs.
 const NotFoundPage = lazy(() => import('../views/pages/client/NotFoundPage.jsx'));
@@ -76,13 +77,15 @@ const NewsletterConfirm = () => <NewsletterStatusController kind="confirm" />;
 const NewsletterUnsubscribe = () => <NewsletterStatusController kind="unsubscribe" />;
 
 export default class AppRouter extends Component {
+  static contextType = LocaleContext;
+
   render() {
     return (
       <LayoutController>
         <Suspense
           fallback={
             <div className="container py-5" role="status" aria-live="polite">
-              Chargement...
+              {this.context.t('Chargement…')}
             </div>
           }
         >

@@ -8,7 +8,7 @@ import ToastStack from '../views/components/ToastStack.jsx';
 import NewItemsContext from '../context/NewItemsContext.js';
 import { metaForPath } from '../../domain/content/seoContent.js';
 import FeedService from '../../bll/services/FeedService.js';
-import { loadContent } from '../store/slices/contentSlice.js';
+import { loadContent, toggleLanguage } from '../store/slices/contentSlice.js';
 import {
   alertUser,
   fetchFeed,
@@ -84,6 +84,7 @@ class LayoutController extends Component {
           dots={index.dots}
           muted={muted}
           onToggleMuted={this.props.toggleMuted}
+          onToggleLanguage={this.props.toggleLanguage}
         />
         <div id="contenu">{children}</div>
         <Footer profile={profile} />
@@ -103,6 +104,7 @@ const mapState = (state) => ({
 export default withRouter(
   connect(mapState, {
     loadContent,
+    toggleLanguage,
     fetchFeed,
     subscribeFeed,
     alertUser,

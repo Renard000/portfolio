@@ -12,15 +12,23 @@ const SHAPE_COUNT = 3;
  * d'abord ; ceux du fichier local restent affichés tant qu'ils n'existent pas en base.
  */
 export default class ContentService {
-  constructor(content, { projectRepository = null, skillRepository = null } = {}) {
+  constructor(
+    content,
+    { projectRepository = null, skillRepository = null, locale = 'fr-CA' } = {}
+  ) {
     this.content = content;
+    this.locale = locale;
     this.projectRepository = projectRepository;
     this.skillRepository = skillRepository;
   }
 
   /** Version synchrone : sert à préremplir le store (aucun écran de chargement). */
   snapshot() {
-    return { profile: this.content.profile, projects: this.content.projects };
+    return {
+      profile: this.content.profile,
+      projects: this.content.projects,
+      locale: this.locale,
+    };
   }
 
   /** Contenu de l'API fusionné avec le fichier ; le fichier seul en cas de panne. */
@@ -60,6 +68,21 @@ export default class ContentService {
     } catch {
       return null;
     }
+  }
+
+  /** Fichier local dans la langue du site ; un champ absent reste en français. */
+  static localize(content, { profile, projects, skillNames }) {
+    return {
+      profile: {
+        ...content.profile,
+        ...profile,
+        skills: content.profile.skills.map((s) => ({
+          ...s,
+          name: skillNames[s.name] || s.name,
+        })),
+      },
+      projects: content.projects.map((p) => ({ ...p, ...projects[p.slug] })),
+    };
   }
 
   /** Éléments de l'API d'abord, puis ceux du fichier qui n'y sont pas (même clé = API). */

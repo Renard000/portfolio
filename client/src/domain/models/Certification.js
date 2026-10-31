@@ -38,8 +38,8 @@ export default class Certification {
     }).format(new Date(Date.UTC(y, m - 1, d)));
   }
 
-  formattedIssueDate() {
-    return Certification.formatDate(this.issueDate);
+  formattedIssueDate(locale) {
+    return Certification.formatDate(this.issueDate, locale);
   }
 
   isPdfDocument() {

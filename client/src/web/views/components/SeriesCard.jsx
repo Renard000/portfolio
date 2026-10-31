@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import Video from '../../../domain/models/Video.js';
 import NewBadge from './NewBadge.jsx';
 import Thumb from './Thumb.jsx';
+import withLocale from '../../context/withLocale.jsx';
 
 const PALETTE = ['#3b2f8f', '#0f5e4d', '#8a3a24', '#24507a', '#6b3b8f'];
 export const seriesColor = (slug) =>
   PALETTE[[...String(slug)].reduce((a, c) => a + c.charCodeAt(0), 0) % PALETTE.length];
 
-export default class SeriesCard extends PureComponent {
+class SeriesCard extends PureComponent {
   render() {
     const { series: s } = this.props;
     return (
@@ -16,7 +17,7 @@ export default class SeriesCard extends PureComponent {
         to={`/formations/${s.slug}`}
         className="pf-card"
         style={{ padding: 14 }}
-        aria-label={`Série ${s.title}`}
+        aria-label={this.props.t('Série {title}', { title: s.title })}
       >
         <NewBadge prefix={`/formations/${s.slug}`} />
         <Thumb
@@ -29,11 +30,11 @@ export default class SeriesCard extends PureComponent {
         <div className="pf-col" style={{ gap: 10, padding: '16px 10px 8px' }}>
           <div className="pf-row pf-between">
             <span className="pf-chip" style={{ cursor: 'default' }}>
-              {Video.levelLabel(s.level)}
+              {this.props.t(Video.levelLabel(s.level))}
             </span>
             <span className="pf-mono">
-              {s.videoCount} vidéo{s.videoCount > 1 ? 's' : ''} ·{' '}
-              {Video.formatTotal(s.totalDurationSeconds)}
+              {s.videoCount} {this.props.t('vidéo')}
+              {s.videoCount > 1 ? 's' : ''} · {Video.formatTotal(s.totalDurationSeconds)}
             </span>
           </div>
           <h3 className="pf-h3">{s.title}</h3>
@@ -43,3 +44,5 @@ export default class SeriesCard extends PureComponent {
     );
   }
 }
+
+export default withLocale(SeriesCard);

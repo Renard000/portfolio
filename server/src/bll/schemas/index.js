@@ -20,6 +20,13 @@ const httpUrl = z
   }, 'URL http(s) invalide');
 
 const optText = (max) => z.string().trim().max(max).nullable().optional();
+/** Version anglaise facultative : { champ: longueur maximale }. */
+const english = (fields) =>
+  z
+    .object(
+      Object.fromEntries(Object.entries(fields).map(([k, max]) => [k, optText(max)]))
+    )
+    .optional();
 const optUrl = httpUrl.nullable().optional();
 
 export const idParams = z.object({ id: z.uuid() });
@@ -39,6 +46,7 @@ const certificationShape = z.object({
   skills: z.array(z.string().trim().min(1).max(60)).max(30).optional(),
   featured: z.boolean().optional(),
   sortOrder: z.number().int().min(-100000).max(100000).optional(),
+  en: english({ title: 200, description: 5000 }),
 });
 const expiryAfterIssue = (v) =>
   !v.expiryDate || !v.issueDate || v.expiryDate >= v.issueDate;
@@ -83,6 +91,7 @@ const awardShape = z.object({
   documentUrl: optUrl,
   featured: z.boolean().optional(),
   sortOrder: z.number().int().min(-100000).max(100000).optional(),
+  en: english({ title: 200, description: 5000 }),
 });
 export const awardCreate = awardShape.extend(notifyOption);
 export const awardUpdate = awardShape
@@ -166,6 +175,7 @@ const seriesShape = z.object({
   status: z.enum(['draft', 'published']).optional(),
   featured: z.boolean().optional(),
   sortOrder: z.number().int().min(-100000).max(100000).optional(),
+  en: english({ title: 200, description: 5000 }),
 });
 export const seriesCreate = seriesShape;
 export const seriesUpdate = seriesShape
@@ -183,6 +193,7 @@ const videoShape = z.object({
   chapters: z.array(chapter).max(60).optional(),
   resources: z.array(resource).max(20).optional(),
   status: z.enum(['draft', 'published']).optional(),
+  en: english({ title: 200, description: 10000 }),
 });
 export const videoCreate = videoShape;
 export const videoUpdate = videoShape
@@ -221,6 +232,7 @@ const articleShape = z.object({
   coverUrl: optUrl,
   category: optText(100),
   tags: tagList,
+  en: english({ title: 200, excerpt: 500, content: 200000 }),
 });
 export const articleCreate = articleShape;
 export const articleUpdate = articleShape
@@ -292,6 +304,14 @@ const projectShape = z.object({
   color: hexColor,
   featured: z.boolean().optional(),
   sortOrder: z.number().int().min(-100000).max(100000).optional(),
+  en: english({
+    title: 200,
+    summary: 500,
+    challenge: 5000,
+    solution: 5000,
+    role: 120,
+    duration: 60,
+  }),
 });
 export const projectCreate = projectShape.extend(notifyOption);
 export const projectUpdate = projectShape

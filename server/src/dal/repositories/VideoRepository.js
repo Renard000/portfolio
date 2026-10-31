@@ -21,10 +21,12 @@ export const videoFromRow = (r) =>
     views: r.views,
     publishedAt: r.published_at,
     createdAt: r.created_at,
+    en: r.en,
   });
 
 const toRow = (d) => {
   const map = {
+    en: 'en',
     seriesId: 'series_id',
     title: 'title',
     slug: 'slug',

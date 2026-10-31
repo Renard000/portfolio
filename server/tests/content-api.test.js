@@ -236,6 +236,18 @@ describe('Blog public', () => {
     expect(res.body.categories.sort()).toEqual(['Node', 'React']);
   });
 
+  it('liste : version anglaise sans le texte complet ; détail : avec', async () => {
+    await request(app)
+      .put(`/api/admin/articles/${A1}`)
+      .set(ADMIN)
+      .send({ en: { title: 'First', content: 'Hello' } });
+    const list = await request(app).get('/api/articles');
+    const item = list.body.items.find((a) => a.id === A1);
+    expect(item.en).toEqual({ title: 'First' });
+    const detail = await request(app).get('/api/articles/premier');
+    expect(detail.body.article.en.content).toBe('Hello');
+  });
+
   it('filtres et pagination limitée à 20', async () => {
     const res = await request(app).get('/api/articles?category=React');
     expect(res.body.items).toHaveLength(1);

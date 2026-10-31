@@ -1,9 +1,10 @@
 import { Component } from 'react';
 import { safeHref } from '../../../utils/url.js';
+import withLocale from '../../../context/withLocale.jsx';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-export default class ContactPage extends Component {
+class ContactPage extends Component {
   state = { nom: '', email: '', sujet: '', message: '', website: '' };
 
   set = (key) => (e) => {
@@ -47,12 +48,15 @@ export default class ContactPage extends Component {
           }}
         >
           <div className="pf-col" style={{ gap: 32 }}>
-            <span className="pf-kicker">Contact</span>
+            <span className="pf-kicker">{this.props.t('Contact')}</span>
             <h1 className="pf-h1 pf-h1--md pf-rise">
-              Parlons <span className="pf-out">projet.</span>
+              {this.props.t('Parlons')}{' '}
+              <span className="pf-out">{this.props.t('projet.')}</span>
             </h1>
             <p className="pf-lead">
-              Un mandat, une collaboration, une question : je réponds sous 48 h.
+              {this.props.t(
+                'Un mandat, une collaboration, une question : je réponds sous 48 h.'
+              )}
             </p>
             <div className="pf-row">
               <span className="pf-dot" aria-hidden="true" />
@@ -76,7 +80,7 @@ export default class ContactPage extends Component {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <span className="pf-h3">LinkedIn</span>
+                  <span className="pf-h3">{this.props.t('LinkedIn')}</span>
                   <span aria-hidden="true">↗</span>
                 </a>
               ) : null}
@@ -87,7 +91,7 @@ export default class ContactPage extends Component {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <span className="pf-h3">GitHub</span>
+                  <span className="pf-h3">{this.props.t('GitHub')}</span>
                   <span aria-hidden="true">↗</span>
                 </a>
               ) : null}
@@ -104,16 +108,18 @@ export default class ContactPage extends Component {
                 ✓
               </span>
               <h2 className="pf-h2" style={{ fontSize: '2.2rem' }}>
-                Message envoyé.
+                {this.props.t('Message envoyé.')}
               </h2>
-              <p className="pf-mu">Merci ! Je vous réponds très bientôt.</p>
+              <p className="pf-mu">
+                {this.props.t('Merci ! Je vous réponds très bientôt.')}
+              </p>
               <button
                 type="button"
                 className="pf-btn"
                 style={{ alignSelf: 'flex-start' }}
                 onClick={this.reset}
               >
-                Envoyer un autre message
+                {this.props.t('Envoyer un autre message')}
               </button>
             </div>
           ) : (
@@ -122,12 +128,12 @@ export default class ContactPage extends Component {
               style={{ padding: 'clamp(24px,4vw,36px)', gap: 20 }}
               onSubmit={this.submit}
               noValidate
-              aria-label="Formulaire de contact"
+              aria-label={this.props.t('Formulaire de contact')}
             >
               <div className="pf-grid2" style={{ gap: 16 }}>
                 <div>
                   <label htmlFor="c-nom" className="pf-label">
-                    Nom
+                    {this.props.t('Nom')}
                   </label>
                   <input
                     id="c-nom"
@@ -140,7 +146,7 @@ export default class ContactPage extends Component {
                 </div>
                 <div>
                   <label htmlFor="c-email" className="pf-label">
-                    Courriel
+                    {this.props.t('Courriel')}
                   </label>
                   <input
                     id="c-email"
@@ -155,7 +161,7 @@ export default class ContactPage extends Component {
               </div>
               <div>
                 <label htmlFor="c-sujet" className="pf-label">
-                  Sujet
+                  {this.props.t('Sujet')}
                 </label>
                 <input
                   id="c-sujet"
@@ -166,7 +172,7 @@ export default class ContactPage extends Component {
               </div>
               <div>
                 <label htmlFor="c-message" className="pf-label">
-                  Message
+                  {this.props.t('Message')}
                 </label>
                 <textarea
                   id="c-message"
@@ -178,7 +184,7 @@ export default class ContactPage extends Component {
               </div>
               {/* Honeypot : invisible pour les humains, rempli par les robots */}
               <div className="visually-hidden" aria-hidden="true">
-                <label htmlFor="c-website">Ne pas remplir</label>
+                <label htmlFor="c-website">{this.props.t('Ne pas remplir')}</label>
                 <input
                   id="c-website"
                   name="website"
@@ -195,14 +201,16 @@ export default class ContactPage extends Component {
               ) : null}
               <div className="pf-row pf-between">
                 <span className="pf-mu" style={{ fontSize: 13 }}>
-                  Protégé contre le spam.
+                  {this.props.t('Protégé contre le spam.')}
                 </span>
                 <button
                   type="submit"
                   className="pf-btn pf-btn--pri"
                   disabled={status === 'loading'}
                 >
-                  {status === 'loading' ? 'Envoi…' : 'Envoyer le message →'}
+                  {status === 'loading'
+                    ? this.props.t('Envoi…')
+                    : this.props.t('Envoyer le message →')}
                 </button>
               </div>
             </form>
@@ -213,3 +221,5 @@ export default class ContactPage extends Component {
   }
 }
 ContactPage.defaultProps = { status: 'idle' };
+
+export default withLocale(ContactPage);

@@ -1,6 +1,7 @@
 import { Component } from 'react';
+import withLocale from '../../context/withLocale.jsx';
 
-export default class NewsletterForm extends Component {
+class NewsletterForm extends Component {
   state = { email: '', consent: false, website: '' };
 
   submit = (e) => {
@@ -13,22 +14,26 @@ export default class NewsletterForm extends Component {
     if (status === 'pending')
       return (
         <div className="alert alert-success" role="status">
-          Merci ! Un courriel de confirmation vous a été envoyé : cliquez sur le lien
-          qu'il contient pour finaliser votre abonnement. Sans ce clic, vous ne recevrez
-          rien.
+          {this.props.t(
+            "Merci ! Un courriel de confirmation vous a été envoyé : cliquez sur le lien qu'il contient pour finaliser votre abonnement. Sans ce clic, vous ne recevrez rien."
+          )}
         </div>
       );
     return (
-      <form onSubmit={this.submit} noValidate aria-label="Abonnement à la newsletter">
+      <form
+        onSubmit={this.submit}
+        noValidate
+        aria-label={this.props.t('Abonnement à la newsletter')}
+      >
         <div className="input-group mb-2">
           <label htmlFor="nl-email" className="visually-hidden">
-            Adresse courriel
+            {this.props.t('Adresse courriel')}
           </label>
           <input
             id="nl-email"
             type="email"
             className="form-control"
-            placeholder="vous@exemple.com"
+            placeholder={this.props.t('vous@exemple.com')}
             autoComplete="email"
             value={this.state.email}
             onChange={(e) => this.setState({ email: e.target.value })}
@@ -39,12 +44,12 @@ export default class NewsletterForm extends Component {
             type="submit"
             disabled={status === 'loading'}
           >
-            {status === 'loading' ? 'Envoi…' : "S'abonner"}
+            {status === 'loading' ? this.props.t('Envoi…') : this.props.t("S'abonner")}
           </button>
         </div>
         {/* Honeypot : invisible pour les humains, rempli par les robots */}
         <div className="visually-hidden" aria-hidden="true">
-          <label htmlFor="nl-website">Ne pas remplir</label>
+          <label htmlFor="nl-website">{this.props.t('Ne pas remplir')}</label>
           <input
             id="nl-website"
             name="website"
@@ -64,9 +69,9 @@ export default class NewsletterForm extends Component {
             onChange={(e) => this.setState({ consent: e.target.checked })}
           />
           <label htmlFor="nl-consent" className="form-check-label small">
-            J'accepte de recevoir par courriel les nouvelles publications de ce portfolio.
-            Je peux me désabonner à tout moment grâce au lien présent dans chaque
-            courriel.
+            {this.props.t(
+              "J'accepte de recevoir par courriel les nouvelles publications de ce portfolio. Je peux me désabonner à tout moment grâce au lien présent dans chaque courriel."
+            )}
           </label>
         </div>
         {error ? (
@@ -78,3 +83,5 @@ export default class NewsletterForm extends Component {
     );
   }
 }
+
+export default withLocale(NewsletterForm);

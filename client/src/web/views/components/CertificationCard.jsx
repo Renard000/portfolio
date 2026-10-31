@@ -3,8 +3,9 @@ import Certification from '../../../domain/models/Certification.js';
 import NewItemsContext from '../../context/NewItemsContext.js';
 import NewBadge from './NewBadge.jsx';
 import StatusBadge from './StatusBadge.jsx';
+import withLocale from '../../context/withLocale.jsx';
 
-export default class CertificationCard extends PureComponent {
+class CertificationCard extends PureComponent {
   static contextType = NewItemsContext;
 
   open = () => {
@@ -21,7 +22,7 @@ export default class CertificationCard extends PureComponent {
           <img
             src={cert.imageUrl}
             className="card-img-top certification-card__img"
-            alt={`Badge ${cert.title}`}
+            alt={this.props.t('Badge {title}', { title: cert.title })}
             loading="lazy"
           />
         ) : null}
@@ -33,17 +34,19 @@ export default class CertificationCard extends PureComponent {
           <p className="text-muted small mb-1">{cert.issuer}</p>
           <p className="small mb-2">
             <i className="fa-regular fa-calendar me-1" aria-hidden="true" />
-            {cert.formattedIssueDate()}
+            {cert.formattedIssueDate(this.props.locale)}
           </p>
           <button
             type="button"
             className="btn btn-outline-primary btn-sm mt-auto"
             onClick={this.open}
           >
-            Voir le détail
+            {this.props.t('Voir le détail')}
           </button>
         </div>
       </article>
     );
   }
 }
+
+export default withLocale(CertificationCard);

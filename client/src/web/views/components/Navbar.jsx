@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { NavLink } from 'react-router-dom';
+import withLocale from '../../context/withLocale.jsx';
 
 export const NAV_LINKS = [
   { to: '/', label: 'Accueil', exact: true },
@@ -12,7 +13,7 @@ export const NAV_LINKS = [
 ];
 
 /** Barre de navigation collante ; sur mobile, menu plein écran (Échap pour fermer). */
-export default class Navbar extends Component {
+class Navbar extends Component {
   state = { open: false };
 
   componentDidMount() {
@@ -45,22 +46,29 @@ export default class Navbar extends Component {
     if (!this.props.dots?.[to]) return null;
     return (
       <span className="pf-nav-dot">
-        <span className="visually-hidden">nouveautés</span>
+        <span className="visually-hidden">{this.props.t('nouveautés')}</span>
       </span>
     );
   }
 
   render() {
-    const { initials = 'VN', dots = {}, muted, onToggleMuted } = this.props;
+    const {
+      initials = 'VN',
+      dots = {},
+      muted,
+      onToggleMuted,
+      lang,
+      onToggleLanguage,
+    } = this.props;
     const { open } = this.state;
     return (
       <header className="pf-nav">
-        <nav className="pf-nav__bar" aria-label="Navigation principale">
+        <nav className="pf-nav__bar" aria-label={this.props.t('Navigation principale')}>
           <NavLink
             to="/"
             exact
             className="pf-logo"
-            aria-label="Accueil"
+            aria-label={this.props.t('Accueil')}
             onClick={this.close}
           >
             {initials}
@@ -69,7 +77,7 @@ export default class Navbar extends Component {
           <div className="pf-links">
             {NAV_LINKS.map((l) => (
               <NavLink key={l.to} to={l.to} exact={l.exact} activeClassName="active">
-                {l.label}
+                {this.props.t(l.label)}
                 {this.dot(l.to)}
               </NavLink>
             ))}
@@ -78,9 +86,22 @@ export default class Navbar extends Component {
               to="/contact"
               activeClassName="active"
             >
-              Me contacter
+              {this.props.t('Me contacter')}
             </NavLink>
           </div>
+          {onToggleLanguage ? (
+            <button
+              type="button"
+              className="pf-sound"
+              lang={lang === 'fr' ? 'en' : 'fr'}
+              aria-label={this.props.t(
+                lang === 'fr' ? 'Passer le site en anglais' : 'Passer le site en français'
+              )}
+              onClick={onToggleLanguage}
+            >
+              {lang === 'fr' ? 'EN' : 'FR'}
+            </button>
+          ) : null}
           {onToggleMuted ? (
             <button
               type="button"
@@ -88,8 +109,8 @@ export default class Navbar extends Component {
               aria-pressed={!muted}
               aria-label={
                 muted
-                  ? 'Activer le son des notifications'
-                  : 'Couper le son des notifications'
+                  ? this.props.t('Activer le son des notifications')
+                  : this.props.t('Couper le son des notifications')
               }
               onClick={onToggleMuted}
             >
@@ -106,16 +127,21 @@ export default class Navbar extends Component {
             aria-controls="pf-menu"
             onClick={this.toggle}
           >
-            {open ? 'Fermer' : 'Menu'}
+            {open ? this.props.t('Fermer') : this.props.t('Menu')}
             {!open && Object.keys(dots).length ? (
               <span className="pf-nav-dot">
-                <span className="visually-hidden">nouveautés</span>
+                <span className="visually-hidden">{this.props.t('nouveautés')}</span>
               </span>
             ) : null}
           </button>
         </nav>
         {open ? (
-          <div id="pf-menu" className="pf-menu" role="dialog" aria-label="Menu">
+          <div
+            id="pf-menu"
+            className="pf-menu"
+            role="dialog"
+            aria-label={this.props.t('Menu')}
+          >
             <div className="pf-row pf-between" style={{ marginBottom: 24 }}>
               <span className="pf-logo">
                 {initials}
@@ -127,7 +153,7 @@ export default class Navbar extends Component {
                 style={{ display: 'inline-flex' }}
                 onClick={this.close}
               >
-                Fermer
+                {this.props.t('Fermer')}
               </button>
             </div>
             {[...NAV_LINKS, { to: '/contact', label: 'Contact' }].map((l) => (
@@ -139,7 +165,7 @@ export default class Navbar extends Component {
                 onClick={this.close}
               >
                 <span>
-                  {l.label}
+                  {this.props.t(l.label)}
                   {this.dot(l.to)}
                 </span>
                 <span aria-hidden="true">→</span>
@@ -151,3 +177,5 @@ export default class Navbar extends Component {
     );
   }
 }
+
+export default withLocale(Navbar);

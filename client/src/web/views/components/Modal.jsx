@@ -1,8 +1,9 @@
 import { Component } from 'react';
 import { createPortal } from 'react-dom';
+import withLocale from '../../context/withLocale.jsx';
 
 /** Modal rendue dans document.body via un Portal. Échap et clic sur le fond la ferment. */
-export default class Modal extends Component {
+class Modal extends Component {
   componentDidMount() {
     document.addEventListener('keydown', this.handleKey);
     document.body.classList.add('modal-open');
@@ -37,7 +38,7 @@ export default class Modal extends Component {
                 <button
                   type="button"
                   className="btn-close"
-                  aria-label="Fermer"
+                  aria-label={this.props.t('Fermer')}
                   onClick={onClose}
                 />
               </div>
@@ -52,3 +53,5 @@ export default class Modal extends Component {
     );
   }
 }
+
+export default withLocale(Modal);

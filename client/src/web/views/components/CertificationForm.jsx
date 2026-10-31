@@ -1,5 +1,11 @@
 import { Component } from 'react';
 import NotifyCheckbox from './NotifyCheckbox.jsx';
+import EnglishFields from './EnglishFields.jsx';
+
+const ENGLISH_FIELDS = [
+  { key: 'title', label: 'Titre' },
+  { key: 'description', label: 'Description', rows: 3 },
+];
 
 const EMPTY = {
   title: '',
@@ -45,6 +51,8 @@ export default class CertificationForm extends Component {
     const next = type === 'checkbox' ? checked : value;
     this.setState((s) => ({ values: { ...s.values, [key]: next } }));
   };
+
+  setEnglish = (en) => this.setState((s) => ({ values: { ...s.values, en } }));
 
   submit = (e) => {
     e.preventDefault();
@@ -157,6 +165,12 @@ export default class CertificationForm extends Component {
         {this.props.initial ? null : (
           <NotifyCheckbox id="notify" checked={v.notify} onChange={this.set('notify')} />
         )}
+        <EnglishFields
+          idPrefix="cert"
+          fields={ENGLISH_FIELDS}
+          value={this.state.values.en}
+          onChange={this.setEnglish}
+        />
         {error ? (
           <div className="col-12">
             <div className="alert alert-danger mb-0" role="alert">
