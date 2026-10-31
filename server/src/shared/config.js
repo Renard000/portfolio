@@ -27,8 +27,9 @@ export const config = {
   },
   // Adresse qui reçoit une copie des messages du formulaire de contact (facultatif)
   contact: { notifyTo: process.env.CONTACT_TO_EMAIL || '' },
-  // Vidéos (addendum C/E) : facultatif. Sans ces variables, les routes vidéo qui touchent
-  // S3 / CloudFront répondent 503 ; la lecture des listes (base de données) reste possible.
+  // Vidéos (addendum C/E) : facultatif. Sans les variables AWS, les routes vidéo qui touchent
+  // S3 répondent 503 ; la lecture des listes (base de données) reste possible.
+  // Sans clés CloudFront, les vidéos et les affiches sont servies directement par S3.
   aws: {
     region: process.env.AWS_REGION || 'ca-central-1',
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',

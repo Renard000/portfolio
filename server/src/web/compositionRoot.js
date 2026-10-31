@@ -93,14 +93,23 @@ export function buildContainer(config) {
               accessKeyId: aws.accessKeyId,
               secretAccessKey: aws.secretAccessKey,
             },
+            // Sinon l'URL présignée fige la somme de contrôle d'un corps vide : S3 refuse l'envoi
+            requestChecksumCalculation: 'WHEN_REQUIRED',
           }),
           aws.bucket
         )
       : new UnconfiguredStorage(unavailable);
-  const cdnSigner =
+  // Sans clés CloudFront, les vidéos et les affiches sont servies directement par S3
+  const hasCloudFront = Boolean(
     cloudfront.url && cloudfront.keyPairId && cloudfront.privateKey
-      ? new CdnSigner(cloudfront.keyPairId, cloudfront.privateKey, cloudfront.url)
-      : new UnconfiguredStorage(unavailable);
+  );
+  const cdnSigner = hasCloudFront
+    ? new CdnSigner(cloudfront.keyPairId, cloudfront.privateKey, cloudfront.url)
+    : storage;
+  const mediaUrl =
+    hasCloudFront || !aws.bucket
+      ? cloudfront.url
+      : `https://${aws.bucket}.s3.${aws.region}.amazonaws.com`;
   const videoRepository = new VideoRepository(supabase);
   const videoSeriesRepository = new VideoSeriesRepository(supabase);
 
@@ -167,7 +176,7 @@ export function buildContainer(config) {
     storage,
     publications,
     {
-      cdnUrl: cloudfront.url,
+      cdnUrl: mediaUrl,
     }
   );
   const videoUploadService = new VideoUploadService(

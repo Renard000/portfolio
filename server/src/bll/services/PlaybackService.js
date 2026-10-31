@@ -3,7 +3,7 @@ import { NotFoundError } from '../../domain/errors/index.js';
 const MIN_VALIDITY_SECONDS = 2 * 3600;
 const MARGIN_SECONDS = 3600;
 
-/** Émet l'URL CloudFront SIGNÉE : le bucket est privé, rien n'est lisible sans signature. */
+/** Émet l'URL SIGNÉE (CloudFront ou S3) : une vidéo n'est lisible que par ce lien temporaire. */
 export default class PlaybackService {
   constructor(
     videoRepository,

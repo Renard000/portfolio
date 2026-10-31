@@ -1,4 +1,5 @@
 import {
+  GetObjectCommand,
   PutObjectCommand,
   HeadObjectCommand,
   DeleteObjectCommand,
@@ -24,6 +25,13 @@ export default class StorageClient {
       ContentType: contentType,
       CacheControl: 'public, max-age=31536000, immutable',
     });
+    return this.presign(this.s3, command, { expiresIn });
+  }
+
+  /** Lecture directe depuis S3 (URL présignée) : remplace CdnSigner sans CloudFront. */
+  async sign(key, expiresAt) {
+    const expiresIn = Math.ceil((expiresAt.getTime() - Date.now()) / 1000);
+    const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
     return this.presign(this.s3, command, { expiresIn });
   }
 

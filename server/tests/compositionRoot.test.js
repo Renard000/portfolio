@@ -61,6 +61,29 @@ describe('composition root serveur', () => {
     expect(c.videoController).toBeDefined();
     expect(createApp(c, full)).toBeDefined();
   });
+  it('sans clés CloudFront, S3 sert directement les vidéos et les affiches', async () => {
+    const c = buildContainer({
+      ...config,
+      aws: {
+        region: 'ca-central-1',
+        accessKeyId: 'AK',
+        secretAccessKey: 'SK',
+        bucket: 'mon-bucket',
+      },
+      cloudfront: {
+        url: 'https://dxxxxxxxx.cloudfront.net',
+        keyPairId: '',
+        privateKey: '',
+      },
+    });
+    const { videoService, playbackService } = c.videoController;
+    expect(videoService.cdnUrl).toBe('https://mon-bucket.s3.ca-central-1.amazonaws.com');
+    const url = await playbackService.cdnSigner.sign(
+      'videos/s/01-a.mp4',
+      new Date(Date.now() + 3600_000)
+    );
+    expect(new URL(url).hostname).toBe('mon-bucket.s3.ca-central-1.amazonaws.com');
+  });
   it('routes vidéo montées : administration protégée (401)', async () => {
     expect((await request(app).get('/api/admin/video-series')).status).toBe(401);
     expect((await request(app).post('/api/videos').send({})).status).toBe(401);

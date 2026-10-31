@@ -4,7 +4,7 @@ import CdnSigner, { UnconfiguredStorage } from '../../src/dal/clients/CdnSigner.
 import VideoRepository from '../../src/dal/repositories/VideoRepository.js';
 import VideoSeriesRepository from '../../src/dal/repositories/VideoSeriesRepository.js';
 import { ServiceUnavailableError } from '../../src/domain/errors/index.js';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 describe('StorageClient', () => {
   it('createUploadUrl : commande PUT avec bucket, clé, type et cache long ; expiration transmise', async () => {
@@ -26,6 +26,36 @@ describe('StorageClient', () => {
     });
     expect(command.input.CacheControl).toContain('immutable');
     expect(opts).toEqual({ expiresIn: 900 });
+  });
+  it('sign : GET présigné sur le bon objet, valable jusqu’à la date demandée', async () => {
+    vi.useFakeTimers({ now: new Date('2026-05-01T12:00:00Z') });
+    const presign = vi.fn().mockResolvedValue('https://signed');
+    const url = await new StorageClient({}, 'b', presign).sign(
+      'videos/s/01-a.mp4',
+      new Date('2026-05-01T14:00:00Z')
+    );
+    vi.useRealTimers();
+    expect(url).toBe('https://signed');
+    const [, command, opts] = presign.mock.calls[0];
+    expect(command).toBeInstanceOf(GetObjectCommand);
+    expect(command.input).toEqual({ Bucket: 'b', Key: 'videos/s/01-a.mp4' });
+    expect(opts).toEqual({ expiresIn: 7200 });
+  });
+  it('produit de vraies URL S3 : lecture limitée dans le temps, envoi sans somme figée', async () => {
+    const s3 = new S3Client({
+      region: 'ca-central-1',
+      credentials: { accessKeyId: 'AK', secretAccessKey: 'SK' },
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+    });
+    const c = new StorageClient(s3, 'mon-bucket');
+    const read = new URL(
+      await c.sign('videos/s/01-a.mp4', new Date(Date.now() + 3600_000))
+    );
+    expect(read.hostname).toBe('mon-bucket.s3.ca-central-1.amazonaws.com');
+    expect(read.pathname).toBe('/videos/s/01-a.mp4');
+    expect(Number(read.searchParams.get('X-Amz-Expires'))).toBeLessThanOrEqual(3600);
+    const upload = new URL(await c.createUploadUrl('videos/s/01-a.mp4', 'video/mp4'));
+    expect(upload.searchParams.has('x-amz-checksum-crc32')).toBe(false);
   });
   it('exists : taille réelle, null si 404/NotFound, relance les autres erreurs', async () => {
     const send = vi
