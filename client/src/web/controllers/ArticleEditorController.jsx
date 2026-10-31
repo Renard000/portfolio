@@ -44,6 +44,7 @@ class ArticleEditorController extends Component {
       slugTouched: false,
       previewHtml: '',
       coverFile: null,
+      uploadingImages: false,
       error: null,
       notice: null,
       loadedId: null,
@@ -104,6 +105,28 @@ class ArticleEditorController extends Component {
   };
 
   setCover = (file) => this.setState({ coverFile: file });
+
+  /** Envoie les images ; celles déjà envoyées restent insérées si une suivante échoue. */
+  insertImages = async (files, position) => {
+    this.setState({ uploadingImages: true, error: null, notice: null });
+    const images = [];
+    try {
+      for (const file of files) {
+        const url = await this.props
+          .uploadAsset({ file, kind: 'image', folder: 'articles' })
+          .unwrap();
+        images.push({ name: file.name, url });
+      }
+    } catch (err) {
+      this.setState({ error: err.message });
+    }
+    this.setState({ uploadingImages: false });
+    if (images.length)
+      this.change(
+        'content',
+        ArticleService.insertImages(this.state.values.content, images, position)
+      );
+  };
 
   async save({ publish }) {
     const invalid = ArticleService.validate(this.state.values);
@@ -173,6 +196,8 @@ class ArticleEditorController extends Component {
         onPublish={this.publish}
         onUnpublish={this.unpublish}
         onCover={this.setCover}
+        uploadingImages={this.state.uploadingImages}
+        onInsertImages={this.insertImages}
       />
     );
   }

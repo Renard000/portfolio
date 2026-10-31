@@ -191,6 +191,71 @@ describe('Admin : articles', () => {
     expect(await screen.findByText(/abonnés sont notifiés/)).toBeInTheDocument();
   });
 
+  it('éditeur : image envoyée puis insérée au curseur, visible dans l’aperçu', async () => {
+    const { services, container } = renderApp('/admin/articles/nouveau', logged());
+    const content = await screen.findByLabelText('Contenu en Markdown');
+    fireEvent.change(content, { target: { value: 'Avant\n\nAprès' } });
+    content.setSelectionRange(5, 5);
+    fireEvent.change(screen.getByLabelText('Insérer une image'), {
+      target: {
+        files: [new File(['x'], 'mon-schema.png', { type: 'image/png' })],
+      },
+    });
+    await waitFor(() =>
+      expect(content).toHaveValue(
+        'Avant\n\n![mon-schema](https://cdn.example/uploaded.png)\n\nAprès'
+      )
+    );
+    expect(services.uploadService.upload).toHaveBeenCalledWith(
+      expect.any(File),
+      'image',
+      'articles'
+    );
+    await waitFor(() =>
+      expect(container.querySelector('.pf-prose img')).toHaveAttribute(
+        'src',
+        'https://cdn.example/uploaded.png'
+      )
+    );
+  });
+
+  it('éditeur : coller une capture d’écran l’insère ; du texte collé reste normal', async () => {
+    const { services } = renderApp('/admin/articles/nouveau', logged());
+    const content = await screen.findByLabelText('Contenu en Markdown');
+    fireEvent.paste(content, { clipboardData: { files: [] } });
+    expect(services.uploadService.upload).not.toHaveBeenCalled();
+    fireEvent.paste(content, {
+      clipboardData: {
+        files: [new File(['x'], 'image.png', { type: 'image/png' })],
+      },
+    });
+    await waitFor(() => expect(content.value).toContain('![image]('));
+  });
+
+  it('éditeur : image refusée, message clair et texte intact', async () => {
+    const services = logged();
+    services.uploadService.upload = vi
+      .fn()
+      .mockRejectedValue(new Error('Fichier trop volumineux (maximum 5 Mo).'));
+    renderApp('/admin/articles/nouveau', services);
+    const content = await screen.findByLabelText('Contenu en Markdown');
+    fireEvent.change(content, { target: { value: 'Texte' } });
+    fireEvent.change(screen.getByLabelText('Insérer une image'), {
+      target: { files: [new File(['x'], 'grosse.png', { type: 'image/png' })] },
+    });
+    expect(await screen.findByRole('alert')).toHaveTextContent('trop volumineux');
+    expect(content).toHaveValue('Texte');
+  });
+
+  it('ArticleService.insertImages : plusieurs images, crochets retirés du texte alternatif', () => {
+    expect(
+      ArticleService.insertImages('', [
+        { name: 'a[1].jpg', url: 'https://x/a.jpg' },
+        { name: 'b.webp', url: 'https://x/b.webp' },
+      ])
+    ).toBe('![a1](https://x/a.jpg)\n\n![b](https://x/b.webp)');
+  });
+
   it('éditeur : validation avant tout appel', async () => {
     const { services } = renderApp('/admin/articles/nouveau', logged());
     fireEvent.click(

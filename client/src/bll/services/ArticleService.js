@@ -130,6 +130,19 @@ export default class ArticleService {
     };
   }
 
+  /** Insère des images Markdown à la position du curseur, séparées du texte voisin. */
+  static insertImages(content, images, position = content.length) {
+    const markdown = images
+      .map(({ name, url }) => {
+        const alt = name.replace(/\.[^.]+$/, '').replace(/[[\]]/g, '');
+        return `![${alt}](${url})`;
+      })
+      .join('\n\n');
+    const before = content.slice(0, position).trimEnd();
+    const after = content.slice(position).trimStart();
+    return [before, markdown, after].filter(Boolean).join('\n\n');
+  }
+
   /** « 23 oct. 2026 » */
   static formatDate(iso, withYear = true) {
     if (!iso) return '—';

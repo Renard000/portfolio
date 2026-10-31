@@ -1,4 +1,4 @@
-import { PureComponent } from 'react';
+import { PureComponent, createRef } from 'react';
 import { Link } from 'react-router-dom';
 import AdminHeader from '../../components/AdminHeader.jsx';
 
@@ -7,7 +7,33 @@ import AdminHeader from '../../components/AdminHeader.jsx';
  * Composant contrôlé : les valeurs et l'aperçu (déjà assaini) viennent du contrôleur.
  */
 export default class ArticleEditorView extends PureComponent {
+  contentRef = createRef();
+
   field = (key) => (e) => this.props.onChange(key, e.target.value);
+
+  /** Les images arrivent à l'endroit du curseur dans le texte. */
+  insert(fileList) {
+    const files = [...fileList].filter((f) => f.type.startsWith('image/'));
+    if (!files.length) return false;
+    this.props.onInsertImages(files, this.contentRef.current.selectionStart);
+    return true;
+  }
+
+  pickImages = (e) => {
+    this.insert(e.target.files);
+    e.target.value = ''; // permet de choisir de nouveau la même image
+  };
+
+  pasteImages = (e) => {
+    if (this.insert(e.clipboardData.files)) e.preventDefault();
+  };
+
+  dropImages = (e) => {
+    e.preventDefault();
+    this.insert(e.dataTransfer.files);
+  };
+
+  allowDrop = (e) => e.preventDefault();
 
   render() {
     const {
@@ -19,6 +45,7 @@ export default class ArticleEditorView extends PureComponent {
       error,
       notice,
       coverName,
+      uploadingImages,
       onSaveDraft,
       onPublish,
       onUnpublish,
@@ -146,12 +173,35 @@ export default class ArticleEditorView extends PureComponent {
               </label>
               <textarea
                 id="ed-content"
+                ref={this.contentRef}
                 className="pf-input"
                 placeholder={'# Titre\nTexte en **Markdown**…'}
                 value={values.content}
                 onChange={this.field('content')}
+                onPaste={this.pasteImages}
+                onDrop={this.dropImages}
+                onDragOver={this.allowDrop}
                 spellCheck
               />
+              <div className="pf-row" style={{ marginTop: 10 }}>
+                <label className="pf-btn" style={{ minHeight: 40 }}>
+                  <input
+                    type="file"
+                    className="visually-hidden"
+                    accept="image/png,image/jpeg,image/webp"
+                    multiple
+                    disabled={uploadingImages}
+                    aria-label="Insérer une image"
+                    onChange={this.pickImages}
+                  />
+                  <i className="fa-regular fa-image" aria-hidden="true" />
+                  {uploadingImages ? 'Envoi de l’image…' : 'Insérer une image'}
+                </label>
+                <span className="pf-mu" style={{ fontSize: 13 }} role="status">
+                  Ou glissez-déposez, ou collez une capture d’écran dans le texte. PNG,
+                  JPEG ou WebP, 5 Mo maximum.
+                </span>
+              </div>
             </div>
             <div>
               <label htmlFor="ed-tags" className="visually-hidden">

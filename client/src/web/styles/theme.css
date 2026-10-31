@@ -953,7 +953,9 @@ a.pf-card:hover .pf-th--zoom {
   text-decoration: underline;
 }
 .pf-prose img {
+  display: block;
   max-width: 100%;
+  height: auto;
   border-radius: 16px;
 }
 .pf-prose blockquote {
