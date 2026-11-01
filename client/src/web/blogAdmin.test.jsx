@@ -134,10 +134,30 @@ describe('Admin : barre latérale et tableau de bord', () => {
       expect(
         within(side).getByRole('link', { name: new RegExp(name) })
       ).toBeInTheDocument();
-    // 1 commentaire en attente, 1 message non lu (données de test)
-    expect(await within(side).findAllByLabelText('1 à traiter')).toHaveLength(2);
+    // 1 commentaire en attente + 1 message non lu (données de test) : une seule entrée
+    expect(
+      within(await within(side).findByLabelText('2 à traiter')).getByText('2')
+    ).toBeInTheDocument();
+    expect(within(side).getByRole('link', { name: /Modération/ })).toHaveAttribute(
+      'href',
+      '/admin/messages'
+    );
+    expect(within(side).queryByRole('link', { name: /^Commentaires/ })).toBeNull();
     expect(await screen.findByText('Articles les plus lus')).toBeInTheDocument();
     expect(screen.getByText('3 commentaires à modérer')).toBeInTheDocument();
+  });
+
+  it('menu mobile : s’ouvre au bouton et se ferme au clic sur un lien', async () => {
+    const { container } = renderApp('/admin', logged());
+    const burger = await screen.findByRole('button', { name: 'Menu' });
+    const menu = container.querySelector('#pf-sb-menu');
+    expect(burger).toHaveAttribute('aria-expanded', 'false');
+    expect(menu).not.toHaveClass('is-open');
+    fireEvent.click(burger);
+    expect(menu).toHaveClass('is-open');
+    fireEvent.click(within(menu).getByRole('link', { name: 'Projets' }));
+    expect(menu).not.toHaveClass('is-open');
+    expect(screen.getByRole('button', { name: 'Menu' })).toBeInTheDocument();
   });
 
   it('modèle du tableau de bord : variation, durée, barres', () => {

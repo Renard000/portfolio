@@ -65,7 +65,7 @@ describe('Navigation et gabarit', () => {
     await screen.findByText('Dernières certifications');
   });
 
-  it('menu mobile : ouvre, ferme avec Échap, se ferme au clic sur un lien et libère le défilement', async () => {
+  it('menu mobile : ouvre, ferme avec Échap, au clic à côté et au clic sur un lien', async () => {
     renderApp('/');
 
     await screen.findByRole('heading', { level: 1 });
@@ -77,12 +77,15 @@ describe('Navigation et gabarit', () => {
 
     const menu = screen.getByRole('dialog', { name: 'Menu' });
     expect(within(menu).getByRole('link', { name: /Contact/ })).toBeInTheDocument();
-    expect(document.body.style.overflow).toBe('hidden');
 
     fireEvent.keyDown(document, { key: 'Escape' });
 
     expect(screen.queryByRole('dialog', { name: 'Menu' })).toBeNull();
-    expect(document.body.style.overflow).toBe('');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+    fireEvent.click(document.getElementById('contenu'));
+
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
     fireEvent.click(

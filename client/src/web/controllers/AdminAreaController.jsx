@@ -49,7 +49,7 @@ class AdminAreaController extends Component {
     this.stopAlerts = null;
   }
 
-  /** Pastilles « Commentaires » et « Messages » de la barre latérale. */
+  /** Pastille « Modération » de la barre latérale. */
   loadBadges() {
     if (!this.props.user || this.props.moderationLoaded) return;
     this.props.fetchComments();
@@ -78,8 +78,10 @@ class AdminAreaController extends Component {
           <Route path="/admin/competences" component={AdminSkillsController} />
           <Route exact path="/admin/articles" component={AdminArticlesController} />
           <Route path="/admin/articles/:id" component={ArticleEditorController} />
-          <Route path="/admin/commentaires" component={ModerationController} />
-          <Route path="/admin/messages" component={ModerationController} />
+          <Route
+            path={['/admin/messages', '/admin/commentaires']}
+            component={ModerationController}
+          />
           <Route path="/admin/courriels" component={AdminEmailsController} />
           <Route path="/admin/certifications" component={AdminCertificationsController} />
           <Route

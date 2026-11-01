@@ -13,7 +13,7 @@ import {
 import ArticleService from '../../bll/services/ArticleService.js';
 import ModerationView from '../views/pages/admin/ModerationView.jsx';
 
-/** /admin/commentaires et /admin/messages : même écran (maquette A-05). */
+/** Page unique pour les commentaires et les messages (maquette A-05). */
 class ModerationController extends Component {
   state = {
     commentTab: 'pending',

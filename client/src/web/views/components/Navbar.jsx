@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, createRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import withLocale from '../../context/withLocale.jsx';
 
@@ -12,35 +12,32 @@ export const NAV_LINKS = [
   { to: '/distinctions', label: 'Distinctions' },
 ];
 
-/** Barre de navigation collante ; sur mobile, menu plein écran (Échap pour fermer). */
+/** Barre de navigation collante ; sur mobile, menu déroulant (Échap ou clic à côté pour fermer). */
 class Navbar extends Component {
   state = { open: false };
+  root = createRef();
 
   componentDidMount() {
     document.addEventListener('keydown', this.handleKey);
+    document.addEventListener('click', this.handleOutsideClick);
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleKey);
-    document.body.style.overflow = '';
+    document.removeEventListener('click', this.handleOutsideClick);
   }
 
   handleKey = (e) => {
     if (e.key === 'Escape' && this.state.open) this.close();
   };
 
-  toggle = () =>
-    this.setState(
-      (s) => ({ open: !s.open }),
-      () => {
-        document.body.style.overflow = this.state.open ? 'hidden' : '';
-      }
-    );
-
-  close = () => {
-    this.setState({ open: false });
-    document.body.style.overflow = '';
+  handleOutsideClick = (e) => {
+    if (this.state.open && !this.root.current.contains(e.target)) this.close();
   };
+
+  toggle = () => this.setState((s) => ({ open: !s.open }));
+
+  close = () => this.setState({ open: false });
 
   dot(to) {
     if (!this.props.dots?.[to]) return null;
@@ -62,7 +59,7 @@ class Navbar extends Component {
     } = this.props;
     const { open } = this.state;
     return (
-      <header className="pf-nav">
+      <header className="pf-nav" ref={this.root}>
         <nav className="pf-nav__bar" aria-label={this.props.t('Navigation principale')}>
           <NavLink
             to="/"
@@ -142,20 +139,6 @@ class Navbar extends Component {
             role="dialog"
             aria-label={this.props.t('Menu')}
           >
-            <div className="pf-row pf-between" style={{ marginBottom: 24 }}>
-              <span className="pf-logo">
-                {initials}
-                <i>.</i>
-              </span>
-              <button
-                type="button"
-                className="pf-burger"
-                style={{ display: 'inline-flex' }}
-                onClick={this.close}
-              >
-                {this.props.t('Fermer')}
-              </button>
-            </div>
             {[...NAV_LINKS, { to: '/contact', label: 'Contact' }].map((l) => (
               <NavLink
                 key={l.to}
