@@ -99,7 +99,11 @@ module.exports = (env, argv) => {
           use: {
             loader: 'babel-loader',
             options: {
-              presets: ['@babel/preset-env', '@babel/preset-react'],
+              presets: [
+                '@babel/preset-env',
+                // Sans cette option, Babel suit NODE_ENV : en production, jsxDEV n'existe pas
+                ['@babel/preset-react', { development: !isProduction }],
+              ],
             },
           },
         },
